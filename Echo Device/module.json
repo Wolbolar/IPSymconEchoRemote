@@ -1,0 +1,13 @@
+{
+    "id": "{496AB8B5-396A-40E4-AF41-32F4C48AC90D}",
+	"title": "Echo Remote",
+	"description": "Amazon Echo Remote",
+    "name": "EchoRemote",
+    "type": 3,
+    "vendor": "Amazon",
+    "aliases": ["Amazon Echo Remote"],
+    "parentRequirements": [],
+    "childRequirements": [],
+    "implemented": [],
+    "prefix": "EchoRemote"
+}
