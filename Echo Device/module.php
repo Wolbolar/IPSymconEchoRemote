@@ -348,7 +348,7 @@ class EchoRemote extends IPSModule
 		$csrf = $this->ReadPropertyString('TuneInCSRF');
 		$cookie = $this->ReadPropertyString('TuneInCookie');
 		$header = $this->GetHeader($csrf, $cookie);
-		$post_fields = '';
+		$postfields = '';
 		$this->SendEcho($postfields, $header, $urltype, $station);
 	}
 	

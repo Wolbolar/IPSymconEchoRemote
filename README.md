@@ -73,33 +73,34 @@ Parameter _$volume_ Volume des Amazon Echo Dot, min 0 max 1, 1 = 100 %, 32% = 0.
 
 Rewind30s
 ```php
-EchoRemote_Rewind30s(integer $InstanceID)
+EchoRemote_Rewind30s(int $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices
 
 Forward30s
 ```php
-EchoRemote_Forward30s(integer $InstanceID)
+EchoRemote_Forward30s(int $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices
 
 Shuffle
 ```php
-EchoRemote_Shuffle(integer $InstanceID, bool Shuffle)
+EchoRemote_Shuffle(int $InstanceID, bool Shuffle)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices
 
 Repeat
 ```php
-EchoRemote_Repeat(integer $InstanceID)
+EchoRemote_Repeat(int $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices  
 
 TuneIn
 ```php
-EchoRemote_TuneIn(integer $InstanceID)
+EchoRemote_TuneIn(int $InstanceID, string $station)
 ``` 
-Parameter _$InstanceID_ ObjektID des Echo Remote Devices  
+Parameter _$InstanceID_ ObjektID des Echo Remote Devices
+Parameter _$station_ Station ID ist die guideId die entsprechend der Anleitung pro Sender einmal ausgelesen werden muss   
 
 AmazonMusic
 ```php
