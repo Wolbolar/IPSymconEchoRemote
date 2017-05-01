@@ -66,9 +66,10 @@ Parameter _$InstanceID_ ObjektID des Echo Remote Devices
 
 SetVolume
 ```php
-EchoRemote_SetVolume(int $InstanceID, int $volume)
+EchoRemote_SetVolume(int $InstanceID, float $volume)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices
+Parameter _$volume_ Volume des Amazon Echo Dot, min 0 max 1, 1 = 100 %, 32% = 0.32
 
 Rewind30s
 ```php

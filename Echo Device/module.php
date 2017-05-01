@@ -27,21 +27,25 @@ class EchoRemote extends IPSModule
         parent::ApplyChanges();
 		
 		$echoremoteass =  Array(
-					Array(1, "Rewind 30s",  "", -1),
-					Array(2, "Previous",  "", -1),
-					Array(3, "Pause/Stop",  "", -1),
-					Array(4, "Play",  "", -1),
-					Array(5, "Next",  "", -1),
-					Array(6, "Forward 30s",  "", -1)
+					Array(1, "Rewind 30s",  "HollowDoubleArrowLeft", -1),
+					Array(2, "Previous",  "HollowLargeArrowLeft", -1),
+					Array(3, "Pause/Stop",  "Sleep", -1),
+					Array(4, "Play",  "Script", -1),
+					Array(5, "Next",  "HollowLargeArrowRight", -1),
+					Array(6, "Forward 30s",  "HollowDoubleArrowRight", -1)
 				);
 						
-		$this->RegisterProfileIntegerAss("Echo.Remote", "TV", "", "", 1, 6, 0, 0, $echoremoteass);
+		$this->RegisterProfileIntegerAss("Echo.Remote", "Move", "", "", 1, 6, 0, 0, $echoremoteass);
 		$this->RegisterVariableInteger("EchoRemote", "Echo Remote", "Echo.Remote", 1);
 		$this->EnableAction("EchoRemote");
 		$this->RegisterVariableBoolean("EchoShuffle", "Echo Shuffle", "~Switch", 2);
+		IPS_SetIcon($this->GetIDForIdent("EchoShuffle"), "Shuffle");
 		$this->EnableAction("EchoShuffle");
 		$this->RegisterVariableBoolean("EchoRepeat", "Echo Repeat", "~Switch", 3);
+		IPS_SetIcon($this->GetIDForIdent("EchoRepeat"), "Repeat");
 		$this->EnableAction("EchoRepeat");
+		$this->RegisterVariableFloat("EchoVolume", "Volume", "~Intensity.1", 4);
+		$this->EnableAction("EchoVolume");
 		/*
 		$tuneinstationass =  Array(
 					Array(1, "FFH",  "", -1),
@@ -55,7 +59,7 @@ class EchoRemote extends IPSModule
 				);
 						
 		$this->RegisterProfileIntegerAss("Echo.TuneInStation", "Music", "", "", 1, 8, 0, 0, $tuneinstationass);
-		$this->RegisterVariableInteger("EchoTuneInRemote", "Echo TuneIn Radio", "Echo.TuneInStation", 4);
+		$this->RegisterVariableInteger("EchoTuneInRemote", "Echo TuneIn Radio", "Echo.TuneInStation", 5);
 		$this->EnableAction("EchoTuneInRemote");
 		*/
 		$this->ValidateConfiguration();	
@@ -287,8 +291,9 @@ class EchoRemote extends IPSModule
 		$this->SendEcho($postfields, $header, $urltype);
 	}
 	
-	public function SetVolume(int $volume)
+	public function SetVolume(float $volume) // float 0 bis 1 100% = 1
 	{
+		$volume = $volume*100;
 		$urltype = "command";
 		$csrf = $this->ReadPropertyString('TuneInCSRF');
 		$cookie = $this->ReadPropertyString('TuneInCookie');
@@ -456,7 +461,7 @@ class EchoRemote extends IPSModule
 			switch($Value) 
 			{
                     case 1: // Rewind30s
-						$this->Rewind30s();
+						$this->Rewind30s(); 
                         break;
                     case 2: // Previous
                         $this->Previous();
@@ -483,6 +488,11 @@ class EchoRemote extends IPSModule
 		{
 			$this->Repeat($Value);
 		}
+		if($Ident == "EchoVolume")
+		{
+			$this->SetVolume($Value);
+		}
+		SetValue($this->GetIDForIdent($Ident), $Value);
     }
 		
 	//Profile
