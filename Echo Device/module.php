@@ -19,6 +19,74 @@ class EchoRemote extends IPSModule
 		$this->RegisterPropertyString("TuneInCookie", "");
 		$this->RegisterPropertyString("AmazonCSRF", "");
 		$this->RegisterPropertyString("AmazonCookie", "");
+		
+		
+		$this->RegisterPropertyString("TuneIn1", "Hit Radio FFH");
+		$this->RegisterPropertyString("TuneIn1StationID", "s17490");
+		$this->RegisterPropertyString("TuneIn2", "FFH Lounge");
+		$this->RegisterPropertyString("TuneIn2StationID", "s84483");
+		$this->RegisterPropertyString("TuneIn3", "FFH Rock");
+		$this->RegisterPropertyString("TuneIn3StationID", "s84489");
+		$this->RegisterPropertyString("TuneIn4", "FFH Die 80er");
+		$this->RegisterPropertyString("TuneIn4StationID", "s84481");
+		$this->RegisterPropertyString("TuneIn5", "FFH iTunes Top 40");
+		$this->RegisterPropertyString("TuneIn5StationID", "s84486");
+		$this->RegisterPropertyString("TuneIn6", "FFH Eurodance");
+		$this->RegisterPropertyString("TuneIn6StationID", "s84487");
+		$this->RegisterPropertyString("TuneIn7", "FFH Soundtrack");
+		$this->RegisterPropertyString("TuneIn7StationID", "s97088");
+		$this->RegisterPropertyString("TuneIn8", "FFH Die 90er");
+		$this->RegisterPropertyString("TuneIn8StationID", "s97089");
+		$this->RegisterPropertyString("TuneIn9", "FFH Schlagerkult");
+		$this->RegisterPropertyString("TuneIn9StationID", "s84482");
+		$this->RegisterPropertyString("TuneIn10", "FFH Leider Geil");
+		$this->RegisterPropertyString("TuneIn10StationID", "s254526");
+		$this->RegisterPropertyString("TuneIn11", "The Wave - relaxing radio");
+		$this->RegisterPropertyString("TuneIn11StationID", "s140647");
+		$this->RegisterPropertyString("TuneIn12", "hr3");
+		$this->RegisterPropertyString("TuneIn12StationID", "s57109");
+		$this->RegisterPropertyString("TuneIn13", "harmony.fm");
+		$this->RegisterPropertyString("TuneIn13StationID", "s140555");
+		$this->RegisterPropertyString("TuneIn14", "SWR3");
+		$this->RegisterPropertyString("TuneIn14StationID", "s24896");
+		$this->RegisterPropertyString("TuneIn15", "Deluxe Lounge Radio");
+		$this->RegisterPropertyString("TuneIn15StationID", "s125250");
+		$this->RegisterPropertyString("TuneIn16", "Lounge-Radio.com");
+		$this->RegisterPropertyString("TuneIn16StationID", "s17364");
+		$this->RegisterPropertyString("TuneIn17", "Bayern 3");
+		$this->RegisterPropertyString("TuneIn17StationID", "s255334");
+		$this->RegisterPropertyString("TuneIn18", "planet radio");
+		$this->RegisterPropertyString("TuneIn18StationID", "s2726");
+		$this->RegisterPropertyString("TuneIn19", "YOU FM");
+		$this->RegisterPropertyString("TuneIn19StationID", "s24878");
+		$this->RegisterPropertyString("TuneIn20", "1LIVE diggi");
+		$this->RegisterPropertyString("TuneIn20StationID", "s45087");
+		$this->RegisterPropertyString("TuneIn21", "Fritz vom rbb");
+		$this->RegisterPropertyString("TuneIn21StationID", "s25005");
+		$this->RegisterPropertyString("TuneIn22", "Hitradio Ö3");
+		$this->RegisterPropertyString("TuneIn22StationID", "s8007");
+		$this->RegisterPropertyString("TuneIn23", "radio ffn");
+		$this->RegisterPropertyString("TuneIn23StationID", "s8954");
+		$this->RegisterPropertyString("TuneIn24", "N-JOY");
+		$this->RegisterPropertyString("TuneIn24StationID", "s25531");
+		$this->RegisterPropertyString("TuneIn25", "bigFM");
+		$this->RegisterPropertyString("TuneIn25StationID", "s84203");
+		$this->RegisterPropertyString("TuneIn26", "Deutschlandfunk");
+		$this->RegisterPropertyString("TuneIn26StationID", "s42828");
+		$this->RegisterPropertyString("TuneIn27", "NDR 2");
+		$this->RegisterPropertyString("TuneIn27StationID", "s17492");
+		$this->RegisterPropertyString("TuneIn28", "DASDING");
+		$this->RegisterPropertyString("TuneIn28StationID", "s20295");
+		$this->RegisterPropertyString("TuneIn29", "sunshine live");
+		$this->RegisterPropertyString("TuneIn29StationID", "s10637");
+		$this->RegisterPropertyString("TuneIn30", "MDR JUMP");
+		$this->RegisterPropertyString("TuneIn30StationID", "s6634");
+		$this->RegisterPropertyString("TuneIn31", "Costa Del Mar");
+		$this->RegisterPropertyString("TuneIn31StationID", "s187256");
+		$this->RegisterPropertyString("TuneIn32", "Antenne Bayern");
+		$this->RegisterPropertyString("TuneIn32StationID", "s139505");
+		
+
 	}
 	
     public function ApplyChanges()
@@ -46,22 +114,48 @@ class EchoRemote extends IPSModule
 		$this->EnableAction("EchoRepeat");
 		$this->RegisterVariableFloat("EchoVolume", "Volume", "~Intensity.1", 4);
 		$this->EnableAction("EchoVolume");
-		/*
+		
+		$tuneinstations = $this->GetTuneInStations();
+				
 		$tuneinstationass =  Array(
-					Array(1, "FFH",  "", -1),
-					Array(2, "Previous",  "", -1),
-					Array(3, "Pause/Stop",  "", -1),
-					Array(4, "Play",  "", -1),
-					Array(5, "Next",  "", -1),
-					Array(6, "Forward 30s",  "", -1),
-					Array(7, "Shuffle",  "", -1),
-					Array(8, "Repeat",  "", -1)
+					Array(1, $tuneinstations[1]["name"],  "", -1),
+					Array(2, $tuneinstations[2]["name"],  "", -1),
+					Array(3, $tuneinstations[3]["name"],  "", -1),
+					Array(4, $tuneinstations[4]["name"],  "", -1),
+					Array(5, $tuneinstations[5]["name"],  "", -1),
+					Array(6, $tuneinstations[6]["name"],  "", -1),
+					Array(7, $tuneinstations[7]["name"],  "", -1),
+					Array(8, $tuneinstations[8]["name"],  "", -1),
+					Array(9, $tuneinstations[9]["name"],  "", -1),
+					Array(10, $tuneinstations[10]["name"],  "", -1),
+					Array(11, $tuneinstations[11]["name"],  "", -1),
+					Array(12, $tuneinstations[12]["name"],  "", -1),
+					Array(13, $tuneinstations[13]["name"],  "", -1),
+					Array(14, $tuneinstations[14]["name"],  "", -1),
+					Array(15, $tuneinstations[15]["name"],  "", -1),
+					Array(16, $tuneinstations[16]["name"],  "", -1),
+					Array(17, $tuneinstations[17]["name"],  "", -1),
+					Array(18, $tuneinstations[18]["name"],  "", -1),
+					Array(19, $tuneinstations[19]["name"],  "", -1),
+					Array(20, $tuneinstations[20]["name"],  "", -1),
+					Array(21, $tuneinstations[21]["name"],  "", -1),
+					Array(22, $tuneinstations[22]["name"],  "", -1),
+					Array(23, $tuneinstations[23]["name"],  "", -1),
+					Array(24, $tuneinstations[24]["name"],  "", -1),
+					Array(25, $tuneinstations[25]["name"],  "", -1),
+					Array(26, $tuneinstations[26]["name"],  "", -1),
+					Array(27, $tuneinstations[27]["name"],  "", -1),
+					Array(28, $tuneinstations[28]["name"],  "", -1),
+					Array(29, $tuneinstations[29]["name"],  "", -1),
+					Array(30, $tuneinstations[30]["name"],  "", -1),
+					Array(31, $tuneinstations[31]["name"],  "", -1),
+					Array(32, $tuneinstations[32]["name"],  "", -1)
 				);
 						
-		$this->RegisterProfileIntegerAss("Echo.TuneInStation", "Music", "", "", 1, 8, 0, 0, $tuneinstationass);
+		$this->RegisterProfileIntegerAss("Echo.TuneInStation", "Music", "", "", 1, 32, 0, 0, $tuneinstationass);
 		$this->RegisterVariableInteger("EchoTuneInRemote", "Echo TuneIn Radio", "Echo.TuneInStation", 5);
 		$this->EnableAction("EchoTuneInRemote");
-		*/
+		
 		$this->ValidateConfiguration();	
 	
     }
@@ -184,6 +278,32 @@ class EchoRemote extends IPSModule
 		$this->SetStatus(102);
 	}
 	
+	protected function GetTuneInStations()
+	{
+		$tuneinstations = array ();
+		for ($i=1; $i<=32; $i++)
+		{
+			${"tunein".$i} = $this->ReadPropertyString('TuneIn'.$i);
+			${"tunein".$i."stationid"} = $this->ReadPropertyString('TuneIn'.$i.'StationID');
+			$tuneinstations[$i]["name"] = ${"tunein".$i};
+			$tuneinstations[$i]["stationid"] = ${"tunein".$i."stationid"};
+		}
+		return $tuneinstations;
+	}
+	
+	protected function GetTuneInStationID($value)
+	{
+		$tuneinstations = array ();
+		for ($i=1; $i<=32; $i++)
+		{
+			${"tunein".$i} = $this->ReadPropertyString('TuneIn'.$i);
+			${"tunein".$i."stationid"} = $this->ReadPropertyString('TuneIn'.$i.'StationID');
+			$tuneinstations[$i]["name"] = ${"tunein".$i};
+			$tuneinstations[$i]["stationid"] = ${"tunein".$i."stationid"};
+		}
+		$stationid = $tuneinstations[$value]["stationid"];
+		return $stationid;
+	}
 		
 	/* Send to Echo API
 	* 
@@ -344,6 +464,7 @@ class EchoRemote extends IPSModule
 	
 	public function TuneIn(string $station)
 	{
+		//$this->SendDebug("Echo:","Switch to Radio Station".$stationname,0);
 		$urltype = "tunein";
 		$csrf = $this->ReadPropertyString('TuneInCSRF');
 		$cookie = $this->ReadPropertyString('TuneInCookie');
@@ -351,7 +472,7 @@ class EchoRemote extends IPSModule
 		$postfields = '';
 		$this->SendEcho($postfields, $header, $urltype, $station);
 	}
-	
+		
 	public function AmazonMusic()
 	{
 		$seedid = "xx";
@@ -462,36 +583,53 @@ class EchoRemote extends IPSModule
 			{
                     case 1: // Rewind30s
 						$this->Rewind30s(); 
+						$this->SendDebug("Echo:","Request Action Rewind 30s",0);
                         break;
                     case 2: // Previous
                         $this->Previous();
+						$this->SendDebug("Echo:","Request Action Previous",0);
                         break;
                     case 3: // Pause / Stop
                         $this->Pause();
+						$this->SendDebug("Echo:","Request Action Pause",0);
                         break;
                     case 4: // Play
                         $this->Play();
+						$this->SendDebug("Echo:","Request Action Play",0);
                         break;
 					case 5: // Next
                         $this->Next();
+						$this->SendDebug("Echo:","Request Action Next",0);
                         break;
 					case 6: // Forward30s
                         $this->Forward30s();
+						$this->SendDebug("Echo:","Request Action Forward 30s",0);
                         break;		
 			}
 		}
 		if($Ident == "EchoShuffle")
 		{
 			$this->Shuffle($Value);
+			$this->SendDebug("Echo:","Request Action Shuffle",0);
 		}
 		if($Ident == "EchoRepeat")
 		{
 			$this->Repeat($Value);
+			$this->SendDebug("Echo:","Request Action Repeat",0);
 		}
 		if($Ident == "EchoVolume")
 		{
 			$this->SetVolume($Value);
+			$volume = $Value*100;
+			$this->SendDebug("Echo:","Request Action set Volume to ".$volume,0);
 		}
+		if($Ident == "EchoTuneInRemote")
+		{
+			$stationid = GetTuneInStationID($Value);
+			$this->SendDebug("Echo:","Request Action set Station to ".$stationid,0);
+			$this->TuneIn($stationid);
+		}
+		
 		SetValue($this->GetIDForIdent($Ident), $Value);
     }
 		
@@ -588,7 +726,105 @@ class EchoRemote extends IPSModule
 				{ "type": "Label", "label": "TuneIn CSRF" },
                 {"type": "ValidationTextBox", "name": "TuneInCSRF", "caption": "TuneIn CSRF" },
 				{ "type": "Label", "label": "TuneIn Cookie" },
-				{"type": "ValidationTextBox", "name": "TuneInCookie", "caption": "TuneIn Cookie" },';
+				{"type": "ValidationTextBox", "name": "TuneInCookie", "caption": "TuneIn Cookie" },
+				{ "type": "Label", "label": "__________________________________________________________________________________________________" },
+				{ "type": "Label", "label": "TuneIn Sender" },
+				{ "type": "Label", "label": "Position 1" },
+				{"type": "ValidationTextBox", "name": "TuneIn1", "caption": "TuneIn Sender 1" },
+				{"type": "ValidationTextBox", "name": "TuneIn1StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 2" },
+				{"type": "ValidationTextBox", "name": "TuneIn2", "caption": "TuneIn Sender 2" },
+				{"type": "ValidationTextBox", "name": "TuneIn2StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 3" },
+				{"type": "ValidationTextBox", "name": "TuneIn3", "caption": "TuneIn Sender 3" },
+				{"type": "ValidationTextBox", "name": "TuneIn3StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 4" },
+				{"type": "ValidationTextBox", "name": "TuneIn4", "caption": "TuneIn Sender 4" },
+				{"type": "ValidationTextBox", "name": "TuneIn4StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 5" },
+				{"type": "ValidationTextBox", "name": "TuneIn5", "caption": "TuneIn Sender 5" },
+				{"type": "ValidationTextBox", "name": "TuneIn5StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 6" },
+				{"type": "ValidationTextBox", "name": "TuneIn6", "caption": "TuneIn Sender 6" },
+				{"type": "ValidationTextBox", "name": "TuneIn6StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 7" },
+				{"type": "ValidationTextBox", "name": "TuneIn7", "caption": "TuneIn Sender 7" },
+				{"type": "ValidationTextBox", "name": "TuneIn7StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 8" },
+				{"type": "ValidationTextBox", "name": "TuneIn8", "caption": "TuneIn Sender 8" },
+				{"type": "ValidationTextBox", "name": "TuneIn8StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 9" },
+				{"type": "ValidationTextBox", "name": "TuneIn9", "caption": "TuneIn Sender 9" },
+				{"type": "ValidationTextBox", "name": "TuneIn9StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 10" },
+				{"type": "ValidationTextBox", "name": "TuneIn10", "caption": "TuneIn Sender 10" },
+				{"type": "ValidationTextBox", "name": "TuneIn10StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 11" },
+				{"type": "ValidationTextBox", "name": "TuneIn11", "caption": "TuneIn Sender 11" },
+				{"type": "ValidationTextBox", "name": "TuneIn11StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 12" },
+				{"type": "ValidationTextBox", "name": "TuneIn12", "caption": "TuneIn Sender 12" },
+				{"type": "ValidationTextBox", "name": "TuneIn12StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 13" },
+				{"type": "ValidationTextBox", "name": "TuneIn13", "caption": "TuneIn Sender 13" },
+				{"type": "ValidationTextBox", "name": "TuneIn13StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 14" },
+				{"type": "ValidationTextBox", "name": "TuneIn14", "caption": "TuneIn Sender 14" },
+				{"type": "ValidationTextBox", "name": "TuneIn14StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 15" },
+				{"type": "ValidationTextBox", "name": "TuneIn15", "caption": "TuneIn Sender 15" },
+				{"type": "ValidationTextBox", "name": "TuneIn15StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 16" },
+				{"type": "ValidationTextBox", "name": "TuneIn16", "caption": "TuneIn Sender 16" },
+				{"type": "ValidationTextBox", "name": "TuneIn16StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 17" },
+				{"type": "ValidationTextBox", "name": "TuneIn17", "caption": "TuneIn Sender 17" },
+				{"type": "ValidationTextBox", "name": "TuneIn17StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 18" },
+				{"type": "ValidationTextBox", "name": "TuneIn18", "caption": "TuneIn Sender 18" },
+				{"type": "ValidationTextBox", "name": "TuneIn18StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 19" },
+				{"type": "ValidationTextBox", "name": "TuneIn19", "caption": "TuneIn Sender 19" },
+				{"type": "ValidationTextBox", "name": "TuneIn19StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 20" },
+				{"type": "ValidationTextBox", "name": "TuneIn20", "caption": "TuneIn Sender 20" },
+				{"type": "ValidationTextBox", "name": "TuneIn20StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 21" },
+				{"type": "ValidationTextBox", "name": "TuneIn21", "caption": "TuneIn Sender 21" },
+				{"type": "ValidationTextBox", "name": "TuneIn21StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 22" },
+				{"type": "ValidationTextBox", "name": "TuneIn22", "caption": "TuneIn Sender 22" },
+				{"type": "ValidationTextBox", "name": "TuneIn22StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 23" },
+				{"type": "ValidationTextBox", "name": "TuneIn23", "caption": "TuneIn Sender 23" },
+				{"type": "ValidationTextBox", "name": "TuneIn23StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 24" },
+				{"type": "ValidationTextBox", "name": "TuneIn24", "caption": "TuneIn Sender 24" },
+				{"type": "ValidationTextBox", "name": "TuneIn24StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 25" },
+				{"type": "ValidationTextBox", "name": "TuneIn25", "caption": "TuneIn Sender 25" },
+				{"type": "ValidationTextBox", "name": "TuneIn25StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 26" },
+				{"type": "ValidationTextBox", "name": "TuneIn26", "caption": "TuneIn Sender 26" },
+				{"type": "ValidationTextBox", "name": "TuneIn26StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 27" },
+				{"type": "ValidationTextBox", "name": "TuneIn27", "caption": "TuneIn Sender 27" },
+				{"type": "ValidationTextBox", "name": "TuneIn27StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 28" },
+				{"type": "ValidationTextBox", "name": "TuneIn28", "caption": "TuneIn Sender 28" },
+				{"type": "ValidationTextBox", "name": "TuneIn28StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 29" },
+				{"type": "ValidationTextBox", "name": "TuneIn29", "caption": "TuneIn Sender 29" },
+				{"type": "ValidationTextBox", "name": "TuneIn29StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 30" },
+				{"type": "ValidationTextBox", "name": "TuneIn30", "caption": "TuneIn Sender 30" },
+				{"type": "ValidationTextBox", "name": "TuneIn30StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 31" },
+				{"type": "ValidationTextBox", "name": "TuneIn31", "caption": "TuneIn Sender 31" },
+				{"type": "ValidationTextBox", "name": "TuneIn31StationID", "caption": "TuneIn Station ID" },
+				{ "type": "Label", "label": "Position 32" },
+				{"type": "ValidationTextBox", "name": "TuneIn32", "caption": "TuneIn Sender 32" },
+				{"type": "ValidationTextBox", "name": "TuneIn32StationID", "caption": "TuneIn Station ID" },';
 			
 		return $form;
 	}
