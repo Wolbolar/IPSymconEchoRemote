@@ -120,7 +120,7 @@ EchoRemote_ImportedMusic(integer $InstanceID, string $trackid)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices 
 
-Parameter _$trackid_ trackId des impotierten FilesSeed ID ist die _seedId_ die entsprechend der Anleitung pro Sender einmal ausgelesen werden muss     
+Parameter _$trackid_ trackId des importierten Files die entsprechend der Anleitung pro Track einmal ausgelesen werden muss     
 
 
 ## 5. Konfiguration:
