@@ -152,9 +152,10 @@ class EchoRemote extends IPSModule
 					Array(32, $tuneinstations[32]["name"],  "", -1)
 				);
 						
-		$this->RegisterProfileIntegerAss("Echo.TuneInStation", "Music", "", "", 1, 32, 0, 0, $tuneinstationass);
-		$this->RegisterVariableInteger("EchoTuneInRemote", "Echo TuneIn Radio", "Echo.TuneInStation", 5);
-		$this->EnableAction("EchoTuneInRemote");
+		$tuneincsrf = $this->ReadPropertyString('TuneInCSRF');
+		$this->RegisterProfileIntegerAss("Echo.TuneInStation".$tuneincsrf, "Music", "", "", 1, 32, 0, 0, $tuneinstationass);
+		$this->RegisterVariableInteger("EchoTuneInRemote".$tuneincsrf, "Echo TuneIn Radio", "Echo.TuneInStation".$tuneincsrf, 5);
+		$this->EnableAction("EchoTuneInRemote".$tuneincsrf);
 		
 		$this->ValidateConfiguration();	
 	
@@ -212,69 +213,6 @@ class EchoRemote extends IPSModule
 		}
 		*/
 		
-		/*
-		//IP prüfen
-		if (!filter_var($ip, FILTER_VALIDATE_IP) === false)
-			{
-				$this->SetParentIP();
-			}
-		else
-			{
-			$this->SetStatus(203); //IP Adresse ist ungültig 
-			}
-		$change = false;	
-		//Email und Passwort prüfen
-		if ($email == "" || $password == "")
-			{
-				$this->SetStatus(205); //Felder dürfen nicht leer sein
-			}
-		elseif ($email !== "" && $password !== "" && (!filter_var($ip, FILTER_VALIDATE_IP) === false))
-			{
-				$userauthtokenid = @$this->GetIDForIdent("HarmonyUserAuthToken");
-				if ($userauthtokenid === false)
-					{
-						//User Auth Token
-						$userauthtokenid = $this->RegisterVariableString("HarmonyUserAuthToken", "User Auth Token", "~String", 1);
-						IPS_SetHidden($userauthtokenid, true);
-						$this->EnableAction("HarmonyUserAuthToken");
-					
-					}
-				else
-					{
-						//Variable UserAuthToken existiert bereits
-						
-					}
-				//Session Token
-				$sessiontokenid = @$this->GetIDForIdent("HarmonySessionToken");
-				if ($sessiontokenid === false)
-					{
-						$sessiontokenid = $this->RegisterVariableString("HarmonySessionToken", "SessionToken", "~String", 1);
-						IPS_SetHidden($sessiontokenid, true);
-						$this->EnableAction("HarmonySessionToken");
-					}
-				
-				
-				$userauthtoken = GetValue($userauthtokenid);	
-				if($userauthtoken == "")
-					{
-						$this->RegisterUser($email, $password, $userauthtokenid);
-					}
-				$change = true;	
-			}
-		
-		//Import Kategorie für HarmonyHub Geräte
-		$ImportCategoryID = $this->ReadPropertyInteger('ImportCategoryID');
-		if ( $ImportCategoryID === 0)
-			{
-				// Status Error Kategorie zum Import auswählen
-				$this->SetStatus(206);
-			}
-		elseif ( $ImportCategoryID != 0)	
-			{
-				// Status Aktiv
-				$this->SetStatus(102);
-			}
-		*/	
 		$this->SetStatus(102);
 	}
 	
@@ -322,6 +260,7 @@ class EchoRemote extends IPSModule
 		$command_url = 'https://layla.amazon.de/api/np/command?deviceSerialNumber=' . $devicenumber . '&deviceType=' . $devicetype;
 		$tunein_url = 'https://layla.amazon.de/api/tunein/queue-and-play?deviceSerialNumber=' . $devicenumber . '&deviceType=' . $devicetype . '&guideId='.$tuneinstation.'&contentType=station&callSign=&mediaOwnerCustomerId=' . $alexacustomerid;
 		$amazon_music_url = 'https://layla.amazon.de/api/gotham/queue-and-play?deviceSerialNumber=' . $devicenumber . '&deviceType=' . $devicetype . '&mediaOwnerCustomerId=' . $alexacustomerid;
+		$imported_music_url = 'https://layla.amazon.de/api/cloudplayer/queue-and-play?deviceSerialNumber=' . $devicenumber . '&deviceType=' . $devicetype . '&shuffle=false&mediaOwnerCustomerId=' . $alexacustomerid;
 		
 		if ($urltype == "command")
 		{
@@ -335,7 +274,10 @@ class EchoRemote extends IPSModule
 		{
 			$url = $amazon_music_url;
 		}
-		
+		elseif ($urltype == "importedmusic")
+		{
+			$url = $imported_music_url;
+		}
 
 		
 		$ch = curl_init();
@@ -473,15 +415,23 @@ class EchoRemote extends IPSModule
 		$this->SendEcho($postfields, $header, $urltype, $station);
 	}
 		
-	public function AmazonMusic()
+	public function AmazonMusic(string $seedid, string $stationname)
 	{
-		$seedid = "xx";
-		$stationname = "blub";
 		$urltype = "amazonmusic";
 		$amazonmusiccsrf = $this->ReadPropertyString('AmazonCSRF');
 		$amazonmusiccookie = $this->ReadPropertyString('AmazonCookie');
 		$header = $this->GetHeader($amazonmusiccsrf, $amazonmusiccookie);
 		$postfields = '{"seed":"{\"type\":\"KEY\",\"seedId\":\"'.$seedid.'\"}","stationName":"'.$stationname.'","seedType":"KEY"}';
+		$this->SendEcho($postfields, $header, $urltype);
+	}
+	
+	public function ImportedMusic(string $trackid)
+	{
+		$urltype = "importedmusic";
+		$amazonmusiccsrf = $this->ReadPropertyString('AmazonCSRF');
+		$amazonmusiccookie = $this->ReadPropertyString('AmazonCookie');
+		$header = $this->GetHeader($amazonmusiccsrf, $amazonmusiccookie);
+		$postfields = '{"trackId":"'.$trackid.'", "playQueuePrime":true}';
 		$this->SendEcho($postfields, $header, $urltype);
 	}
 	
@@ -577,7 +527,8 @@ class EchoRemote extends IPSModule
 	
 	public function RequestAction($Ident, $Value)
     {
-        if($Ident == "EchoRemote")
+        $tuneincsrf = $this->ReadPropertyString('TuneInCSRF');
+		if($Ident == "EchoRemote")
 		{
 			switch($Value) 
 			{
@@ -623,7 +574,7 @@ class EchoRemote extends IPSModule
 			$volume = $Value*100;
 			$this->SendDebug("Echo:","Request Action set Volume to ".$volume,0);
 		}
-		if($Ident == "EchoTuneInRemote")
+		if($Ident == "EchoTuneInRemote".$tuneincsrf)
 		{
 			$stationid = GetTuneInStationID($Value);
 			$this->SendDebug("Echo:","Request Action set Station to ".$stationid,0);
@@ -833,9 +784,9 @@ class EchoRemote extends IPSModule
 	{
 		$form = '"actions":
 			[
-				{ "type": "Label", "label": "Start Play:" },
+				{ "type": "Label", "label": "Play:" },
 				{ "type": "Button", "label": "Play", "onClick": "EchoRemote_Play($id);" },
-				{ "type": "Label", "label": "Start Pause:" },
+				{ "type": "Label", "label": "Pause:" },
 				{ "type": "Button", "label": "Pause", "onClick": "EchoRemote_Pause($id);" }
 			],';
 		return  $form;

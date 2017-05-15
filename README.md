@@ -69,6 +69,7 @@ SetVolume
 EchoRemote_SetVolume(int $InstanceID, float $volume)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices
+
 Parameter _$volume_ Volume des Amazon Echo Dot, min 0 max 1, 1 = 100 %, 32% = 0.32
 
 Rewind30s
@@ -100,13 +101,26 @@ TuneIn
 EchoRemote_TuneIn(int $InstanceID, string $station)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices
+
 Parameter _$station_ Station ID ist die guideId die entsprechend der Anleitung pro Sender einmal ausgelesen werden muss   
 
 AmazonMusic
 ```php
-EchoRemote_AmazonMusic(integer $InstanceID)
+EchoRemote_AmazonMusic(integer $InstanceID, string $seedid, string $stationname)
 ``` 
-Parameter _$InstanceID_ ObjektID des Echo Remote Devices  
+Parameter _$InstanceID_ ObjektID des Echo Remote Devices 
+
+Parameter _$seedid_ Seed ID ist die _seedId_ die entsprechend der Anleitung pro Sender einmal ausgelesen werden muss  
+
+Parameter _$stationname_ Station Name der _stationName_ der entsprechend der Anleitung pro Sender einmal ausgelesen werden muss
+
+ImportedMusic
+```php
+EchoRemote_ImportedMusic(integer $InstanceID, string $trackid)
+``` 
+Parameter _$InstanceID_ ObjektID des Echo Remote Devices 
+
+Parameter _$trackid_ trackId des impotierten FilesSeed ID ist die _seedId_ die entsprechend der Anleitung pro Sender einmal ausgelesen werden muss     
 
 
 ## 5. Konfiguration:
