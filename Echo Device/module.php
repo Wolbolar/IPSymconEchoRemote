@@ -247,6 +247,20 @@ class EchoRemote extends IPSModule
 		$stationid = $tuneinstations[$value]["stationid"];
 		return $stationid;
 	}
+	
+	protected function GetTuneInStationPreset($station)
+	{
+		$stationpreset = false;
+		for ($i=1; $i<=32; $i++)
+		{
+			${"tunein".$i."stationid"} = $this->ReadPropertyString('TuneIn'.$i.'StationID');
+			if (${"tunein".$i."stationid"} == $station)
+				{
+					$stationpreset = $i;
+				}
+		}
+		return $stationpreset;
+	}
 		
 	/* Send to Echo API
 	* 
@@ -320,104 +334,143 @@ class EchoRemote extends IPSModule
 	
 	public function Play()
 	{
+		$this->SendDebug("Echo Remote:","Request Action Play",0);
 		$urltype = "command";
 		$csrf = $this->ReadPropertyString('TuneInCSRF');
 		$cookie = $this->ReadPropertyString('TuneInCookie');
 		$header = $this->GetHeader($csrf, $cookie);
 		$postfields = '{"type":"PlayCommand","contentFocusClientId":null}';
 		$this->SendEcho($postfields, $header, $urltype);
+		$Ident = "EchoRemote";
+		$this->EchoSetValue($Ident, 4);
 	}
 	
 	public function Pause()
 	{
+		$this->SendDebug("Echo Remote:","Request Action Pause",0);
 		$urltype = "command";
 		$csrf = $this->ReadPropertyString('TuneInCSRF');
 		$cookie = $this->ReadPropertyString('TuneInCookie');
 		$header = $this->GetHeader($csrf, $cookie);
 		$postfields = '{"type":"PauseCommand","contentFocusClientId":null}';
 		$this->SendEcho($postfields, $header, $urltype);
+		$Ident = "EchoRemote";
+		$this->EchoSetValue($Ident, 3);
 	}
 	
 	public function Next()
 	{
+		$this->SendDebug("Echo Remote:","Request Action Next",0);
 		$urltype = "command";
 		$csrf = $this->ReadPropertyString('TuneInCSRF');
 		$cookie = $this->ReadPropertyString('TuneInCookie');
 		$header = $this->GetHeader($csrf, $cookie);
 		$postfields = '{"type":"NextCommand","contentFocusClientId":null}';
 		$this->SendEcho($postfields, $header, $urltype);
+		$Ident = "EchoRemote";
+		$this->EchoSetValue($Ident, 5);
 	}
 	
 	public function Previous()
 	{
+		$this->SendDebug("Echo Remote:","Request Action Previous",0);
 		$urltype = "command";
 		$csrf = $this->ReadPropertyString('TuneInCSRF');
 		$cookie = $this->ReadPropertyString('TuneInCookie');
 		$header = $this->GetHeader($csrf, $cookie);
 		$postfields = '{"type":"PreviousCommand","contentFocusClientId":null}';
 		$this->SendEcho($postfields, $header, $urltype);
+		$Ident = "EchoRemote";
+		$this->EchoSetValue($Ident, 2);
 	}
 	
 	public function SetVolume(float $volume) // float 0 bis 1 100% = 1
 	{
-		$volume = $volume*100;
+		$volumelevel = $volume*100;
+		$this->SendDebug("Echo Remote:","Set Volume to ".$volumelevel,0);
 		$urltype = "command";
 		$csrf = $this->ReadPropertyString('TuneInCSRF');
 		$cookie = $this->ReadPropertyString('TuneInCookie');
 		$header = $this->GetHeader($csrf, $cookie);
-		$postfields = '{"type":"VolumeLevelCommand","volumeLevel":'.$volume.', "contentFocusClientId":null}';
+		$postfields = '{"type":"VolumeLevelCommand","volumeLevel":'.$volumelevel.', "contentFocusClientId":null}';
 		$this->SendEcho($postfields, $header, $urltype);
+		$Ident = "EchoVolume";
+		$this->EchoSetValue($Ident, $volume);
 	}
-	
+		
 	public function Rewind30s()
 	{
+		$this->SendDebug("Echo Remote:","Request Action Rewind 30s",0);
 		$urltype = "command";
 		$csrf = $this->ReadPropertyString('TuneInCSRF');
 		$cookie = $this->ReadPropertyString('TuneInCookie');
 		$header = $this->GetHeader($csrf, $cookie);
 		$postfields = '{"type":"RewindCommand"}';
 		$this->SendEcho($postfields, $header, $urltype);
+		$Ident = "EchoRemote";
+		$this->EchoSetValue($Ident, 1);
 	}
 	
 	public function Forward30s()
 	{
+		$this->SendDebug("Echo Remote:","Request Action Forward 30s",0);
 		$urltype = "command";
 		$csrf = $this->ReadPropertyString('TuneInCSRF');
 		$cookie = $this->ReadPropertyString('TuneInCookie');
 		$header = $this->GetHeader($csrf, $cookie);
 		$postfields = '{"type":"ForwardCommand"}';
 		$this->SendEcho($postfields, $header, $urltype);
+		$Ident = "EchoRemote";
+		$this->EchoSetValue($Ident, 6);
 	}
 	
 	public function Shuffle(bool $value)
 	{
+		$this->SendDebug("Echo Remote:","Request Action Shuffle",0);
 		$urltype = "command";
 		$csrf = $this->ReadPropertyString('TuneInCSRF');
 		$cookie = $this->ReadPropertyString('TuneInCookie');
 		$header = $this->GetHeader($csrf, $cookie);
 		$postfields = '{"type":"ShuffleCommand","shuffle":' . ($value ? 'true' : 'false') . '}';
 		$this->SendEcho($postfields, $header, $urltype);
+		$Ident = "EchoShuffle";
+		$this->EchoSetValue($Ident, $value);
 	}
 	
 	public function Repeat(bool $value)
 	{
+		$this->SendDebug("Echo Remote:","Request Action Repeat",0);
 		$urltype = "command";
 		$csrf = $this->ReadPropertyString('TuneInCSRF');
 		$cookie = $this->ReadPropertyString('TuneInCookie');
 		$header = $this->GetHeader($csrf, $cookie);
 		$postfields = '{"type":"RepeatCommand","repeat":' . ($value ? 'true' : 'false') . '}';
 		$this->SendEcho($postfields, $header, $urltype);
+		$Ident = "EchoRepeat";
+		$this->EchoSetValue($Ident, $value);
 	}
 	
 	public function TuneIn(string $station)
 	{
-		//$this->SendDebug("Echo:","Switch to Radio Station".$stationname,0);
+		$this->SendDebug("Echo Remote:","Set Station to ".$station,0);
 		$urltype = "tunein";
 		$csrf = $this->ReadPropertyString('TuneInCSRF');
 		$cookie = $this->ReadPropertyString('TuneInCookie');
 		$header = $this->GetHeader($csrf, $cookie);
 		$postfields = '';
 		$this->SendEcho($postfields, $header, $urltype, $station);
+		$Ident = "EchoTuneInRemote_".$devicenumber;
+		$stationvalue = $this->GetTuneInStationPreset($station);
+		if($stationvalue > 0)
+		{
+			$this->EchoSetValue($Ident, $stationvalue);
+		}
+	}
+		
+	public function TuneInPreset(int $preset)
+	{
+		$station = $this->GetTuneInStationID($preset);
+		$this->TuneIn($station);
 	}
 		
 	public function AmazonMusic(string $seedid, string $stationname)
@@ -438,6 +491,13 @@ class EchoRemote extends IPSModule
 		$header = $this->GetHeader($amazonmusiccsrf, $amazonmusiccookie);
 		$postfields = '{"trackId":"'.$trackid.'", "playQueuePrime":true}';
 		$this->SendEcho($postfields, $header, $urltype);
+	}
+	
+	protected function EchoSetValue($Ident, $Value)
+	{
+		$objid = $this->GetIDForIdent($Ident);
+		SetValue($objid, $Value);
+		$this->SendDebug("Echo Remote:","Set value of variable with object ID ".$objid." and ident ".$Ident." to ".$Value,0);
 	}
 	
 	private function SetParentIP()
@@ -540,56 +600,41 @@ class EchoRemote extends IPSModule
 			{
                     case 1: // Rewind30s
 						$this->Rewind30s(); 
-						$this->SendDebug("Echo Remote:","Request Action Rewind 30s",0);
                         break;
                     case 2: // Previous
                         $this->Previous();
-						$this->SendDebug("Echo Remote:","Request Action Previous",0);
                         break;
                     case 3: // Pause / Stop
                         $this->Pause();
-						$this->SendDebug("Echo Remote:","Request Action Pause",0);
                         break;
                     case 4: // Play
                         $this->Play();
-						$this->SendDebug("Echo Remote:","Request Action Play",0);
                         break;
 					case 5: // Next
                         $this->Next();
-						$this->SendDebug("Echo Remote:","Request Action Next",0);
                         break;
 					case 6: // Forward30s
                         $this->Forward30s();
-						$this->SendDebug("Echo Remote:","Request Action Forward 30s",0);
                         break;		
 			}
 		}
 		if($Ident == "EchoShuffle")
 		{
 			$this->Shuffle($Value);
-			$this->SendDebug("Echo Remote:","Request Action Shuffle",0);
 		}
 		if($Ident == "EchoRepeat")
 		{
 			$this->Repeat($Value);
-			$this->SendDebug("Echo Remote:","Request Action Repeat",0);
 		}
 		if($Ident == "EchoVolume")
 		{
 			$this->SetVolume($Value);
-			$volume = $Value*100;
-			$this->SendDebug("Echo Remote:","Request Action set Volume to ".$volume,0);
 		}
 		if($Ident == "EchoTuneInRemote_".$devicenumber)
 		{
 			$stationid = $this->GetTuneInStationID($Value);
-			$this->SendDebug("Echo Remote:","Request Action set Station to ".$stationid,0);
 			$this->TuneIn($stationid);
 		}
-		
-		$objid = $this->GetIDForIdent($Ident);
-		SetValue($objid, $Value);
-		$this->SendDebug("Echo Remote:","Set value of variable with object ID ".$objid." and ident ".$Ident." to ".$Value,0);
     }
 		
 	//Profile

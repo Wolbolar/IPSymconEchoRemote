@@ -102,7 +102,15 @@ EchoRemote_TuneIn(int $InstanceID, string $station)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices
 
-Parameter _$station_ Station ID ist die guideId die entsprechend der Anleitung pro Sender einmal ausgelesen werden muss   
+Parameter _$station_ Station ID ist die guideId die entsprechend der Anleitung pro Sender einmal ausgelesen werden muss
+
+TuneInPreset
+```php
+EchoRemote_TuneInPreset(int $InstanceID, int $preset)
+``` 
+Parameter _$InstanceID_ ObjektID des Echo Remote Devices
+
+Parameter _$preset_ Positions ID der Radiostation im Modul    
 
 AmazonMusic
 ```php
