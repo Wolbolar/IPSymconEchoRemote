@@ -115,47 +115,7 @@ class EchoRemote extends IPSModule
 		$this->RegisterVariableFloat("EchoVolume", "Volume", "~Intensity.1", 4);
 		$this->EnableAction("EchoVolume");
 		
-		$tuneinstations = $this->GetTuneInStations();
-				
-		$tuneinstationass =  Array(
-					Array(1, $tuneinstations[1]["name"],  "", -1),
-					Array(2, $tuneinstations[2]["name"],  "", -1),
-					Array(3, $tuneinstations[3]["name"],  "", -1),
-					Array(4, $tuneinstations[4]["name"],  "", -1),
-					Array(5, $tuneinstations[5]["name"],  "", -1),
-					Array(6, $tuneinstations[6]["name"],  "", -1),
-					Array(7, $tuneinstations[7]["name"],  "", -1),
-					Array(8, $tuneinstations[8]["name"],  "", -1),
-					Array(9, $tuneinstations[9]["name"],  "", -1),
-					Array(10, $tuneinstations[10]["name"],  "", -1),
-					Array(11, $tuneinstations[11]["name"],  "", -1),
-					Array(12, $tuneinstations[12]["name"],  "", -1),
-					Array(13, $tuneinstations[13]["name"],  "", -1),
-					Array(14, $tuneinstations[14]["name"],  "", -1),
-					Array(15, $tuneinstations[15]["name"],  "", -1),
-					Array(16, $tuneinstations[16]["name"],  "", -1),
-					Array(17, $tuneinstations[17]["name"],  "", -1),
-					Array(18, $tuneinstations[18]["name"],  "", -1),
-					Array(19, $tuneinstations[19]["name"],  "", -1),
-					Array(20, $tuneinstations[20]["name"],  "", -1),
-					Array(21, $tuneinstations[21]["name"],  "", -1),
-					Array(22, $tuneinstations[22]["name"],  "", -1),
-					Array(23, $tuneinstations[23]["name"],  "", -1),
-					Array(24, $tuneinstations[24]["name"],  "", -1),
-					Array(25, $tuneinstations[25]["name"],  "", -1),
-					Array(26, $tuneinstations[26]["name"],  "", -1),
-					Array(27, $tuneinstations[27]["name"],  "", -1),
-					Array(28, $tuneinstations[28]["name"],  "", -1),
-					Array(29, $tuneinstations[29]["name"],  "", -1),
-					Array(30, $tuneinstations[30]["name"],  "", -1),
-					Array(31, $tuneinstations[31]["name"],  "", -1),
-					Array(32, $tuneinstations[32]["name"],  "", -1)
-				);
-						
-		$tuneincsrf = $this->ReadPropertyString('TuneInCSRF');
-		$this->RegisterProfileIntegerAss("Echo.TuneInStation".$tuneincsrf, "Music", "", "", 1, 32, 0, 0, $tuneinstationass);
-		$this->RegisterVariableInteger("EchoTuneInRemote".$tuneincsrf, "Echo TuneIn Radio", "Echo.TuneInStation".$tuneincsrf, 5);
-		$this->EnableAction("EchoTuneInRemote".$tuneincsrf);
+		
 		
 		$this->ValidateConfiguration();	
 	
@@ -213,7 +173,52 @@ class EchoRemote extends IPSModule
 		}
 		*/
 		
-		$this->SetStatus(102);
+		if ($devicetype != "" && $devicenumber != "" && $alexacustomerid != "" && $tuneincsrf != "" && $tuneincookie != "")
+		{
+			$tuneinstations = $this->GetTuneInStations();
+				
+			$tuneinstationass =  Array(
+					Array(1, $tuneinstations[1]["name"],  "", -1),
+					Array(2, $tuneinstations[2]["name"],  "", -1),
+					Array(3, $tuneinstations[3]["name"],  "", -1),
+					Array(4, $tuneinstations[4]["name"],  "", -1),
+					Array(5, $tuneinstations[5]["name"],  "", -1),
+					Array(6, $tuneinstations[6]["name"],  "", -1),
+					Array(7, $tuneinstations[7]["name"],  "", -1),
+					Array(8, $tuneinstations[8]["name"],  "", -1),
+					Array(9, $tuneinstations[9]["name"],  "", -1),
+					Array(10, $tuneinstations[10]["name"],  "", -1),
+					Array(11, $tuneinstations[11]["name"],  "", -1),
+					Array(12, $tuneinstations[12]["name"],  "", -1),
+					Array(13, $tuneinstations[13]["name"],  "", -1),
+					Array(14, $tuneinstations[14]["name"],  "", -1),
+					Array(15, $tuneinstations[15]["name"],  "", -1),
+					Array(16, $tuneinstations[16]["name"],  "", -1),
+					Array(17, $tuneinstations[17]["name"],  "", -1),
+					Array(18, $tuneinstations[18]["name"],  "", -1),
+					Array(19, $tuneinstations[19]["name"],  "", -1),
+					Array(20, $tuneinstations[20]["name"],  "", -1),
+					Array(21, $tuneinstations[21]["name"],  "", -1),
+					Array(22, $tuneinstations[22]["name"],  "", -1),
+					Array(23, $tuneinstations[23]["name"],  "", -1),
+					Array(24, $tuneinstations[24]["name"],  "", -1),
+					Array(25, $tuneinstations[25]["name"],  "", -1),
+					Array(26, $tuneinstations[26]["name"],  "", -1),
+					Array(27, $tuneinstations[27]["name"],  "", -1),
+					Array(28, $tuneinstations[28]["name"],  "", -1),
+					Array(29, $tuneinstations[29]["name"],  "", -1),
+					Array(30, $tuneinstations[30]["name"],  "", -1),
+					Array(31, $tuneinstations[31]["name"],  "", -1),
+					Array(32, $tuneinstations[32]["name"],  "", -1)
+				);
+						
+			$this->RegisterProfileIntegerAss("Echo.TuneInStation.".$devicenumber, "Music", "", "", 1, 32, 0, 0, $tuneinstationass);
+			$this->RegisterVariableInteger("EchoTuneInRemote_".$devicenumber, "Echo TuneIn Radio", "Echo.TuneInStation.".$devicenumber, 5);
+			$this->EnableAction("EchoTuneInRemote_".$devicenumber);
+			$this->SetStatus(102);
+		}
+		
+		
 	}
 	
 	protected function GetTuneInStations()
@@ -527,61 +532,63 @@ class EchoRemote extends IPSModule
 	
 	public function RequestAction($Ident, $Value)
     {
-        $tuneincsrf = $this->ReadPropertyString('TuneInCSRF');
+        $devicenumber = $this->ReadPropertyString('Devicenumber');
+		$this->SendDebug("Echo Remote:","Request Action trigger by Ident ".$Ident,0);
 		if($Ident == "EchoRemote")
 		{
 			switch($Value) 
 			{
                     case 1: // Rewind30s
 						$this->Rewind30s(); 
-						$this->SendDebug("Echo:","Request Action Rewind 30s",0);
+						$this->SendDebug("Echo Remote:","Request Action Rewind 30s",0);
                         break;
                     case 2: // Previous
                         $this->Previous();
-						$this->SendDebug("Echo:","Request Action Previous",0);
+						$this->SendDebug("Echo Remote:","Request Action Previous",0);
                         break;
                     case 3: // Pause / Stop
                         $this->Pause();
-						$this->SendDebug("Echo:","Request Action Pause",0);
+						$this->SendDebug("Echo Remote:","Request Action Pause",0);
                         break;
                     case 4: // Play
                         $this->Play();
-						$this->SendDebug("Echo:","Request Action Play",0);
+						$this->SendDebug("Echo Remote:","Request Action Play",0);
                         break;
 					case 5: // Next
                         $this->Next();
-						$this->SendDebug("Echo:","Request Action Next",0);
+						$this->SendDebug("Echo Remote:","Request Action Next",0);
                         break;
 					case 6: // Forward30s
                         $this->Forward30s();
-						$this->SendDebug("Echo:","Request Action Forward 30s",0);
+						$this->SendDebug("Echo Remote:","Request Action Forward 30s",0);
                         break;		
 			}
 		}
 		if($Ident == "EchoShuffle")
 		{
 			$this->Shuffle($Value);
-			$this->SendDebug("Echo:","Request Action Shuffle",0);
+			$this->SendDebug("Echo Remote:","Request Action Shuffle",0);
 		}
 		if($Ident == "EchoRepeat")
 		{
 			$this->Repeat($Value);
-			$this->SendDebug("Echo:","Request Action Repeat",0);
+			$this->SendDebug("Echo Remote:","Request Action Repeat",0);
 		}
 		if($Ident == "EchoVolume")
 		{
 			$this->SetVolume($Value);
 			$volume = $Value*100;
-			$this->SendDebug("Echo:","Request Action set Volume to ".$volume,0);
+			$this->SendDebug("Echo Remote:","Request Action set Volume to ".$volume,0);
 		}
-		if($Ident == "EchoTuneInRemote".$tuneincsrf)
+		if($Ident == "EchoTuneInRemote_".$devicenumber)
 		{
 			$stationid = GetTuneInStationID($Value);
-			$this->SendDebug("Echo:","Request Action set Station to ".$stationid,0);
+			$this->SendDebug("Echo Remote:","Request Action set Station to ".$stationid,0);
 			$this->TuneIn($stationid);
 		}
 		
 		SetValue($this->GetIDForIdent($Ident), $Value);
+		$this->SendDebug("Echo Remote:","Set Value of Ident ".$Ident." to ".$Value,0);
     }
 		
 	//Profile
