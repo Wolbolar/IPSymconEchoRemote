@@ -533,7 +533,7 @@ class EchoRemote extends IPSModule
 	public function RequestAction($Ident, $Value)
     {
         $devicenumber = $this->ReadPropertyString('Devicenumber');
-		$this->SendDebug("Echo Remote:","Request Action trigger by Ident ".$Ident,0);
+		$this->SendDebug("Echo Remote:","Request Action trigger device ".$devicenumber." by Ident ".$Ident,0);
 		if($Ident == "EchoRemote")
 		{
 			switch($Value) 
@@ -582,13 +582,14 @@ class EchoRemote extends IPSModule
 		}
 		if($Ident == "EchoTuneInRemote_".$devicenumber)
 		{
-			$stationid = GetTuneInStationID($Value);
+			$stationid = $this->GetTuneInStationID($Value);
 			$this->SendDebug("Echo Remote:","Request Action set Station to ".$stationid,0);
 			$this->TuneIn($stationid);
 		}
 		
-		SetValue($this->GetIDForIdent($Ident), $Value);
-		$this->SendDebug("Echo Remote:","Set Value of Ident ".$Ident." to ".$Value,0);
+		$objid = $this->GetIDForIdent($Ident);
+		SetValue($objid, $Value);
+		$this->SendDebug("Echo Remote:","Set value of variable with object ID ".$objid." and ident ".$Ident." to ".$Value,0);
     }
 		
 	//Profile
