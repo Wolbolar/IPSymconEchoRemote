@@ -459,6 +459,7 @@ class EchoRemote extends IPSModule
 		$header = $this->GetHeader($csrf, $cookie);
 		$postfields = '';
 		$this->SendEcho($postfields, $header, $urltype, $station);
+		$devicenumber = $this->ReadPropertyString('Devicenumber');
 		$Ident = "EchoTuneInRemote_".$devicenumber;
 		$stationvalue = $this->GetTuneInStationPreset($station);
 		if($stationvalue > 0)
