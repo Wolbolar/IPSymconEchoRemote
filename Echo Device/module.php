@@ -1,5 +1,5 @@
 <?
-// Modul für Amazon Echo Remote
+// Modul fÃ¼r Amazon Echo Remote
 
 class EchoRemote extends IPSModule
 {
@@ -63,7 +63,7 @@ class EchoRemote extends IPSModule
 		$this->RegisterPropertyString("TuneIn20StationID", "s45087");
 		$this->RegisterPropertyString("TuneIn21", "Fritz vom rbb");
 		$this->RegisterPropertyString("TuneIn21StationID", "s25005");
-		$this->RegisterPropertyString("TuneIn22", "Hitradio Ö3");
+		$this->RegisterPropertyString("TuneIn22", "Hitradio Ã–3");
 		$this->RegisterPropertyString("TuneIn22StationID", "s8007");
 		$this->RegisterPropertyString("TuneIn23", "radio ffn");
 		$this->RegisterPropertyString("TuneIn23StationID", "s8954");
@@ -122,8 +122,8 @@ class EchoRemote extends IPSModule
     }
 
 		/**
-        * Die folgenden Funktionen stehen automatisch zur Verfügung, wenn das Modul über die "Module Control" eingefügt wurden.
-        * Die Funktionen werden, mit dem selbst eingerichteten Prefix, in PHP und JSON-RPC wiefolgt zur Verfügung gestellt:
+        * Die folgenden Funktionen stehen automatisch zur VerfÃ¼gung, wenn das Modul Ã¼ber die "Module Control" eingefÃ¼gt wurden.
+        * Die Funktionen werden, mit dem selbst eingerichteten Prefix, in PHP und JSON-RPC wiefolgt zur VerfÃ¼gung gestellt:
         *
         *
         */
@@ -313,22 +313,66 @@ class EchoRemote extends IPSModule
 		curl_close($ch);
 		return $result;
 	}
-		
-	protected function GetHeader($csrf, $cookie)
+	
+	protected function SendGETEcho($header, $url)
 	{
-		$http_headers = array(
-		'Access-Control-Request-Method: POST',
-		'Origin: http://alexa.amazon.de',
-		'Accept-Encoding: gzip, deflate, sdch, br',
-		'Accept-Language: de-DE,de;q=0.8,en-US;q=0.6,en;q=0.4',
-		'User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36',
-		'Content-Type: application/x-www-form-urlencoded; charset=UTF-8',
-		'Accept: application/json, text/javascript, */*; q=0.01',
-		'Referer: http://alexa.amazon.de/spa/index.html',
-		'csrf: '.$csrf,
-		'Cookie: '.$cookie,
-		'Connection: keep-alive'
-		);
+		$devicetype = $this->ReadPropertyString('Devicetype');
+		$devicenumber = $this->ReadPropertyString('Devicenumber');
+		$alexacustomerid = $this->ReadPropertyString('CustomerID');
+		$tuneincsrf = $this->ReadPropertyString('TuneInCSRF');
+		$tuneincookie = $this->ReadPropertyString('TuneInCookie');
+		$amazonmusiccsrf = $this->ReadPropertyString('AmazonCSRF');
+		$amazonmusiccookie = $this->ReadPropertyString('AmazonCookie');
+		
+		
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $url);
+		//curl_setopt($ch, CURLOPT_USERAGENT, "IPSymcon4");
+		curl_setopt($ch, CURLOPT_TIMEOUT, 30); //timeout after 30 seconds
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+		curl_setopt($ch, CURLOPT_ENCODING, "");
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		$result = curl_exec($ch);
+		$this->SendDebug("Echo:","Send to URL : ".print_r($url,true),0);
+		$this->SendDebug("Echo:","Response : ".print_r($result,true),0);
+		curl_close($ch);
+		return $result;
+	}
+		
+	protected function GetHeader($csrf, $cookie, $type)
+	{
+		if($type == "POST")
+		{
+			$http_headers = array(
+			'Access-Control-Request-Method: POST',
+			'Origin: http://alexa.amazon.de',
+			'Accept-Encoding: gzip, deflate, sdch, br',
+			'Accept-Language: de-DE,de;q=0.8,en-US;q=0.6,en;q=0.4',
+			'User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36',
+			'Content-Type: application/x-www-form-urlencoded; charset=UTF-8',
+			'Accept: application/json, text/javascript, */*; q=0.01',
+			'Referer: http://alexa.amazon.de/spa/index.html',
+			'csrf: '.$csrf,
+			'Cookie: '.$cookie,
+			'Connection: keep-alive'
+			);
+		}
+		elseif($type == "GET")
+		{
+			$http_headers = array(
+			'Host: layla.amazon.de',
+			'Origin: http://alexa.amazon.de',
+			'Accept-Encoding: gzip, deflate, sdch, br',
+			'Accept-Language: de-DE,de;q=0.8,en-US;q=0.6,en;q=0.4',
+			'User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36',
+			'Content-Type: application/x-www-form-urlencoded; charset=UTF-8',
+			'Accept: application/json, text/javascript, */*; q=0.01',
+			'Referer: http://alexa.amazon.de/spa/index.html',
+			'csrf: '.$csrf,
+			'Cookie: '.$cookie,
+			'Connection: keep-alive'
+			);		
+		}
 		return $http_headers;
 	}
 	
@@ -338,7 +382,8 @@ class EchoRemote extends IPSModule
 		$urltype = "command";
 		$csrf = $this->ReadPropertyString('TuneInCSRF');
 		$cookie = $this->ReadPropertyString('TuneInCookie');
-		$header = $this->GetHeader($csrf, $cookie);
+		$type = "POST";
+		$header = $this->GetHeader($csrf, $cookie, $type);
 		$postfields = '{"type":"PlayCommand","contentFocusClientId":null}';
 		$this->SendEcho($postfields, $header, $urltype);
 		$Ident = "EchoRemote";
@@ -351,7 +396,8 @@ class EchoRemote extends IPSModule
 		$urltype = "command";
 		$csrf = $this->ReadPropertyString('TuneInCSRF');
 		$cookie = $this->ReadPropertyString('TuneInCookie');
-		$header = $this->GetHeader($csrf, $cookie);
+		$type = "POST";
+		$header = $this->GetHeader($csrf, $cookie, $type);
 		$postfields = '{"type":"PauseCommand","contentFocusClientId":null}';
 		$this->SendEcho($postfields, $header, $urltype);
 		$Ident = "EchoRemote";
@@ -364,7 +410,8 @@ class EchoRemote extends IPSModule
 		$urltype = "command";
 		$csrf = $this->ReadPropertyString('TuneInCSRF');
 		$cookie = $this->ReadPropertyString('TuneInCookie');
-		$header = $this->GetHeader($csrf, $cookie);
+		$type = "POST";
+		$header = $this->GetHeader($csrf, $cookie, $type);
 		$postfields = '{"type":"NextCommand","contentFocusClientId":null}';
 		$this->SendEcho($postfields, $header, $urltype);
 		$Ident = "EchoRemote";
@@ -377,7 +424,8 @@ class EchoRemote extends IPSModule
 		$urltype = "command";
 		$csrf = $this->ReadPropertyString('TuneInCSRF');
 		$cookie = $this->ReadPropertyString('TuneInCookie');
-		$header = $this->GetHeader($csrf, $cookie);
+		$type = "POST";
+		$header = $this->GetHeader($csrf, $cookie, $type);
 		$postfields = '{"type":"PreviousCommand","contentFocusClientId":null}';
 		$this->SendEcho($postfields, $header, $urltype);
 		$Ident = "EchoRemote";
@@ -391,7 +439,8 @@ class EchoRemote extends IPSModule
 		$urltype = "command";
 		$csrf = $this->ReadPropertyString('TuneInCSRF');
 		$cookie = $this->ReadPropertyString('TuneInCookie');
-		$header = $this->GetHeader($csrf, $cookie);
+		$type = "POST";
+		$header = $this->GetHeader($csrf, $cookie, $type);
 		$postfields = '{"type":"VolumeLevelCommand","volumeLevel":'.$volumelevel.', "contentFocusClientId":null}';
 		$this->SendEcho($postfields, $header, $urltype);
 		$Ident = "EchoVolume";
@@ -404,7 +453,8 @@ class EchoRemote extends IPSModule
 		$urltype = "command";
 		$csrf = $this->ReadPropertyString('TuneInCSRF');
 		$cookie = $this->ReadPropertyString('TuneInCookie');
-		$header = $this->GetHeader($csrf, $cookie);
+		$type = "POST";
+		$header = $this->GetHeader($csrf, $cookie, $type);
 		$postfields = '{"type":"RewindCommand"}';
 		$this->SendEcho($postfields, $header, $urltype);
 		$Ident = "EchoRemote";
@@ -417,7 +467,8 @@ class EchoRemote extends IPSModule
 		$urltype = "command";
 		$csrf = $this->ReadPropertyString('TuneInCSRF');
 		$cookie = $this->ReadPropertyString('TuneInCookie');
-		$header = $this->GetHeader($csrf, $cookie);
+		$type = "POST";
+		$header = $this->GetHeader($csrf, $cookie, $type);
 		$postfields = '{"type":"ForwardCommand"}';
 		$this->SendEcho($postfields, $header, $urltype);
 		$Ident = "EchoRemote";
@@ -430,7 +481,8 @@ class EchoRemote extends IPSModule
 		$urltype = "command";
 		$csrf = $this->ReadPropertyString('TuneInCSRF');
 		$cookie = $this->ReadPropertyString('TuneInCookie');
-		$header = $this->GetHeader($csrf, $cookie);
+		$type = "POST";
+		$header = $this->GetHeader($csrf, $cookie, $type);
 		$postfields = '{"type":"ShuffleCommand","shuffle":' . ($value ? 'true' : 'false') . '}';
 		$this->SendEcho($postfields, $header, $urltype);
 		$Ident = "EchoShuffle";
@@ -443,7 +495,8 @@ class EchoRemote extends IPSModule
 		$urltype = "command";
 		$csrf = $this->ReadPropertyString('TuneInCSRF');
 		$cookie = $this->ReadPropertyString('TuneInCookie');
-		$header = $this->GetHeader($csrf, $cookie);
+		$type = "POST";
+		$header = $this->GetHeader($csrf, $cookie, $type);
 		$postfields = '{"type":"RepeatCommand","repeat":' . ($value ? 'true' : 'false') . '}';
 		$this->SendEcho($postfields, $header, $urltype);
 		$Ident = "EchoRepeat";
@@ -451,6 +504,26 @@ class EchoRemote extends IPSModule
 	}
 	
 	public function TuneIn(string $station)
+	{
+		$this->SendDebug("Echo Remote:","Set Station to ".$station,0);
+		$urltype = "tunein";
+		$csrf = $this->ReadPropertyString('TuneInCSRF');
+		$cookie = $this->ReadPropertyString('TuneInCookie');
+		$type = "POST";
+		$header = $this->GetHeader($csrf, $cookie, $type);
+		$postfields = '';
+		$this->SendEcho($postfields, $header, $urltype, $station);
+		$devicenumber = $this->ReadPropertyString('Devicenumber');
+		$Ident = "EchoTuneInRemote_".$devicenumber;
+		$stationvalue = $this->GetTuneInStationPreset($station);
+		if($stationvalue > 0)
+		{
+			$this->EchoSetValue($Ident, $stationvalue);
+		}
+	}
+	
+	/*
+	public function Audible(string $book)
 	{
 		$this->SendDebug("Echo Remote:","Set Station to ".$station,0);
 		$urltype = "tunein";
@@ -467,7 +540,26 @@ class EchoRemote extends IPSModule
 			$this->EchoSetValue($Ident, $stationvalue);
 		}
 	}
-		
+	
+	public function Kindle(string $book)
+	{
+		$this->SendDebug("Echo Remote:","Set Station to ".$station,0);
+		$urltype = "tunein";
+		$csrf = $this->ReadPropertyString('TuneInCSRF');
+		$cookie = $this->ReadPropertyString('TuneInCookie');
+		$header = $this->GetHeader($csrf, $cookie);
+		$postfields = '';
+		$this->SendEcho($postfields, $header, $urltype, $station);
+		$devicenumber = $this->ReadPropertyString('Devicenumber');
+		$Ident = "EchoTuneInRemote_".$devicenumber;
+		$stationvalue = $this->GetTuneInStationPreset($station);
+		if($stationvalue > 0)
+		{
+			$this->EchoSetValue($Ident, $stationvalue);
+		}
+	}
+	*/
+	
 	public function TuneInPreset(int $preset)
 	{
 		$station = $this->GetTuneInStationID($preset);
@@ -479,17 +571,59 @@ class EchoRemote extends IPSModule
 		$urltype = "amazonmusic";
 		$amazonmusiccsrf = $this->ReadPropertyString('AmazonCSRF');
 		$amazonmusiccookie = $this->ReadPropertyString('AmazonCookie');
-		$header = $this->GetHeader($amazonmusiccsrf, $amazonmusiccookie);
+		$type = "POST";
+		$header = $this->GetHeader($amazonmusiccsrf, $amazonmusiccookie, $type);
 		$postfields = '{"seed":"{\"type\":\"KEY\",\"seedId\":\"'.$seedid.'\"}","stationName":"'.$stationname.'","seedType":"KEY"}';
 		$this->SendEcho($postfields, $header, $urltype);
 	}
+	
+	public function SearchMusicTuneIn(string $query)
+	{
+		$alexacustomerid = $this->ReadPropertyString('CustomerID');
+		$csrf = $this->ReadPropertyString('TuneInCSRF');
+		$cookie = $this->ReadPropertyString('TuneInCookie');
+		$type = "GET";
+		$header = $this->GetHeader($csrf, $cookie, $type);
+		$search_url = 'https://layla.amazon.de/api/tunein/search?query='.$query.'&mediaOwnerCustomerId='.$alexacustomerid;
+		$search = $this->SendGETEcho($header, $search_url);
+		return $search;
+	}
+	
+	public function GetStateTuneIn()
+	{
+		$devicetype = $this->ReadPropertyString('Devicetype');
+		$devicenumber = $this->ReadPropertyString('Devicenumber');
+		$csrf = $this->ReadPropertyString('TuneInCSRF');
+		$cookie = $this->ReadPropertyString('TuneInCookie');
+		$type = "GET";
+		$header = $this->GetHeader($csrf, $cookie, $type);
+		$state_url = 'https://layla.amazon.de/api/media/state?deviceSerialNumber='.$devicenumber.'&deviceType='.$devicetype.'&queueId=0e7d86f5-d5a4-4a3a-933e-5910c15d9d4f&shuffling=false&firstIndex=1&lastIndex=1&screenWidth=1920&_=1495289082979';
+		$statejson = $this->SendGETEcho($header, $state_url);
+		$state = json_decode($statejson);
+		return $state;
+	}
+
+    public function GetStateOwnMusic()
+    {
+        $devicetype = $this->ReadPropertyString('Devicetype');
+        $devicenumber = $this->ReadPropertyString('Devicenumber');
+        $csrf = $this->ReadPropertyString('TuneInCSRF');
+        $cookie = $this->ReadPropertyString('TuneInCookie');
+        $type = "GET";
+        $header = $this->GetHeader($csrf, $cookie, $type);
+        $state_url = 'https://layla.amazon.de/api/media/state?deviceSerialNumber='.$devicenumber.'&deviceType='.$devicetype.'&queueId=0e7d86f5-d5a4-4a3a-933e-5910c15d9d4f&shuffling=false&firstIndex=1&lastIndex=1&screenWidth=1920&_=1495289082979';
+        $statejson = $this->SendGETEcho($header, $state_url);
+        $state = json_decode($statejson);
+        return $state;
+    }
 	
 	public function ImportedMusic(string $trackid)
 	{
 		$urltype = "importedmusic";
 		$amazonmusiccsrf = $this->ReadPropertyString('AmazonCSRF');
 		$amazonmusiccookie = $this->ReadPropertyString('AmazonCookie');
-		$header = $this->GetHeader($amazonmusiccsrf, $amazonmusiccookie);
+		$type = "POST";
+		$header = $this->GetHeader($amazonmusiccsrf, $amazonmusiccookie, $type);
 		$postfields = '{"trackId":"'.$trackid.'", "playQueuePrime":true}';
 		$this->SendEcho($postfields, $header, $urltype);
 	}
@@ -504,7 +638,7 @@ class EchoRemote extends IPSModule
 	private function SetParentIP()
 	{
 		$change = false;
-		//$this->SetStatus(102); //IP Adresse ist gültig -> aktiv
+		//$this->SetStatus(102); //IP Adresse ist gï¿½ltig -> aktiv
 				
 		// Zwangskonfiguration des ClientSocket
 		$ParentID = $this->GetParent();
@@ -522,7 +656,7 @@ class EchoRemote extends IPSModule
 					}
 					$ParentOpen = $this->ReadPropertyBoolean('Open');
 						
-			// Keine Verbindung erzwingen wenn IP Harmony Hub leer ist, sonst folgt später Exception.
+			// Keine Verbindung erzwingen wenn IP Harmony Hub leer ist, sonst folgt spï¿½ter Exception.
 				if (!$ParentOpen)
 						$this->SetStatus(104);
 
@@ -542,7 +676,7 @@ class EchoRemote extends IPSModule
 					@IPS_ApplyChanges($ParentID);
 					// Socket vor Trennung durch Hub wieder neu aufbauen
 					$this->RegisterTimer('Update', 55, 'HarmonyHub_UpdateSocket($id)');
-					// Ping senden statt Socket neu Aufbau, Funktioniert zur Zeit noch nicht zuverlässig
+					// Ping senden statt Socket neu Aufbau, Funktioniert zur Zeit noch nicht zuverlï¿½ssig
 					//$this->RegisterTimer('Update', 55, 'HarmonyHub_Ping($id)');
 				}
 					
