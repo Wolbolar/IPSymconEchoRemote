@@ -6,9 +6,9 @@
 			"Echo Remote is activ.": "Echo Remote ist aktiv.",
 			"interface closed.": "Interface geschlossen.",
 			"Harmony Hub IP adress must not empty.": "Harmony Hub IP Adresse darf nicht leer sein.",
-			"No valid IP adress.": "Keine gültige IP Adresse.",
+			"No valid IP adress.": "Keine gÃ¼ltige IP Adresse.",
 			"connection to the Harmony Hub lost.": "Verbindung zum Harmony Hub verloren.",
-			"field must not be empty.": "Felder dürfen nicht leer sein.",
+			"field must not be empty.": "Felder dÃ¼rfen nicht leer sein.",
 			"devicetype field must not be empty.": "Device Type Feld darf nicht leer sein.",
 			"devicenumber field must not be empty.": "Device Number Feld darf nicht leer sein.",
 			"alexacustomerid field must not be empty.": "Alexacustomerid Feld darf nicht leer sein.",
@@ -16,10 +16,10 @@
 			"tuneincookie field must not be empty.": "TuneIn Cookie Feld darf nicht leer sein.",
 			"amazonmusiccrsf field must not be empty.": "Amazon Music CRSF Feld darf nicht leer sein.",
 			"amazonmusiccookie field must not be empty.": "Amazon Music Cookie Feld darf nicht leer sein.",
-			"select category for import.": "Kategorie zum Import auswählen.",
-			"Alexa Smart Home Skill is available in IP-Symcon": "Alexa SmartHomeSkill ist in IP-Symcon verfügbar",
-			"Would you like to create Scripts for Alexa for Harmony actions and links in the SmartHomeSkill instace?": "Sollen Skripte zum Schalten von Harmony Aktion für Alexa und Links in der SmartHomeSkill Instanz erstellt werden?",
-			"Create Links and Scripts for Amazon Echo / Dot": "Links und Skripte für Amazon Echo /Dot anlegen"
+			"select category for import.": "Kategorie zum Import auswÃ¤hlen.",
+			"Alexa Smart Home Skill is available in IP-Symcon": "Alexa SmartHomeSkill ist in IP-Symcon verfÃ¼gbar",
+			"Would you like to create Scripts for Alexa for Harmony actions and links in the SmartHomeSkill instace?": "Sollen Skripte zum Schalten von Harmony Aktion fÃ¼r Alexa und Links in der SmartHomeSkill Instanz erstellt werden?",
+			"Create Links and Scripts for Amazon Echo / Dot": "Links und Skripte fÃ¼r Amazon Echo /Dot anlegen"
 			
 			
 		}

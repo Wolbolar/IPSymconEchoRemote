@@ -434,7 +434,15 @@ class EchoRemote extends IPSModule
 	
 	public function SetVolume(float $volume) // float 0 bis 1 100% = 1
 	{
-		$volumelevel = $volume*100;
+		if($volume >= 1)
+        {
+            $volume = 1;
+        }
+        if($volume <= 0)
+        {
+            $volume = 0;
+        }
+	    $volumelevel = $volume*100;
 		$this->SendDebug("Echo Remote:","Set Volume to ".$volumelevel,0);
 		$urltype = "command";
 		$csrf = $this->ReadPropertyString('TuneInCSRF');
