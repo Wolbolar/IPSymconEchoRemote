@@ -1,0 +1,13 @@
+{
+    "id": "{44CAAF86-E8E0-F417-825D-6BFFF044CBF5}",
+    "name": "AmazonEchoConfigurator",
+    "type": 4,
+    "vendor": "Amazon",
+    "aliases": ["Amazon Echo Configurator"],
+    "parentRequirements": ["{2BD76048-32BD-7D8B-AB6C-626D5C6D7253}"],
+    "childRequirements": [],
+  "implemented": [
+    "{E41E38AC-30D7-CA82-DEF5-9561A5B06CD7}"
+  ],
+    "prefix": "AmazonEchoConfig"
+}

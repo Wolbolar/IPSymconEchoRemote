@@ -1,12 +1,13 @@
 {
-	"id": "{F5204558-5349-4C73-82E3-09CD2254C513}",
-	"description": "Amazon Echo Device Remote Control",
-	"tags": "Amazon Echo",
-	"req_ips_version": "4.1",
-	"author": "Fonzo",
-	"name": "Amazon Echo Remote",
-	"url": "http://www.amazon.de/echo",
-	"version": "0.1",
-	"build": 0,
-	"date": 0
+  "id": "{F5204558-5349-4C73-82E3-09CD2254C513}",
+  "author": "Fonzo/bumaas",
+  "name": "Amazon Echo Remote",
+  "url": "http://www.amazon.de/echo",
+  "compatibility": {
+    "version": "5.0",
+    "date": 1492639200
+  },
+  "version": "0.9",
+  "build": 0,
+  "date": 0
 }

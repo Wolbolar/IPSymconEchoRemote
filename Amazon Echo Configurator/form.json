@@ -1,0 +1,44 @@
+{
+  "actions": [
+    {
+      "type": "Configurator",
+      "name": "AmazonEchoConfiguration",
+      "rowCount": 20,
+      "add": false,
+      "delete": true,
+      "sort": {
+        "column": "name",
+        "direction": "ascending"
+      },
+      "columns": [
+        {
+          "label": "device name",
+          "name": "name",
+          "width": "auto"
+        },
+        {
+          "label": "device type",
+          "name": "devicetype",
+          "width": "250px"
+        },
+        {
+          "label": "device family",
+          "name": "devicefamily",
+          "width": "350px"
+        },
+        {
+          "label": "device number",
+          "name": "devicenumber",
+          "width": "250px"
+        },
+        {
+          "label": "device account id",
+          "name": "deviceaccountid",
+          "width": "250px",
+          "visible": false
+        }
+      ],
+      "values": []
+    }
+  ]
+}

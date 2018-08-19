@@ -1,0 +1,24 @@
+{
+  "translations": {
+    "de": {
+      "Amazon User Name": "Amazon Benutzer Name",
+      "User name": "Benutzername",
+      "Amazon Password": "Amazon Passwort",
+      "Password": "Passwort",
+      "Please choose": "Bitte wählen",
+      "german": "deutsch",
+      "english": "english",
+      "LogIn:": "Anmelden",
+      "LogOff:": "Abmelden",
+      "CheckLogInStatus:": "Anmeldestatus prüfen",
+      "login": "anmelden",
+      "logoff": "abmelden",
+      "checkloginstatus": "Anmeldestatus prüfen",
+      "Echo language": "Echo Sprache",
+      "Echo is accessible.": "Echo ist erreichbar.",
+      "user name must not be empty.": "Benutzername darf nicht leer sein.",
+      "password must not be empty.": "Passwort darf nicht leer sein.",
+      "not authenticated.": "Die Anmeldung ist fehlgeschlagen."
+    }
+  }
+}
