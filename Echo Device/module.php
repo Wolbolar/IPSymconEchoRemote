@@ -1806,14 +1806,14 @@ class EchoRemote extends IPSModule
                     [
                         'name'  => 'station',
                         'label' => 'TuneIn Station',
-                        'width' => '350px',
+                        'width' => '200px',
                         'save'  => true,
                         'edit'  => [
                             'type' => 'ValidationTextBox']],
                     [
                         'name'    => 'station_id',
                         'label'   => 'Station ID',
-                        'width'   => '250px',
+                        'width'   => '150px',
                         'save'    => true,
                         'edit'    => [
                             'type' => 'ValidationTextBox'],

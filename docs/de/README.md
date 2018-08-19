@@ -69,7 +69,7 @@ Anschließend erscheint ein Eintrag für das Modul in der Liste der Instanz _Mod
 
 
 
-### c. Einrichtung in IPS
+### c. Einrichtung in IP-Symcon
 
 In IP-Symcon nun zunächst mit einem rechten Mausklick auf _Konfigurator Instanzen_ eine neue Instanz mit _Objekt hinzufügen -> Instanz_ (_CTRL+1_ in der Legacy Konsole) hinzufügen, und _Echo_ auswählen.
 
