@@ -18,6 +18,7 @@ class AmazonEchoConfigurator extends IPSModule
         'A15ERDAKK5HQQG' => ['name' => 'Sonos'],
         'A1NL4BVLQ4L3N3' => ['name' => 'Echo Show'],
         'A1DL2DVDQVK3Q'  => ['name' => 'App'],
+		'A10A33FOX2NUBK'  => ['name' => 'Echo Spot'],
         'A3C9PE6TNYLTCH' => ['name' => 'Multiroom Musik-Gruppe']];
 
 	public function Create()
