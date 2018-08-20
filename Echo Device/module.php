@@ -1122,7 +1122,10 @@ class EchoRemote extends IPSModule
             $this->SetValue("Subtitle_1", $subtitle_1);
             $this->SetValue("Subtitle_2", $subtitle_2);
             $this->SetBuffer("CoverURL", $imageurl);
-            $this->RefreshCover($imageurl);
+			if(!is_null($imageurl))
+			{
+				$this->RefreshCover($imageurl);
+			}
         }
     }
 
