@@ -5,14 +5,7 @@
       "device name": "Gerätename",
       "device type": "Gerätetyp",
       "device family": "Gerätefamilie",
-      "device number": "Gerätenummer",
-      "Device Family": "Geräte Familie",
-      "FIRE_TV": "Fire TV",
-      "AMAZONMOBILEMUSIC_IOS": "Amazon Mobile Music IOS",
-      "ECHO": "Echo",
-      "THIRD_PARTY_AVS_MEDIA_DISPLAY": "AVS Media Display",
-      "KNIGHT": "Show",
-      "AMAZONMOBILEMUSIC_ANDROID": "Amazon Mobile Music Android"
+      "device number": "Gerätenummer"
     }
   }
 }

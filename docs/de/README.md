@@ -252,6 +252,85 @@ Parameter _$InstanceID_ ObjektID des Echo Remote Devices
 
 Spielt ein kurze Geschichte auf dem Gerät ab
      
+**Ermitteln die Bluetooth Verbindungen**
+```php
+array EchoRemote_ListPairedBluetoothDevices(integer $InstanceID)
+``` 
+Parameter _$InstanceID_ ObjektID des Echo Remote Devices 
+
+Es werden die für das Gerät angelegten Bluetooth Verbindungen ermittelt. Hinweis: die Bluetootheinrichtung selber hat mit der Amazon App oder im Dialog zu erfolgen.
+
+Beispiel:
+```php
+$devices = EchoRemote_ListPairedBluetoothDevices(47111);
+
+var_dump($devices);
+```
+
+Es wird eine Liste der eingerichteten Bluetooth Verbindungen und deren Eigenschaften ausgegeben:
+```php
+array(1) {
+  [0]=>
+  array(5) {
+    ["address"]=>
+    string(17) "00:16:94:25:7B:93"
+    ["connected"]=>
+    bool(false)
+    ["deviceClass"]=>
+    string(5) "OTHER"
+    ["friendlyName"]=>
+    string(7) "PXC 550"
+    ["profiles"]=>
+    array(2) {
+      [0]=>
+      string(9) "A2DP-SINK"
+      [1]=>
+      string(5) "AVRCP"
+    }
+  }
+}
+```
+
+**Verbinden eines Bluetooth Gerätes**
+```php
+EchoRemote_ConnectBluetooth(integer $InstanceID, string $bluetooth_address)
+``` 
+Parameter _$InstanceID_: ObjektID des Echo Remote Devices.
+ 
+Parameter _$bluetooth_address_: Adresse des zu verbindenden Gerätes 
+
+Es wird der Verbindungsaufbau zu dem angegeben Gerät initiiert.
+
+Beispiel:
+```php
+EchoRemote_ConnectBluetooth(47111, '00:16:94:25:7B:93');
+```
+
+**Trennen einer Bluetooth Verbindung**
+```php
+EchoRemote_DisconnectBluetooth(integer $InstanceID)
+``` 
+Parameter _$InstanceID_ ObjektID des Echo Remote Devices 
+
+Es wird eine bestehende Bluetooth Verbindung getrennt.
+
+**Starten einer Routine**
+```php
+boolean EchoRemote_StartAlexaRoutine(integer $InstanceID, string $utterance)
+``` 
+Parameter _$InstanceID_: ObjektID des Echo Remote Devices.
+ 
+Parameter _$utterance_: 'Sprachausdruck' der zu startenden Routine. Routinen können in der Alexa App definiert, 
+konfiguriert und aktiviert werden.
+
+Es wird die zum Sprachausdruck passende Routine gestartet. Im Fehlerfall wird false zurückgegeben.
+
+Beispiel:
+```php
+EchoRemote_StartAlexaRoutine(47111, 'Starte meinen Tag');
+```
+
+
 
 ## 5. Konfiguration:
 
