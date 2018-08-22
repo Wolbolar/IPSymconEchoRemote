@@ -127,9 +127,7 @@ class AmazonEchoConfigurator extends IPSModule
                     "moduleID"      => "{496AB8B5-396A-40E4-AF41-32F4C48AC90D}",
                     "configuration" => [
                         "Devicetype"      => $deviceType,
-                        "DeviceFamily"    => $deviceFamily,
-                        "Devicenumber"    => $serialNumber,
-                        "DeviceAccountID" => $deviceAccountId]]];
+                        "Devicenumber"    => $serialNumber]]];
         }
 
         return $config_list;

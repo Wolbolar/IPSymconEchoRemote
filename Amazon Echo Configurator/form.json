@@ -12,27 +12,27 @@
       },
       "columns": [
         {
-          "label": "device name",
+          "caption": "device name",
           "name": "name",
           "width": "auto"
         },
         {
-          "label": "device type",
+          "caption": "device type",
           "name": "devicetype",
           "width": "250px"
         },
         {
-          "label": "device family",
+          "caption": "device family",
           "name": "devicefamily",
           "width": "350px"
         },
         {
-          "label": "device number",
+          "caption": "device number",
           "name": "devicenumber",
           "width": "250px"
         },
         {
-          "label": "device account id",
+          "caption": "device account id",
           "name": "deviceaccountid",
           "width": "250px",
           "visible": false

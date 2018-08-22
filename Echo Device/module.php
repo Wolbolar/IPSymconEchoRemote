@@ -27,9 +27,7 @@ class EchoRemote extends IPSModule
         //You cannot use variables here. Just static values.
 
         $this->RegisterPropertyString("Devicetype", "");
-        $this->RegisterPropertyString("DeviceFamily", "");
         $this->RegisterPropertyString("Devicenumber", "");
-        $this->RegisterPropertyString("DeviceAccountID", "");
         $this->RegisterPropertyString(
             "TuneInStations", '[{"position":1,"station":"Hit Radio FFH","station_id":"s17490"},
             {"position":10,"station":"FFH Leider Geil","station_id":"s254526"},
@@ -64,11 +62,13 @@ class EchoRemote extends IPSModule
             {"position":8,"station":"FFH Die 90er","station_id":"s97089"},
             {"position":9,"station":"FFH Schlagerkult","station_id":"s84482"}]'
         );
-        $this->RegisterPropertyInteger("updateinterval", 0);
-        $this->RegisterPropertyBoolean("ExtendedInfo", false);
+        $this->RegisterPropertyInteger('updateinterval', 0);
+        $this->RegisterPropertyBoolean('ExtendedInfo', false);
+        $this->RegisterPropertyBoolean('AlarmInfo', false);
 
         $this->SetBuffer('CoverURL', '');
         $this->RegisterTimer('EchoUpdate', 0, 'EchoRemote_UpdateStatus(' . $this->InstanceID . ');');
+        $this->RegisterTimer('EchoAlarm', 0, 'EchoRemote_RaiseAlarm(' . $this->InstanceID . ');');
 
         $this->ConnectParent("{C7F853A4-60D2-99CD-A198-2C9025E2E312}");
 
@@ -163,6 +163,7 @@ class EchoRemote extends IPSModule
     private function ValidateConfiguration()
     {
 
+        $this->SetTimerInterval('EchoAlarm', 0);
         if ($this->ReadPropertyString('Devicetype') == "") {
             $this->SetStatus(self::STATUS_INST_DEVICETYPE_IS_EMPTY);
         } elseif ($this->ReadPropertyString('Devicenumber') == "") {
@@ -293,13 +294,20 @@ class EchoRemote extends IPSModule
             }
         }
 
+        //Extended Info
         if ($this->ReadPropertyBoolean("ExtendedInfo")) {
             $this->RegisterVariableString("Title", $this->Translate("Title"), "", 8);
             $this->RegisterVariableString("Subtitle_1", $this->Translate("Subtitle 1"), "", 9);
             $this->RegisterVariableString("Subtitle_2", $this->Translate("Subtitle 2"), "", 10);
             $this->CreateMediaImage("MediaImageCover", 11);
-
         }
+
+        //support of alarm
+        if ($this->ReadPropertyBoolean('AlarmInfo')) {
+            $this->RegisterVariableInteger('nextAlarmTime', $this->Translate('next Alarm'), '~UnixTimestamp', 12);
+            $this->RegisterVariableInteger('lastAlarmTime', $this->Translate('last Alarm'), '~UnixTimestamp', 13);
+        }
+
 
     }
 
@@ -427,6 +435,19 @@ class EchoRemote extends IPSModule
      *
      *
      */
+
+    public function RaiseAlarm()
+    {
+        //Alarmzeit setzen
+        $oldAlarmTime = $this->GetValue('nextAlarmTime');
+        $this->SetValue('lastAlarmTime', $oldAlarmTime);
+        $this->SendDebug(__FUNCTION__, 'lastAlarmTime set to ' . $oldAlarmTime . ' (' . date(DATE_RSS, $oldAlarmTime) . ')', 0);
+
+        //Timer deaktivieren
+        $this->SetTimerInterval('EchoAlarm', 0);
+
+        //alte Zeit wird nicht gelöscht, da Alexa den Wecker erst deaktiviert, wenn er abgelaufen ist
+    }
 
     /** Rewind 30s
      *
@@ -737,7 +758,7 @@ class EchoRemote extends IPSModule
             $this->SetValue($Ident, $stationvalue);
         }
         if ($result['http_code'] == 200) {
-            return true;
+            return $this->UpdateStatus();
         }
         return false;
     }
@@ -956,23 +977,6 @@ class EchoRemote extends IPSModule
         return false;
     }
 
-    private function DeleteMultiroom(string $devicenumber)
-    {
-        //todo: anpassen und public machen
-        $url = "https://{AlexaURL}/api/lemur/tail/" . $devicenumber;
-        // Todo add DELETE
-        return $this->SendData('DeleteMultiroom', null, null, $url);
-    }
-
-    private function CreateMultiroom()
-    {
-        //todo: anpassen und public machen
-        $url        = "https://{AlexaURL}/api/lemur/tail";
-        $postfields = [
-            'dsn'        => $this->GetDevicenumber(),
-            'deviceType' => $this->GetDevicetype()];
-        return $this->SendData('CustomCommand', null, $postfields, $url); //todo
-    }
 
     /** List all echo devices with connected Bluetooth devices
      *
@@ -997,7 +1001,6 @@ class EchoRemote extends IPSModule
      */
     public function ListPairedBluetoothDevices()
     {
-        //todo: anpassen und public machen
         $devicenumber = $this->ReadPropertyString('Devicenumber');
         if ($devices = $this->ListBluetooth()) {
             $pairedDeviceList = "";
@@ -1116,8 +1119,8 @@ class EchoRemote extends IPSModule
 </body>
 </html>';
         $this->SetValue("EchoInfo", $html);
-        $extended_info = $this->ReadPropertyBoolean("ExtendedInfo");
-        if ($extended_info) {
+
+        if ($this->ReadPropertyBoolean('ExtendedInfo')) {
             $this->SetValue("Title", $title);
             $this->SetValue("Subtitle_1", $subtitle_1);
             $this->SetValue("Subtitle_2", $subtitle_2);
@@ -1159,118 +1162,6 @@ class EchoRemote extends IPSModule
         return $state;
     }
 
-    /** Get State Tune In
-     *
-     * @return string
-     */
-    private function GetState() //todo: zu löschen? ersetzt durch UpdateStatus()
-    {
-
-        $getfields = [
-            'deviceSerialNumber' => $this->GetDevicenumber(),
-            'deviceType'         => $this->GetDevicetype()];
-
-        $result = (array) $this->SendData('MediaState', $getfields);
-
-
-        //$url = 'https://{AlexaURL}/api/media/state?deviceSerialNumber=' . $this->GetDevicenumber() . '&deviceType=' . $this->GetDevicetype()
-        //       . '&queueId=0e7d86f5-d5a4-4a3a-933e-5910c15d9d4f&shuffling=false&firstIndex=1&lastIndex=1&screenWidth=1920&_=1495289082979';
-
-
-        $returnObj = json_decode($result['body']);
-
-        // get all relevant properties from the return
-        $values = $this->GetPropertyValues(
-            [
-                'clientId',
-                'contentId',
-                'contentType',
-                'currentState',
-                'imageURL',
-                'isDisliked',
-                'isLiked',
-                'looping',
-                'programId',
-                'progressSeconds',
-                'muted',
-                'providerId',
-                'queue',
-                'queueId',
-                'queueSize',
-                'radioStationId',
-                'radioVariety',
-                'referenceId',
-                'service',
-                'shuffling',
-                'timeLastShuffled',
-                'volume'], $returnObj
-        );
-        /*
-        $queue = $values['queue'][0];
-        $queue_values = $this->GetPropertyValues(['album', 'albumAsin', 'artist', 'asin', 'cardImageURL', 'contentId', 'contentType', 'durationSeconds', 'feedbackDisabled', 'historicalId',
-            'imageURL', 'index', 'isAd', 'isDisliked', 'isFreeWithPrime', 'isLiked', 'programId', 'programName', 'providerId', 'queueId', 'radioStationCallSign', 'radioStationId', 'radioStationLocation',
-            'radioStationName', 'radioStationSlogan', 'referenceId', 'service', 'startTime', 'title', 'trackId', 'trackStatus'], $queue);
-        */
-        if ($values['queueSize'] > 0) {
-            switch ($values['contentType']) {
-                case 'LIVE_STATION':
-                    $valuesLiveStation = $this->GetPropertyValues(
-                        ['radioStationId', 'radioStationSlogan', 'radioStationName', 'radioStationLocation', 'imageURL', 'title'],
-                        $returnObj->queue[0]
-                    );
-                    break;
-
-                case 'TRACKS':
-                    $valuesTracks = $this->GetPropertyValues(['artist', 'album', 'title', 'imageURL'], $returnObj->queue[0]);
-                    break;
-
-                default:
-                    trigger_error('Not (yet) supported contentType: ' . $values['contentType']);
-            }
-        }
-
-        switch ($values['currentState']) {
-            case 'PLAYING':
-                $this->SetValue("EchoRemote", 3);
-                break;
-
-            case 'PAUSED':
-                $this->SetValue("EchoRemote", 2);
-                break;
-
-            default:
-                trigger_error('Unexpected currentState: ' . $values['currentState']);
-        }
-
-        if (isset($valuesLiveStation)) {
-            $this->SetStatePageRadio(
-                $valuesLiveStation['imageURL'], $valuesLiveStation['title'], $valuesLiveStation['radioStationName'],
-                $valuesLiveStation['radioStationSlogan']
-            );
-        }
-
-        if (isset($valuesTracks)) {
-            $this->SetStatePageAlbum($valuesTracks['imageURL'], $valuesTracks['title'], $valuesTracks['album'], $valuesTracks['artist']);
-        }
-
-        if (isset($values['looping'])) {
-            $this->SetValue("EchoRepeat", $values['looping']);
-        }
-
-        if (isset($values['shuffling'])) {
-            $this->SetValue("EchoShuffle", $values['shuffling']);
-        }
-
-        if (isset($values['volume'])) {
-            $this->SetValue("EchoVolume", $values['volume']);
-        }
-
-        if ($result['http_code'] == 200) {
-            return json_decode($result['body'], true);
-        } else {
-            return false;
-        }
-    }
 
     /** Get State Tune In
      *
@@ -1341,19 +1232,58 @@ class EchoRemote extends IPSModule
 
         $this->SetValue("EchoVolume", $playerInfo['volume']['volume']);
 
+        //update Alarm
+        if ($this->ReadPropertyBoolean('AlarmInfo')) {
+            $return = $this->CustomCommand('https://{AlexaURL}/api/notifications?');
+            if ($return['http_code'] != 200) {
+                return false;
+            }
+            $this->SetAlarm(json_decode($return['body'], true)['notifications']);
+        }
+
         return true;
     }
 
-    /** Plays imported music via trackid
-     *
-     * @param string $trackid
-     *
-     * @return string
-     */
-    private function ImportedMusic(string $trackid)
+    private function SetAlarm(array $notifications)
     {
-        //todo: zu löschen? Hinweis: ist identisch mit 'PlaySong'!
-        return $this->PlayCloudplayer(false, ['trackId' => $trackid, 'playQueuePrime' => true]);
+        $alarmTime = 0;
+        $nextAlarm = $this->GetValue('nextAlarmTime');
+
+        // if the alarm time has already passed, it is set to 0
+        if ($nextAlarm < (time() - 2 * 60)) {
+            $nextAlarm = 0;
+        }
+
+        foreach ($notifications as $notification) {
+            if (($notification['deviceSerialNumber'] == IPS_GetProperty($this->InstanceID, 'Devicenumber')) && ($notification['type'] == 'Alarm')
+                && ($notification['status'] == 'ON')) {
+
+                $alarmTime = strtotime($notification['originalDate'] . ' ' . $notification['originalTime']);
+
+                if ($nextAlarm == 0) {
+                    $nextAlarm = $alarmTime;
+                } else {
+                    $nextAlarm = min($nextAlarm, $alarmTime);
+                }
+            }
+        }
+
+        if ($alarmTime == 0) {
+            $nextAlarm = 0;
+            $timerIntervalSec = 0;
+        } else {
+            $timerIntervalSec = $nextAlarm - time();
+        }
+
+        if ($nextAlarm != $this->GetValue('nextAlarmTime')) {
+            //neuen Wert und Timer setzen.
+            $this->SetValue('nextAlarmTime', $nextAlarm);
+            $this->SendDebug(__FUNCTION__, 'nextAlarmTime set to ' . $nextAlarm . ' (' . date(DATE_RSS, $nextAlarm) . ')', 0);
+
+            $this->SetTimerInterval('EchoAlarm', $timerIntervalSec*1000);
+            $this->SendDebug(__FUNCTION__, 'Timer EchoAlarm is set to ' . $timerIntervalSec . 's', 0);
+        }
+
     }
 
     private function PlayCloudplayer(bool $shuffle, array $postfields)
@@ -1534,24 +1464,10 @@ class EchoRemote extends IPSModule
 
 
 
-    public function PrimeStation(string $seedid)
-    {
-        $url = 'https://{AlexaURL}/api/gotham/queue-and-play?deviceSerialNumber=' . $this->GetDevicenumber() . '&deviceType=' . $this->GetDevicetype() . '&mediaOwnerCustomerId=' . $this->GetCustomerID();
-        $postfields = '{"seed":"{"type":"KEY","seedId":"' . $seedid . '"}","stationName":"none","seedType":"KEY"}';
-        return $this->SendData_old("PrimeStation", $url, json_decode($postfields)); //todo
-    }
-
     public function PrimePlaylist(string $asin)
     {
         $url = 'https://{AlexaURL}/api/prime/prime-playlist-queue-and-play?deviceSerialNumber=' . $this->GetDevicenumber() . '&deviceType=' . $this->GetDevicetype() . '&mediaOwnerCustomerId=' . $this->GetCustomerID();
         return $this->SendData_old("PrimePlaylist", $url, ['asin' => $asin]);
-    }
-
-    public function PlayPrimeHistoricalQueue(string $historicalid)
-    {
-        $url = 'https://{AlexaURL}/api/media/play-historical-queue';
-        $postfields = '{"deviceType":"' . $this->GetDevicetype() . '","deviceSerialNumber":"' . $this->GetDevicenumber() . '","mediaOwnerCustomerId":"' . $this->GetCustomerID() . '","queueId":"' . $historicalid . '","service":null,"trackSource":"TRACK"}';
-        return $this->SendData_old("PlayPrimeHistoricalQueue", $url, json_decode($postfields)); //todo
     }
 
 
@@ -1762,33 +1678,25 @@ class EchoRemote extends IPSModule
     {
         $form = [
             [
-                'type'  => 'Label',
-                'label' => 'device type:'],
-            [
                 'name'    => 'Devicetype',
                 'type'    => 'ValidationTextBox',
                 'caption' => 'device type'],
-            [
-                'type'  => 'Label',
-                'label' => 'device number:'],
             [
                 'name'    => 'Devicenumber',
                 'type'    => 'ValidationTextBox',
                 'caption' => 'device number'],
             [
-                'type'  => 'Label',
-                'label' => 'Echo update interval:'],
-            [
                 'name'    => 'updateinterval',
                 'type'    => 'IntervalBox',
-                'caption' => 'seconds'],
-            [
-                'type'  => 'Label',
-                'label' => 'setup variables for extended info (title, album, cover, radiostation):'],
+                'caption' => 'update interval in seconds'],
             [
                 'name'    => 'ExtendedInfo',
                 'type'    => 'CheckBox',
-                'caption' => 'extended info'],
+                'caption' => 'setup variables for extended info (title, subtitle_1, subtitle_2, cover)'],
+            [
+                'name'    => 'AlarmInfo',
+                'type'    => 'CheckBox',
+                'caption' => 'setup variables for alarm info (nextAlarmTime, lastAlarmTime)'],
             [
                 'type'     => 'List',
                 'name'     => 'TuneInStations',
@@ -1802,20 +1710,20 @@ class EchoRemote extends IPSModule
                 'columns'  => [
                     [
                         'name'    => 'position',
-                        'label'   => 'Position',
+                        'caption'   => 'Position',
                         'width'   => '95px',
                         'save'    => true,
                         'visible' => true],
                     [
                         'name'  => 'station',
-                        'label' => 'TuneIn Station',
+                        'caption' => 'TuneIn Station',
                         'width' => '200px',
                         'save'  => true,
                         'edit'  => [
                             'type' => 'ValidationTextBox']],
                     [
                         'name'    => 'station_id',
-                        'label'   => 'Station ID',
+                        'caption'   => 'Station ID',
                         'width'   => 'auto',
                         'save'    => true,
                         'edit'    => [
@@ -1872,39 +1780,39 @@ class EchoRemote extends IPSModule
         $form = [
             [
                 'type'  => 'Label',
-                'label' => 'Play Radio:'],
+                'caption' => 'Play Radio:'],
             [
                 'type'    => 'Button',
-                'label'   => 'FFH Lounge',
+                'caption'   => 'FFH Lounge',
                 'onClick' => "if (EchoRemote_TuneIn(\$id, 's84483')){echo 'Ok';} else {echo 'Error';}"],
             [
                 'type'  => 'Label',
-                'label' => 'Remote Control:'],
+                'caption' => 'Remote Control:'],
             [
                 'type'    => 'Button',
-                'label'   => 'Play',
+                'caption'   => 'Play',
                 'onClick' => "if (EchoRemote_Play(\$id)){echo 'Ok';} else {echo 'Error';}"],
             [
                 'type'    => 'Button',
-                'label'   => 'Pause',
+                'caption'   => 'Pause',
                 'onClick' => "if (EchoRemote_Pause(\$id)){echo 'Ok';} else {echo 'Error';}"],
             [
                 'type'  => 'Label',
-                'label' => 'Modify Volume:'],
+                'caption' => 'Modify Volume:'],
             [
                 'type'    => 'Button',
-                'label'   => 'Decrease Volume',
+                'caption'   => 'Decrease Volume',
                 'onClick' => "if (EchoRemote_DecreaseVolume(\$id, 3)){echo 'Ok';} else {echo 'Error';}"],
             [
                 'type'    => 'Button',
-                'label'   => 'Increase Volume',
+                'caption'   => 'Increase Volume',
                 'onClick' => "if (EchoRemote_IncreaseVolume(\$id, 3)){echo 'Ok';} else {echo 'Error';}"],
             [
                 'type'  => 'Label',
-                'label' => 'Voice Output:'],
+                'caption' => 'Voice Output:'],
             [
                 'type'    => 'Button',
-                'label'   => 'Speak Text',
+                'caption'   => 'Speak Text',
                 'onClick' => "if (EchoRemote_TextToSpeech(\$id, 'Wer hätte das gedacht. Das ist ein toller Erfolg!')){echo 'Ok';} else {echo 'Error';}"]];
 
         return $form;

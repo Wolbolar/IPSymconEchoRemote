@@ -30,6 +30,7 @@ Modul für IP-Symcon ab Version 5.0. Ermöglicht die Fernsteuerung mit einem Ama
      - Titel wiederholen
      - Radio TuneIn Sender auswählen     
  - Sprachausgabe auf einem Echo (Text to Speech)
+ - Uhrzeit der nächsten Weckzeit
  - Wettervorhersage
  - Verkehrsmeldungen
  - Flash Briefing
@@ -321,7 +322,7 @@ boolean EchoRemote_StartAlexaRoutine(integer $InstanceID, string $utterance)
 Parameter _$InstanceID_: ObjektID des Echo Remote Devices.
  
 Parameter _$utterance_: 'Sprachausdruck' der zu startenden Routine. Routinen können in der Alexa App definiert, 
-konfiguriert und aktiviert werden.
+konfiguriert und aktiviert werden. Der zu übergebene String ist der Wert der in der Alexa App hinter _Alexa,_ steht.
 
 Es wird die zum Sprachausdruck passende Routine gestartet. Im Fehlerfall wird false zurückgegeben.
 
@@ -339,10 +340,12 @@ EchoRemote_StartAlexaRoutine(47111, 'Starte meinen Tag');
 
 | Eigenschaft     | Typ     | Standardwert | Funktion                                                              |
 | :-------------: | :-----: | :----------: | :-------------------------------------------------------------------: |
-| Devicetype      | string  |              | Typ des Geräts                                                        |
-| Devicenumber    | string  |              | Device Nummer des Geräts (Seriennummer)                               |
-| AmazonCSRF      | string  |              | CSRF für Amazon Music                                                 |
-| AmazonCookie    | string  |              | Cookie für Amazon Music                                               |
+| Devicetype      | string  |    -          | Typ des Geräts                                                        |
+| Devicenumber    | string  |    -          | Device Nummer des Geräts (Seriennummer)                               |
+| TuneInStations  | array   |  Liste von ausgewählten Sendern mit den Attributen 'position', 'station' und 'station_id'| Liste der im Webfront angebotenen Sender                              |
+| UpdateIntervall | integer |  0            | Intervall in Sekunden, in dem die Daten vom Gerät geholt werden und die Statusvariablen aktualisiert werden       |
+| ExtendedInfo    | boolean |  false | Auswahl, ob erweiterte Statusvariablen (Titel, Subtitel_1, Subtitel_2) sowie das MediaImage 'MediaImageCover' zur Verfügung gestellt werden sollen
+| AlarmInfo       | boolean |  false | Auswahl, ob Weckzeiten (nextAlarmTime, lastAlarmTime) in Statusvariablen abgebildet werden sollen
 
 ## 6. Anhang
 

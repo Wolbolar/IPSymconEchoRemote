@@ -1029,41 +1029,26 @@ class AmazonEchoIO extends IPSModule
     {
         $form = [
             [
-                'type'  => 'Label',
-                'label' => 'Amazon User Name'],
-            [
                 'name'    => 'username',
                 'type'    => 'ValidationTextBox',
-                'caption' => 'User name'],
-            [
-                'type'  => 'Label',
-                'label' => 'Amazon Password'],
+                'caption' => 'Amazon User Name'],
             [
                 'name'    => 'password',
                 'type'    => 'PasswordTextBox',
-                'caption' => 'Password'],
+                'caption' => 'Amazon Password'],
             [
                 'name'    => 'language',
                 'type'    => 'Select',
                 'caption' => 'Echo language',
                 'options' => $this->GetEchoLanguageList()],
             [
-                'type'  => 'Label',
-                'label' => 'Use Custom CSRF and Cookie'],
-            [
                 'name'    => 'UseCustomCSRFandCookie',
                 'type'    => 'CheckBox',
                 'caption' => 'Use Custom CSRF and Cookie'],
             [
-                'type'  => 'Label',
-                'label' => 'CSRF'],
-            [
                 'name'    => 'CSRF',
                 'type'    => 'ValidationTextBox',
                 'caption' => 'CSRF'],
-            [
-                'type'  => 'Label',
-                'label' => 'Cookie'],
             [
                 'name'    => 'alexa_cookie',
                 'type'    => 'ValidationTextBox',
@@ -1083,24 +1068,18 @@ class AmazonEchoIO extends IPSModule
         $form = [
             [
                 'type'  => 'Label',
-                'label' => 'LogIn:'],
+                'caption' => 'Test the Registration:'],
             [
                 'type'    => 'Button',
-                'label'   => 'login',
+                'caption'   => 'login',
                 'onClick' => "if (EchoIO_LogIn(\$id)){echo 'Die Anmeldung war erfolgreich.';} else {echo 'Bei der Anmeldung ist ein Fehler aufgetreten.';}"],
             [
-                'type'  => 'Label',
-                'label' => 'LogOff:'],
-            [
                 'type'    => 'Button',
-                'label'   => 'logoff',
+                'caption'   => 'logoff',
                 'onClick' => "if (EchoIO_LogOff(\$id)){echo 'Die Abmeldung war erfolgreich.';} else {echo 'Bei der Abmeldung ist ein Fehler aufgetreten.';}"],
             [
-                'type'  => 'Label',
-                'label' => 'CheckLogInStatus:'],
-            [
                 'type'    => 'Button',
-                'label'   => 'checkloginstatus',
+                'caption'   => 'Login Status',
                 'onClick' => "if (EchoIO_CheckLoginStatus(\$id)){echo 'Sie sind angemeldet.';} else {echo 'Sie sind nicht angemeldet.';}"],];
 
 
@@ -1136,13 +1115,13 @@ class AmazonEchoIO extends IPSModule
     {
         $options = [
             [
-                'label' => 'Please choose',
+                'caption' => 'Please choose',
                 'value' => -1],
             [
-                'label' => 'german',
+                'caption' => 'german',
                 'value' => 0],
             [
-                'label' => 'english',
+                'caption' => 'english',
                 'value' => 1]];
         return $options;
     }
