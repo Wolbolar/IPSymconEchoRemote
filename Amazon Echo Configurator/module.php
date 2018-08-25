@@ -20,6 +20,7 @@ class AmazonEchoConfigurator extends IPSModule
         'A1NL4BVLQ4L3N3' => ['name' => 'Echo Show'],
         'A1DL2DVDQVK3Q'  => ['name' => 'App'],
         'A10A33FOX2NUBK' => ['name' => 'Echo Spot'],
+        'A7WXQPH584P'    => ['name' => 'Echo (2.Gen)'],
         'A3C9PE6TNYLTCH' => ['name' => 'Multiroom Musik-Gruppe']];
 
     public function Create()
@@ -38,12 +39,6 @@ class AmazonEchoConfigurator extends IPSModule
     {
         //Never delete this line!
         parent::ApplyChanges();
-    }
-
-    private function GetDeviceBuffer() //todo: wofür wird der gebraucht?
-    {
-        $buffer = $this->GetBuffer($this->InstanceID . '-alexa_devices');
-        return $buffer;
     }
 
     /** Get Config Echo
@@ -75,33 +70,29 @@ class AmazonEchoConfigurator extends IPSModule
         $config_list = [];
 
         foreach ($devices as $key => $device) {
-            $instanceID = 0;
-            if (isset($device["accountName"])) {
-                $accountName = $device["accountName"];
-                $this->SendDebug("Echo Device", "account name: " . $accountName, 0);
+            $instanceID  = 0;
+
+            $accountName = $device["accountName"];
+            $this->SendDebug("Echo Device", "account name: " . $accountName, 0);
+
+            $deviceAccountId = $device["deviceAccountId"];
+            $this->SendDebug("Echo Device", "device account id: " . $deviceAccountId, 0);
+
+            $deviceFamily = $device["deviceFamily"];
+            $this->SendDebug("Echo Device", "device family: " . $deviceFamily, 0);
+
+            $deviceType = $device["deviceType"];
+            if (array_key_exists($deviceType, self::DEVICETYPES)) {
+                $device_type_name = self::DEVICETYPES[$deviceType]['name'];
+            } else {
+                $device_type_name = 'unknown: ' . $deviceType;
+                $this->LogMessage('Unknown DeviceType: ' . $deviceType, KL_WARNING);
             }
-            if (isset($device["deviceAccountId"])) {
-                $deviceAccountId = $device["deviceAccountId"];
-                $this->SendDebug("Echo Device", "device account id: " . $deviceAccountId, 0);
-            }
-            if (isset($device["deviceFamily"])) {
-                $deviceFamily = $device["deviceFamily"];
-                $this->SendDebug("Echo Device", "device family: " . $deviceFamily, 0);
-            }
-            if (isset($device["deviceType"])) {
-                $deviceType = $device["deviceType"];
-                if (array_key_exists($deviceType, self::DEVICETYPES)) {
-                    $device_type_name = self::DEVICETYPES[$deviceType]['name'];
-                } else {
-                    $device_type_name = 'unknown: ' . $deviceType;
-                    $this->LogMessage('Unknown DeviceType: ' . $deviceType, KL_WARNING);
-                }
-                $this->SendDebug("Echo Device", "device type: " . $deviceType . ", device type name: " . $device_type_name, 0);
-            }
-            if (isset($device["serialNumber"])) {
-                $serialNumber = $device["serialNumber"];
-                $this->SendDebug("Echo Device", "serial number: " . $serialNumber, 0);
-            }
+            $this->SendDebug("Echo Device", "device type: " . $deviceType . ", device type name: " . $device_type_name, 0);
+
+            $serialNumber = $device["serialNumber"];
+            $this->SendDebug("Echo Device", "serial number: " . $serialNumber, 0);
+
 
             $MyParent = IPS_GetInstance($this->InstanceID)['ConnectionID'];
             foreach ($EchoRemoteInstanceIDList as $EchoRemoteInstanceID) {
@@ -126,8 +117,8 @@ class AmazonEchoConfigurator extends IPSModule
                 "create"          => [
                     "moduleID"      => "{496AB8B5-396A-40E4-AF41-32F4C48AC90D}",
                     "configuration" => [
-                        "Devicetype"      => $deviceType,
-                        "Devicenumber"    => $serialNumber]]];
+                        "Devicetype"   => $deviceType,
+                        "Devicenumber" => $serialNumber]]];
         }
 
         return $config_list;

@@ -345,7 +345,7 @@ class AmazonEchoIO extends IPSModule
     /**
      * Step 4: login with filled out form
      *
-     * @param $str_hiddenFields
+     * @param $hiddenFields
      *
      * @return array
      */
@@ -693,6 +693,10 @@ class AmazonEchoIO extends IPSModule
 
     /** get JSON device list
      *
+     * @param string|null $deviceType
+     * @param string|null $serialNumber
+     * @param bool        $cached
+     *
      * @return mixed
      */
     private function GetDevices(string $deviceType = null, string $serialNumber = null, bool $cached = false)
@@ -807,10 +811,12 @@ class AmazonEchoIO extends IPSModule
 
     /**  Send to Echo API
      *
-     * @param string $url
+     * @param string    $url
      *
-     * @param array  $header
-     * @param string $postfields as json string
+     * @param array     $header
+     * @param string    $postfields as json string
+     *
+     * @param bool|null $optpost
      *
      * @return mixed
      */

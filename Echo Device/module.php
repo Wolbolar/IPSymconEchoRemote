@@ -14,6 +14,48 @@ class EchoRemote extends IPSModule
     const STATUS_INST_DEVICETYPE_IS_EMPTY = 210; // devicetype must not be empty.
     const STATUS_INST_DEVICENUMBER_IS_EMPTY = 211; // devicenumber must not be empty
 
+    const HEADER = '
+<head>
+<meta charset="utf-8">
+<title>Echo Info</title>
+<style type="text/css">
+.echo_mediaplayer1 {
+	/*font-family: "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", "DejaVu Sans", "Verdana", "sans-serif";
+	background-color: hsla(0,0%,100%,0.00);
+	color: hsla(0,0%,100%,1.00);
+	text-shadow: 1px 1px 3px hsla(0,0%,0%,1.00);*/
+}
+.echo_cover {
+	display: block;
+	float: left;
+	padding: 8px;
+}
+.echo_mediaplayer1 .echo_cover #echocover {
+	-webkit-box-shadow: 2px 2px 5px hsla(0,0%,0%,1.00);
+	box-shadow: 2px 2px 5px hsla(0,0%,0%,1.00);
+}
+.echo_description {
+	vertical-align: bottom;
+	float: none;
+	padding: 60px 11px 11px;
+	margin-top: 0;
+}
+.echo_title {
+	font-size: xx-large;
+}
+.echo_subtitle1 {
+	font-size: large;
+}
+.echo_subtitle2 {
+	font-size: large;
+}
+.shopping_item {
+	font-size: large;
+}
+</style>
+</head>
+';
+
     private $customerID = '';
 
     private $ParentID   = 0;
@@ -30,6 +72,14 @@ class EchoRemote extends IPSModule
         $this->RegisterPropertyString("Devicenumber", "");
         $this->RegisterPropertyString(
             "TuneInStations", '[{"position":1,"station":"Hit Radio FFH","station_id":"s17490"},
+            {"position":2,"station":"FFH Lounge","station_id":"s84483"},
+            {"position":3,"station":"FFH Rock","station_id":"s84489"},
+            {"position":4,"station":"FFH Die 80er","station_id":"s84481"},
+            {"position":5,"station":"FFH iTunes Top 40","station_id":"s84486"},
+            {"position":6,"station":"FFH Eurodance","station_id":"s84487"},
+            {"position":7,"station":"FFH Soundtrack","station_id":"s97088"},
+            {"position":8,"station":"FFH Die 90er","station_id":"s97089"},
+            {"position":9,"station":"FFH Schlagerkult","station_id":"s84482"},
             {"position":10,"station":"FFH Leider Geil","station_id":"s254526"},
             {"position":11,"station":"The Wave - relaxing radio","station_id":"s140647"},
             {"position":12,"station":"hr3","station_id":"s57109"},
@@ -40,7 +90,6 @@ class EchoRemote extends IPSModule
             {"position":17,"station":"Bayern 3","station_id":"s255334"},
             {"position":18,"station":"planet radio","station_id":"s2726"},
             {"position":19,"station":"YOU FM","station_id":"s24878"},
-            {"position":2,"station":"FFH Lounge","station_id":"s84483"},
             {"position":20,"station":"1LIVE diggi","station_id":"s45087"},
             {"position":21,"station":"Fritz vom rbb","station_id":"s25005"},
             {"position":22,"station":"Hitradio \u00d63","station_id":"s8007"},
@@ -51,20 +100,14 @@ class EchoRemote extends IPSModule
             {"position":27,"station":"NDR 2","station_id":"s17492"},
             {"position":28,"station":"DASDING","station_id":"s20295"},
             {"position":29,"station":"sunshine live","station_id":"s10637"},
-            {"position":3,"station":"FFH Rock","station_id":"s84489"},
             {"position":30,"station":"MDR JUMP","station_id":"s6634"},
             {"position":31,"station":"Costa Del Mar","station_id":"s187256"},
-            {"position":32,"station":"Antenne Bayern","station_id":"s139505"},
-            {"position":4,"station":"FFH Die 80er","station_id":"s84481"},
-            {"position":5,"station":"FFH iTunes Top 40","station_id":"s84486"},
-            {"position":6,"station":"FFH Eurodance","station_id":"s84487"},
-            {"position":7,"station":"FFH Soundtrack","station_id":"s97088"},
-            {"position":8,"station":"FFH Die 90er","station_id":"s97089"},
-            {"position":9,"station":"FFH Schlagerkult","station_id":"s84482"}]'
+            {"position":32,"station":"Antenne Bayern","station_id":"s139505"}]'
         );
         $this->RegisterPropertyInteger('updateinterval', 0);
         $this->RegisterPropertyBoolean('ExtendedInfo', false);
         $this->RegisterPropertyBoolean('AlarmInfo', false);
+        $this->RegisterPropertyBoolean('ShoppingList', false);
 
         $this->SetBuffer('CoverURL', '');
         $this->RegisterTimer('EchoUpdate', 0, 'EchoRemote_UpdateStatus(' . $this->InstanceID . ');');
@@ -154,6 +197,7 @@ class EchoRemote extends IPSModule
                 if ($Data[0] == KR_READY) {
                     $this->ApplyChanges();
                 }
+                break;
 
             default:
                 break;
@@ -306,6 +350,11 @@ class EchoRemote extends IPSModule
         if ($this->ReadPropertyBoolean('AlarmInfo')) {
             $this->RegisterVariableInteger('nextAlarmTime', $this->Translate('next Alarm'), '~UnixTimestamp', 12);
             $this->RegisterVariableInteger('lastAlarmTime', $this->Translate('last Alarm'), '~UnixTimestamp', 13);
+        }
+
+        //support of ShoppingList
+        if ($this->ReadPropertyBoolean('ShoppingList')) {
+            $this->RegisterVariableString('ShoppingList', $this->Translate('ShoppingList'), '~HTMLBox', 12);
         }
 
 
@@ -520,6 +569,26 @@ class EchoRemote extends IPSModule
         return false;
     }
 
+    /** JumpToMediaId
+     *
+     * @param string $mediaID
+     *
+     * @return array|string
+     */
+    public function JumpToMediaId(string $mediaID)
+    {
+        $getfields = [
+            'deviceSerialNumber' => $this->GetDevicenumber(),
+            'deviceType'         => $this->GetDevicetype()];
+
+        $postfields = [
+            'type'                 => 'JumpCommand',
+            'mediaId'              => $mediaID];
+
+        $result = $this->SendData('NpCommand', $getfields, $postfields);
+
+        return ($result['http_code'] == 200);
+    }
 
     /** Forward 30s
      *
@@ -709,20 +778,20 @@ class EchoRemote extends IPSModule
 
     /** PlayCommand
      *
-     * @param $COMMAND
+     * @param $commandType
      *
      * @return array|string
      */
-    private function PlayCommand(string $COMMAND)
+    private function PlayCommand(string $commandType)
     {
-        $this->SendDebug(__FUNCTION__, 'Command: ' . $COMMAND, 0);
+        $this->SendDebug(__FUNCTION__, 'CommandType: ' . $commandType, 0);
 
         $getfields = [
             'deviceSerialNumber' => $this->GetDevicenumber(),
             'deviceType'         => $this->GetDevicetype()];
 
         $postfields = [
-            'type' => $COMMAND];
+            'type' => $commandType];
 
         $result = $this->SendData('NpCommand', $getfields, $postfields);
 
@@ -758,6 +827,7 @@ class EchoRemote extends IPSModule
             $this->SetValue($Ident, $stationvalue);
         }
         if ($result['http_code'] == 200) {
+            sleep(2); //warten, bis das Umschalten erfolgt ist
             return $this->UpdateStatus();
         }
         return false;
@@ -951,6 +1021,11 @@ class EchoRemote extends IPSModule
 
     }
 
+    /**
+     * @param string $utterance
+     *
+     * @return bool
+     */
     public function StartAlexaRoutine(string $utterance)
     {
 
@@ -1046,74 +1121,17 @@ class EchoRemote extends IPSModule
         return $this->SendData('CustomCommand', null, null, $url);
     }
 
-    private function SetStatePageRadio(string $imageurl, string $title, string $radioStationName, string $radiostationslogan)
-    {
-        $this->SetStatePage($imageurl, $title, $radioStationName, $radiostationslogan);
-    }
-
-    private function SetStatePageAlbum(string $imageurl, string $title, string $album, string $artist)
-    {
-        $this->SetStatePage($imageurl, $title, $album, $artist);
-    }
-
     private function SetStatePage(string $imageurl = null, string $title = null, string $subtitle_1 = null, string $subtitle_2 = null)
     {
         $html = '<!doctype html>
-<html>
-<head>
-<meta charset="utf-8">
-<title>Echo Info</title>
-<style type="text/css">
-.echo_mediaplayer {
-	font-family: "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", "DejaVu Sans", Verdana, sans-serif;
-	background-color: hsla(0,0%,100%,0.00);
-	color: hsla(0,0%,100%,1.00);
-	text-shadow: 1px 1px 3px hsla(0,0%,0%,1.00);
-}
-.echo_cover {
-	display: block;
-	float: left;
-	padding-left: 8px;
-	padding-top: 8px;
-	padding-right: 8px;
-	padding-bottom: 8px;
-}
-.echo_mediaplayer .echo_cover #echocover {
-	-webkit-box-shadow: 2px 2px 5px hsla(0,0%,0%,1.00);
-	box-shadow: 2px 2px 5px hsla(0,0%,0%,1.00);
-}
-.echo_description {
-	vertical-align: bottom;
-	float: none;
-	padding-top: 60px;
-	padding-right: 11px;
-	padding-bottom: 11px;
-	padding-left: 11px;
-	margin-top: 0;
-}
-.echo_title {
-	font-size: xx-large;
-}
-.echo_subtitle1 {
-	font-size: large;
-}
-.echo_subtiltle2 {
-	font-size: large;
-}
-</style>
-<!--The following script tag downloads a font from the Adobe Edge Web Fonts server for use within the web page. We recommend that you do not modify it.-->
-<script>var __adobewebfontsappname__="dreamweaver"</script>
-<script src="http://use.edgefonts.net/source-sans-pro:n6:default;acme:n4:default;bilbo:n4:default.js" type="text/javascript"></script>
-
-</head>
-
+<html>' . self::HEADER . '
 <body>
-<main class="echo_mediaplayer">
+<main class="echo_mediaplayer1">
   <section class="echo_cover"><img src="' . $imageurl . '" width="145" height="145" id="echocover"></section>
   <section class="echo_description">
     <div class="echo_title">' . $title . '</div>
     <div class="echo_subtitle1">' . $subtitle_1 . '</div>
-    <div class="echo_subtiltle2">' . $subtitle_2 . '</div>
+    <div class="echo_subtitle2">' . $subtitle_2 . '</div>
   </section>
 </main>
 </body>
@@ -1137,29 +1155,6 @@ class EchoRemote extends IPSModule
         $Content = base64_encode(file_get_contents($imageurl)); // Bild Base64 codieren
         IPS_SetMediaContent($this->GetIDForIdent("MediaImageCover"), $Content);  // Base64 codiertes Bild ablegen
         IPS_SendMediaEvent($this->GetIDForIdent("MediaImageCover")); //aktualisieren
-    }
-
-    private function GetPropertyValues(array $requestedProperties, $StateReturn)
-    {
-        $state = [];
-        foreach ($requestedProperties as $property) {
-            if (property_exists($StateReturn, $property)) {
-                $Data             = $StateReturn->{$property};
-                $state[$property] = $Data;
-                if (is_array($Data)) {
-                    foreach ($Data as $Key => $DebugData) {
-                        if (is_array($DebugData)) {
-                            $this->SendDebug($property . ':' . $Key, json_encode($DebugData), 0);
-                        } else {
-                            $this->SendDebug($property . ":", json_encode($DebugData), 0);
-                        }
-                    }
-                } else {
-                    $this->SendDebug($property . ":", $StateReturn->{$property}, 0);
-                }
-            }
-        }
-        return $state;
     }
 
 
@@ -1202,6 +1197,7 @@ class EchoRemote extends IPSModule
 
         switch ($playerInfo['transport']['repeat']) {
             case null:
+                break;
             case 'HIDDEN':
             case 'ENABLED':
                 $this->SetValue("EchoRepeat", false);
@@ -1217,6 +1213,7 @@ class EchoRemote extends IPSModule
 
         switch ($playerInfo['transport']['shuffle']) {
             case null:
+                break;
             case 'HIDDEN':
             case 'ENABLED':
                 $this->SetValue("EchoShuffle", false);
@@ -1230,7 +1227,9 @@ class EchoRemote extends IPSModule
                 trigger_error('Unexpected shuffle value: ' . $playerInfo['transport']['shuffle']);
         }
 
-        $this->SetValue("EchoVolume", $playerInfo['volume']['volume']);
+        if (!is_null($playerInfo['volume']['volume'])) {
+            $this->SetValue("EchoVolume", $playerInfo['volume']['volume']);
+        }
 
         //update Alarm
         if ($this->ReadPropertyBoolean('AlarmInfo')) {
@@ -1239,6 +1238,19 @@ class EchoRemote extends IPSModule
                 return false;
             }
             $this->SetAlarm(json_decode($return['body'], true)['notifications']);
+        }
+
+        //update ShoppingList
+        if ($this->ReadPropertyBoolean('ShoppingList')) {
+            $getfields = [
+                'completed' => 'false',
+                'type'      => 'SHOPPING_ITEM',
+                'size'      => 500];
+            $return    = $this->CustomCommand('https://{AlexaURL}/api/todos?' . http_build_query($getfields));
+            if ($return['http_code'] != 200) {
+                return false;
+            }
+            $this->SetShoppingListPage(json_decode($return['body'], true)['values']);
         }
 
         return true;
@@ -1269,7 +1281,7 @@ class EchoRemote extends IPSModule
         }
 
         if ($alarmTime == 0) {
-            $nextAlarm = 0;
+            $nextAlarm        = 0;
             $timerIntervalSec = 0;
         } else {
             $timerIntervalSec = $nextAlarm - time();
@@ -1280,11 +1292,35 @@ class EchoRemote extends IPSModule
             $this->SetValue('nextAlarmTime', $nextAlarm);
             $this->SendDebug(__FUNCTION__, 'nextAlarmTime set to ' . $nextAlarm . ' (' . date(DATE_RSS, $nextAlarm) . ')', 0);
 
-            $this->SetTimerInterval('EchoAlarm', $timerIntervalSec*1000);
+            $this->SetTimerInterval('EchoAlarm', $timerIntervalSec * 1000);
             $this->SendDebug(__FUNCTION__, 'Timer EchoAlarm is set to ' . $timerIntervalSec . 's', 0);
         }
 
     }
+
+    private function SetShoppingListPage(array $shoppingItems)
+    {
+
+        $html = '<!doctype html>
+<html>' . self::HEADER . '
+<body>
+<main class="echo_mediaplayer1">
+<table class="shopping_item">';
+        foreach ($shoppingItems as $shoppingItem) {
+            $html .= '<tr><td>' . $shoppingItem['text'] . '</td></tr>';
+        }
+        $html .= '
+</table>
+</main>
+</body>
+</html>';
+
+        //neuen Wert setzen.
+        if ($html != $this->GetValue('ShoppingList')) {
+            $this->SetValue('ShoppingList', $html);
+        }
+    }
+
 
     private function PlayCloudplayer(bool $shuffle, array $postfields)
     {
@@ -1479,6 +1515,9 @@ class EchoRemote extends IPSModule
      * @param array|null  $getfields
      * @param array|null  $postfields
      * @param null|string $url
+     *
+     * @param null        $optpost
+     * @param null        $automation
      *
      * @return mixed
      */
@@ -1698,6 +1737,10 @@ class EchoRemote extends IPSModule
                 'type'    => 'CheckBox',
                 'caption' => 'setup variables for alarm info (nextAlarmTime, lastAlarmTime)'],
             [
+                'name'    => 'ShoppingList',
+                'type'    => 'CheckBox',
+                'caption' => 'setup variable for a shopping list'],
+            [
                 'type'     => 'List',
                 'name'     => 'TuneInStations',
                 'caption'  => 'TuneIn stations',
@@ -1710,20 +1753,20 @@ class EchoRemote extends IPSModule
                 'columns'  => [
                     [
                         'name'    => 'position',
-                        'caption'   => 'Position',
+                        'caption' => 'Position',
                         'width'   => '95px',
                         'save'    => true,
                         'visible' => true],
                     [
-                        'name'  => 'station',
+                        'name'    => 'station',
                         'caption' => 'TuneIn Station',
-                        'width' => '200px',
-                        'save'  => true,
-                        'edit'  => [
+                        'width'   => '200px',
+                        'save'    => true,
+                        'edit'    => [
                             'type' => 'ValidationTextBox']],
                     [
                         'name'    => 'station_id',
-                        'caption'   => 'Station ID',
+                        'caption' => 'Station ID',
                         'width'   => 'auto',
                         'save'    => true,
                         'edit'    => [
@@ -1779,40 +1822,40 @@ class EchoRemote extends IPSModule
     {
         $form = [
             [
-                'type'  => 'Label',
+                'type'    => 'Label',
                 'caption' => 'Play Radio:'],
             [
                 'type'    => 'Button',
-                'caption'   => 'FFH Lounge',
+                'caption' => 'FFH Lounge',
                 'onClick' => "if (EchoRemote_TuneIn(\$id, 's84483')){echo 'Ok';} else {echo 'Error';}"],
             [
-                'type'  => 'Label',
+                'type'    => 'Label',
                 'caption' => 'Remote Control:'],
             [
                 'type'    => 'Button',
-                'caption'   => 'Play',
+                'caption' => 'Play',
                 'onClick' => "if (EchoRemote_Play(\$id)){echo 'Ok';} else {echo 'Error';}"],
             [
                 'type'    => 'Button',
-                'caption'   => 'Pause',
+                'caption' => 'Pause',
                 'onClick' => "if (EchoRemote_Pause(\$id)){echo 'Ok';} else {echo 'Error';}"],
             [
-                'type'  => 'Label',
+                'type'    => 'Label',
                 'caption' => 'Modify Volume:'],
             [
                 'type'    => 'Button',
-                'caption'   => 'Decrease Volume',
+                'caption' => 'Decrease Volume',
                 'onClick' => "if (EchoRemote_DecreaseVolume(\$id, 3)){echo 'Ok';} else {echo 'Error';}"],
             [
                 'type'    => 'Button',
-                'caption'   => 'Increase Volume',
+                'caption' => 'Increase Volume',
                 'onClick' => "if (EchoRemote_IncreaseVolume(\$id, 3)){echo 'Ok';} else {echo 'Error';}"],
             [
-                'type'  => 'Label',
+                'type'    => 'Label',
                 'caption' => 'Voice Output:'],
             [
                 'type'    => 'Button',
-                'caption'   => 'Speak Text',
+                'caption' => 'Speak Text',
                 'onClick' => "if (EchoRemote_TextToSpeech(\$id, 'Wer hätte das gedacht. Das ist ein toller Erfolg!')){echo 'Ok';} else {echo 'Error';}"]];
 
         return $form;
