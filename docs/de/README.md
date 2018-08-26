@@ -33,6 +33,7 @@ Modul für IP-Symcon ab Version 5.0. Ermöglicht die Fernsteuerung mit einem Ama
  - Sprachausgabe auf einem Echo (Text to Speech)
  - Uhrzeit der nächsten Weckzeit
  - Anzeige der Einkaufsliste
+ - Anzeige der Aufgabenliste
  - Wettervorhersage
  - Verkehrsmeldungen
  - Flash Briefing
@@ -165,13 +166,23 @@ EchoRemote_Repeat(int $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices  
 
+**GetQueueInformation**
+```php
+EchoRemote_GetQueueInformation(int $InstanceID)
+``` 
+Parameter _$InstanceID_ ObjektID des Echo Remote Devices 
+ 
+Liefert eine Liste mit den Media Einträgen der aktuellen Abspielliste.  
+
 **JumpToMediaId**
 ```php
 EchoRemote_JumpToMediaId(int $InstanceID, string MediaID)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices 
  
-Parameter _$MediaID_ MediaID, die innerhalb einer Abspielliste angesprungen werden soll  
+Parameter _$MediaID_ MediaID, die innerhalb einer Abspielliste angesprungen werden soll
+
+Springt zu der angegebenen ID der aktuellen Abspielliste.  
 
 **TuneIn**
 ```php

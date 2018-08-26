@@ -19,7 +19,7 @@ class EchoRemote extends IPSModule
 <meta charset="utf-8">
 <title>Echo Info</title>
 <style type="text/css">
-.echo_mediaplayer1 {
+.echo_mediaplayer {
 	/*font-family: "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", "DejaVu Sans", "Verdana", "sans-serif";
 	background-color: hsla(0,0%,100%,0.00);
 	color: hsla(0,0%,100%,1.00);
@@ -30,7 +30,7 @@ class EchoRemote extends IPSModule
 	float: left;
 	padding: 8px;
 }
-.echo_mediaplayer1 .echo_cover #echocover {
+.echo_mediaplayer .echo_cover #echocover {
 	-webkit-box-shadow: 2px 2px 5px hsla(0,0%,0%,1.00);
 	box-shadow: 2px 2px 5px hsla(0,0%,0%,1.00);
 }
@@ -108,6 +108,7 @@ class EchoRemote extends IPSModule
         $this->RegisterPropertyBoolean('ExtendedInfo', false);
         $this->RegisterPropertyBoolean('AlarmInfo', false);
         $this->RegisterPropertyBoolean('ShoppingList', false);
+        $this->RegisterPropertyBoolean('TaskList', false);
 
         $this->SetBuffer('CoverURL', '');
         $this->RegisterTimer('EchoUpdate', 0, 'EchoRemote_UpdateStatus(' . $this->InstanceID . ');');
@@ -355,6 +356,11 @@ class EchoRemote extends IPSModule
         //support of ShoppingList
         if ($this->ReadPropertyBoolean('ShoppingList')) {
             $this->RegisterVariableString('ShoppingList', $this->Translate('ShoppingList'), '~HTMLBox', 12);
+        }
+
+        //support of TaskList
+        if ($this->ReadPropertyBoolean('TaskList')) {
+            $this->RegisterVariableString('TaskList', $this->Translate('TaskList'), '~HTMLBox', 12);
         }
 
 
@@ -689,6 +695,26 @@ class EchoRemote extends IPSModule
         ];
 
         $result = $this->SendData('NpPlayer', $getfields);
+        if ($result['http_code'] == 200) {
+            //$this->SetValue("EchoVolume", $volume);
+            return json_decode($result['body'], true);
+        }
+        return false;
+
+    }
+
+    /** Get Player Status Information
+     *
+     * @return array|string
+     */
+    public function GetQueueInformation()
+    {
+        $getfields = [
+            'deviceSerialNumber' => $this->GetDevicenumber(),
+            'deviceType'         => $this->GetDevicetype()
+        ];
+
+        $result = $this->SendData('NpQueue', $getfields);
         if ($result['http_code'] == 200) {
             //$this->SetValue("EchoVolume", $volume);
             return json_decode($result['body'], true);
@@ -1250,7 +1276,29 @@ class EchoRemote extends IPSModule
             if ($return['http_code'] != 200) {
                 return false;
             }
-            $this->SetShoppingListPage(json_decode($return['body'], true)['values']);
+            $html = $this->GetListPage(json_decode($return['body'], true)['values']);
+            //neuen Wert setzen.
+            if ($html != $this->GetValue('ShoppingList')) {
+                $this->SetValue('ShoppingList', $html);
+            }
+
+        }
+
+        //update TaskList
+        if ($this->ReadPropertyBoolean('TaskList')) {
+            $getfields = [
+                'completed' => 'false',
+                'type'      => 'TASK',
+                'size'      => 500];
+            $return    = $this->CustomCommand('https://{AlexaURL}/api/todos?' . http_build_query($getfields));
+            if ($return['http_code'] != 200) {
+                return false;
+            }
+            $html = $this->GetListPage(json_decode($return['body'], true)['values']);
+            //neuen Wert setzen.
+            if ($html != $this->GetValue('TaskList')) {
+                $this->SetValue('TaskList', $html);
+            }
         }
 
         return true;
@@ -1298,7 +1346,7 @@ class EchoRemote extends IPSModule
 
     }
 
-    private function SetShoppingListPage(array $shoppingItems)
+    private function GetListPage(array $Items)
     {
 
         $html = '<!doctype html>
@@ -1306,8 +1354,8 @@ class EchoRemote extends IPSModule
 <body>
 <main class="echo_mediaplayer1">
 <table class="shopping_item">';
-        foreach ($shoppingItems as $shoppingItem) {
-            $html .= '<tr><td>' . $shoppingItem['text'] . '</td></tr>';
+        foreach ($Items as $Item) {
+            $html .= '<tr><td>' . $Item['text'] . '</td></tr>';
         }
         $html .= '
 </table>
@@ -1315,10 +1363,7 @@ class EchoRemote extends IPSModule
 </body>
 </html>';
 
-        //neuen Wert setzen.
-        if ($html != $this->GetValue('ShoppingList')) {
-            $this->SetValue('ShoppingList', $html);
-        }
+        return $html;
     }
 
 
@@ -1740,6 +1785,10 @@ class EchoRemote extends IPSModule
                 'name'    => 'ShoppingList',
                 'type'    => 'CheckBox',
                 'caption' => 'setup variable for a shopping list'],
+            [
+                'name'    => 'TaskList',
+                'type'    => 'CheckBox',
+                'caption' => 'setup variable for a task list'],
             [
                 'type'     => 'List',
                 'name'     => 'TuneInStations',

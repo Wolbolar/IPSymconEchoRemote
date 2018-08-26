@@ -552,6 +552,15 @@ class AmazonEchoIO extends IPSModule
         return $this->SendEcho($url, $header, null);
     }
 
+    private function NpQueue(array $getfields)
+    {
+        $url = 'https://' . $this->GetAlexaURL() . '/api/np/queue?' . http_build_query($getfields);
+
+        $header = $this->GetHeader();
+
+        return $this->SendEcho($url, $header, null);
+    }
+
     private function BehaviorsPreview(array $postfields)
     {
 
@@ -907,6 +916,12 @@ class AmazonEchoIO extends IPSModule
                 $getfields = $buffer['getfields'];
 
                 $result = $this->NpPlayer($getfields);
+                break;
+
+            case 'NpQueue':
+                $getfields = $buffer['getfields'];
+
+                $result = $this->NpQueue($getfields);
                 break;
 
             case 'BehaviorsPreview':
