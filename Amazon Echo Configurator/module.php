@@ -12,15 +12,20 @@ class AmazonEchoConfigurator extends IPSModule
 
     const DEVICETYPES = [
         'A2E0SNTXJVT7WK' => ['name' => 'Fire TV'],
+        'ADVBD696BHNV5' => ['name' => 'Fire TV Stick (1.Gen)'],
+        'A2LWARUGJLBYEW' => ['name' => 'Fire TV Stick (2.Gen)'],
         'A2825NDLA7WDZV' => ['name' => 'App'],
         'AB72C64C86AW2'  => ['name' => 'Echo'],
-        'A3S5BH2HU6VAYF' => ['name' => 'Echo Dot'],
-        'AILBSA2LNTOYL'  => ['name' => 'Reverb'],
+        'A3S5BH2HU6VAYF' => ['name' => 'Echo Dot (2.Gen)'],
+        'AILBSA2LNTOYL'  => ['name' => 'Reverb App'],
         'A15ERDAKK5HQQG' => ['name' => 'Sonos'],
         'A1NL4BVLQ4L3N3' => ['name' => 'Echo Show'],
         'A1DL2DVDQVK3Q'  => ['name' => 'App'],
         'A10A33FOX2NUBK' => ['name' => 'Echo Spot'],
-        'A7WXQPH584P'    => ['name' => 'Echo (2.Gen)'],
+        'A7WXQPH584YP'    => ['name' => 'Echo (2.Gen)'],
+        'A2M35JJZWCQOMZ'    => ['name' => 'Echo Plus'],
+        'A2IVLV5VM2W81'    => ['name' => 'Mobile Voice iOS'],
+        'A2TF17PFR55MTB'    => ['name' => 'Mobile Voice Android'],
         'A3C9PE6TNYLTCH' => ['name' => 'Multiroom Musik-Gruppe']];
 
     public function Create()

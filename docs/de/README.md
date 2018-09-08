@@ -108,7 +108,7 @@ Hier ist anzugeben:
 
 ## 4. Funktionsreferenz
 
-### Echo Remote:
+### Echo Remote Device:
  
 **Play**
 ```php
@@ -351,6 +351,26 @@ Beispiel:
 ```php
 EchoRemote_StartAlexaRoutine(47111, 'Starte meinen Tag');
 ```
+
+### AmazonEchoIO:
+**Anmelden**
+```php
+boolean EchoIO_LogIn(integer $InstanceID)
+``` 
+Parameter _$InstanceID_: ObjektID der EchoIO Instanz.
+
+**Abmelden**
+```php
+boolean EchoIO_LogOff(integer $InstanceID)
+``` 
+Parameter _$InstanceID_: ObjektID der EchoIO Instanz.
+
+**Anmeldestatus überprüfen**
+```php
+boolean EchoIO_CheckLoginStatus(integer $InstanceID)
+``` 
+Parameter _$InstanceID_: ObjektID der EchoIO Instanz.
+
 
 
 

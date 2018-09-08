@@ -1221,36 +1221,40 @@ class EchoRemote extends IPSModule
             $imageurl, $playerInfo['infoText']['title'], $playerInfo['infoText']['subText1'], $playerInfo['infoText']['subText2']
         );
 
-        switch ($playerInfo['transport']['repeat']) {
-            case null:
-                break;
-            case 'HIDDEN':
-            case 'ENABLED':
-                $this->SetValue("EchoRepeat", false);
-                break;
+        if (isset($playerInfo['transport']['repeat'])) {
+            switch ($playerInfo['transport']['repeat']) {
+                case null:
+                    break;
+                case 'HIDDEN':
+                case 'ENABLED':
+                    $this->SetValue("EchoRepeat", false);
+                    break;
 
-            case 'SELECTED':
-                $this->SetValue("EchoRepeat", true);
-                break;
+                case 'SELECTED':
+                    $this->SetValue("EchoRepeat", true);
+                    break;
 
-            default:
-                trigger_error('Unexpected repeat value: ' . $playerInfo['transport']['repeat']);
+                default:
+                    trigger_error('Unexpected repeat value: ' . $playerInfo['transport']['repeat']);
+            }
         }
 
-        switch ($playerInfo['transport']['shuffle']) {
-            case null:
-                break;
-            case 'HIDDEN':
-            case 'ENABLED':
-                $this->SetValue("EchoShuffle", false);
-                break;
+        if (isset($playerInfo['transport']['shuffle'])) {
+            switch ($playerInfo['transport']['shuffle']) {
+                case null:
+                    break;
+                case 'HIDDEN':
+                case 'ENABLED':
+                    $this->SetValue("EchoShuffle", false);
+                    break;
 
-            case 'SELECTED':
-                $this->SetValue("EchoShuffle", true);
-                break;
+                case 'SELECTED':
+                    $this->SetValue("EchoShuffle", true);
+                    break;
 
-            default:
-                trigger_error('Unexpected shuffle value: ' . $playerInfo['transport']['shuffle']);
+                default:
+                    trigger_error('Unexpected shuffle value: ' . $playerInfo['transport']['shuffle']);
+            }
         }
 
         if (!is_null($playerInfo['volume']['volume'])) {
