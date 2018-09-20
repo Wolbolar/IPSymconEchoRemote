@@ -649,6 +649,24 @@ class AmazonEchoIO extends IPSModule
         return $this->SendEcho($url, $header, null);
     }
 
+    private function Notifications()
+    {
+        $url = 'https://' . $this->GetAlexaURL() . '/api/notifications?';
+
+        $header = $this->GetHeader();
+
+        return $this->SendEcho($url, $header);
+    }
+
+    private function ToDos($getfields)
+    {
+        $url = 'https://' . $this->GetAlexaURL() . '/api/todos?' . http_build_query($getfields);
+
+        $header = $this->GetHeader();
+
+        return $this->SendEcho($url, $header, null);
+    }
+
     private function Activities($getfields)
     {
         $url = 'https://' . $this->GetAlexaURL() . '/api/activities?' . http_build_query($getfields);
@@ -959,6 +977,16 @@ class AmazonEchoIO extends IPSModule
                 $getfields = $buffer['getfields'];
 
                 $result = $this->MediaState($getfields);
+                break;
+
+            case 'Notifications':
+                $result = $this->Notifications();
+                break;
+
+            case 'ToDos':
+                $getfields = $buffer['getfields'];
+
+                $result = $this->ToDos($getfields);
                 break;
 
             case 'Activities':

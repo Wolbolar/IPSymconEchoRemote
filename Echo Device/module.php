@@ -465,22 +465,23 @@ class EchoRemote extends IPSModule
      *
      * @return bool|int
      */
-    private function GetTuneInStationPreset(string $guideId)
+    private function GetTuneInStationPresetPosition(string $guideId)
     {
-        $stationpreset = false;
-        $list_json     = $this->ReadPropertyString("TuneInStations");
-        $list          = json_decode($list_json, true);
+        $presetPosition = false;
+        $list_json      = $this->ReadPropertyString("TuneInStations");
+        $list           = json_decode($list_json, true);
         foreach ($list as $station) {
             if ($guideId == $station["station_id"]) {
-                $stationpreset = $station["position"];
-                $station_name  = $station["station"];
-                $stationid     = $station["station_id"];
-                $this->SendDebug(__FUNCTION__, 'present: ' . $stationpreset, 0);
+                $presetPosition = $station["position"];
+                $station_name   = $station["station"];
+                $stationid      = $station["station_id"];
+                $this->SendDebug(__FUNCTION__, 'preset position: ' . $presetPosition, 0);
                 $this->SendDebug(__FUNCTION__, 'station name: ' . $station_name, 0);
                 $this->SendDebug(__FUNCTION__, 'station id: ' . $stationid, 0);
+                break;
             }
         }
-        return $stationpreset;
+        return $presetPosition;
     }
 
 
@@ -588,8 +589,8 @@ class EchoRemote extends IPSModule
             'deviceType'         => $this->GetDevicetype()];
 
         $postfields = [
-            'type'                 => 'JumpCommand',
-            'mediaId'              => $mediaID];
+            'type'    => 'JumpCommand',
+            'mediaId' => $mediaID];
 
         $result = $this->SendData('NpCommand', $getfields, $postfields);
 
@@ -711,8 +712,7 @@ class EchoRemote extends IPSModule
     {
         $getfields = [
             'deviceSerialNumber' => $this->GetDevicenumber(),
-            'deviceType'         => $this->GetDevicetype()
-        ];
+            'deviceType'         => $this->GetDevicetype()];
 
         $result = $this->SendData('NpQueue', $getfields);
         if ($result['http_code'] == 200) {
@@ -846,14 +846,12 @@ class EchoRemote extends IPSModule
 
         $result = $this->SendData('TuneinQueueandplay', $getfields, $postfields);
 
-        $stationvalue = $this->GetTuneInStationPreset($guideId);
-        if ($stationvalue > 0) {
-            $devicenumber = $this->ReadPropertyString('Devicenumber');
-            $Ident        = "EchoTuneInRemote_" . $devicenumber;
-            $this->SetValue($Ident, $stationvalue);
+        $presetPosition = $this->GetTuneInStationPresetPosition($guideId);
+        if ($presetPosition) {
+            $this->SetValue('EchoTuneInRemote_' . $this->ReadPropertyString('Devicenumber'), $presetPosition);
         }
         if ($result['http_code'] == 200) {
-            sleep(2); //warten, bis das Umschalten erfolgt ist
+            sleep(4); //warten, bis das Umschalten erfolgt ist
             return $this->UpdateStatus();
         }
         return false;
@@ -878,6 +876,49 @@ class EchoRemote extends IPSModule
 
         if ($result['http_code'] == 200) {
             return json_decode($result['body'], true);
+        } else {
+            return false;
+        }
+    }
+
+    /** GetNoticications
+     *
+     * @return mixed
+     */
+    public function GetNotifications()
+    {
+        $result = (array) $this->SendData('Notifications');
+
+        if ($result['http_code'] == 200) {
+            return json_decode($result['body'], true)['notifications'];
+        } else {
+            return false;
+        }
+    }
+
+
+    /**
+     * @param string $type      : one of 'SHOPPING_ITEM' or 'TASK'
+     * @param bool $completed true: completed todos are returned
+     *                        false: not completed todos are returned
+     *                        null: all todos are returned
+     *
+     * @return bool
+     */
+    public function GetToDos(string $type, bool $completed = null)
+    {
+        $getfields = [
+            'type'      => $type, //SHOPPING_ITEM or TASK,
+            'size'      => 500];
+
+        if (!is_null($completed)) {
+            $getfields['completed'] = $completed ? 'true' : 'false';
+        }
+
+        $result = (array) $this->SendData('ToDos', $getfields);
+
+        if ($result['http_code'] == 200) {
+            return json_decode($result['body'], true)['values'];
         } else {
             return false;
         }
@@ -1169,10 +1210,10 @@ class EchoRemote extends IPSModule
             $this->SetValue("Subtitle_1", $subtitle_1);
             $this->SetValue("Subtitle_2", $subtitle_2);
             $this->SetBuffer("CoverURL", $imageurl);
-			if(!is_null($imageurl))
-			{
-				$this->RefreshCover($imageurl);
-			}
+
+            if (!is_null($imageurl)) {
+                $this->RefreshCover($imageurl);
+            }
         }
     }
 
@@ -1263,45 +1304,39 @@ class EchoRemote extends IPSModule
 
         //update Alarm
         if ($this->ReadPropertyBoolean('AlarmInfo')) {
-            $return = $this->CustomCommand('https://{AlexaURL}/api/notifications?');
-            if ($return['http_code'] != 200) {
+            $notifications = $this->GetNotifications();
+            if ($notifications === false) {
                 return false;
-            }
-            $this->SetAlarm(json_decode($return['body'], true)['notifications']);
+            } else {
+                $this->SetAlarm($notifications);
+            };
         }
 
         //update ShoppingList
         if ($this->ReadPropertyBoolean('ShoppingList')) {
-            $getfields = [
-                'completed' => 'false',
-                'type'      => 'SHOPPING_ITEM',
-                'size'      => 500];
-            $return    = $this->CustomCommand('https://{AlexaURL}/api/todos?' . http_build_query($getfields));
-            if ($return['http_code'] != 200) {
+            $shoppingList = (array) $this->GetToDos('SHOPPING_ITEM', false);
+            if ($shoppingList === false) {
                 return false;
+            } else {
+                $html = $this->GetListPage($shoppingList);
+                //neuen Wert setzen.
+                if ($html != $this->GetValue('ShoppingList')) {
+                    $this->SetValue('ShoppingList', $html);
+                }
             }
-            $html = $this->GetListPage(json_decode($return['body'], true)['values']);
-            //neuen Wert setzen.
-            if ($html != $this->GetValue('ShoppingList')) {
-                $this->SetValue('ShoppingList', $html);
-            }
-
         }
 
         //update TaskList
         if ($this->ReadPropertyBoolean('TaskList')) {
-            $getfields = [
-                'completed' => 'false',
-                'type'      => 'TASK',
-                'size'      => 500];
-            $return    = $this->CustomCommand('https://{AlexaURL}/api/todos?' . http_build_query($getfields));
-            if ($return['http_code'] != 200) {
+            $taskList = (array) $this->GetToDos('TASK', false);
+            if ($taskList === false) {
                 return false;
-            }
-            $html = $this->GetListPage(json_decode($return['body'], true)['values']);
-            //neuen Wert setzen.
-            if ($html != $this->GetValue('TaskList')) {
-                $this->SetValue('TaskList', $html);
+            } else {
+                $html = $this->GetListPage($taskList);
+                //neuen Wert setzen.
+                if ($html != $this->GetValue('TaskList')) {
+                    $this->SetValue('TaskList', $html);
+                }
             }
         }
 

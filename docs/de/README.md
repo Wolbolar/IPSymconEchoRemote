@@ -174,6 +174,26 @@ Parameter _$InstanceID_ ObjektID des Echo Remote Devices
  
 Liefert eine Liste mit den Media Einträgen der aktuellen Abspielliste.  
 
+**GetNotifications**
+```php
+EchoRemote_GetNotifications(int $InstanceID)
+``` 
+Parameter _$InstanceID_ ObjektID des Echo Remote Devices 
+ 
+Liefert eine Liste mit den aktuellen Weckern.  
+
+**GetToDos**
+```php
+EchoRemote_GetToDos(int $InstanceID, string $type, bool $completed)
+``` 
+Parameter _$InstanceID_ ObjektID des Echo Remote Devices
+
+Parameter _$type_ gesuchter Itemtyp: 'SHOPPING_ITEM' oder 'TASK'
+
+Parameter _$completed_ null: es werden alle Einträge geliefert, false: es werden die offenen Einträge geliefert, true: es werden die erledigten Einträge geliefert
+ 
+Liefert eine Liste mit den Einträgen der aktuellen Einkaufsliste oder To-Do-Liste.  
+
 **JumpToMediaId**
 ```php
 EchoRemote_JumpToMediaId(int $InstanceID, string MediaID)
