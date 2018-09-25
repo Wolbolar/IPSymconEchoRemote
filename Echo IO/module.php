@@ -8,7 +8,9 @@ class AmazonEchoIO extends IPSModule
 
     const STATUS_INST_USER_NAME_IS_EMPTY = 210; // user name must not be empty.
     const STATUS_INST_PASSWORD_IS_EMPTY = 211; // password must not be empty.
-    const STATUS_INST_NOT_AUTHENTICATED = 212; // authentication must be performed.
+    const STATUS_INST_COOKIE_IS_EMPTY = 212; // cookie must not be empty.
+    const STATUS_INST_COOKIE_WITHOUT_CSRF = 213; // cookie must include csrf.
+    const STATUS_INST_NOT_AUTHENTICATED = 214; // authentication must be performed.
 
     public function Create()
     {
@@ -19,16 +21,15 @@ class AmazonEchoIO extends IPSModule
         //You cannot use variables here. Just static values.
 
         //the following Properties can be set in the configuration form
-        $this->RegisterPropertyString("username", "");
-        $this->RegisterPropertyString("password", "");
-        $this->RegisterPropertyInteger("language", 0);
-        $this->RegisterPropertyBoolean("UseCustomCSRFandCookie", false);
-        $this->RegisterPropertyString("CSRF", "");
-        $this->RegisterPropertyString("alexa_cookie", "");
+        $this->RegisterPropertyString('username', '');
+        $this->RegisterPropertyString('password', '');
+        $this->RegisterPropertyInteger('language', 0);
+        $this->RegisterPropertyBoolean('UseCustomCSRFandCookie', false);
+        $this->RegisterPropertyString('alexa_cookie', '');
 
         //the following Properties are only used internally
         $this->RegisterPropertyString(
-            "browser", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:58.0) Gecko/20100101 Firefox/58.0"
+            'browser', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:58.0) Gecko/20100101 Firefox/58.0'
         );
         $this->RegisterPropertyString('CookiesFileName', IPS_GetKernelDir() . 'alexa_cookie.txt');
         $this->RegisterPropertyString('LoginFileName', IPS_GetKernelDir() . 'alexa_login.html');
@@ -56,19 +57,51 @@ class AmazonEchoIO extends IPSModule
     {
         $username = $this->ReadPropertyString('username');
         $password = $this->ReadPropertyString('password');
+        $cookie = $this->ReadPropertyString('alexa_cookie');
+        $useCookie = $this->ReadPropertyBoolean('UseCustomCSRFandCookie');
 
-        if ($username == "") {
-            $this->SetStatus(self::STATUS_INST_PASSWORD_IS_EMPTY);
-        } elseif ($password == "") {
-            $this->SetStatus(self::STATUS_INST_USER_NAME_IS_EMPTY);
-        } elseif (!$this->LogIn()) {
-            $this->SetStatus(self::STATUS_INST_NOT_AUTHENTICATED);
+        if ($useCookie){
+            if ($cookie == "") {
+                $this->SetStatus(self::STATUS_INST_COOKIE_IS_EMPTY);
+            } elseif ($this->getCsrfFromCookie() === false){
+                $this->SetStatus(self::STATUS_INST_COOKIE_WITHOUT_CSRF);
+            } elseif (!$this->LogIn()) {
+                $this->SetStatus(self::STATUS_INST_NOT_AUTHENTICATED);
+            } else {
+                $this->SetStatus(IS_ACTIVE);
+            }
         } else {
-            $this->SetStatus(IS_ACTIVE);
+            if ($username == "") {
+                $this->SetStatus(self::STATUS_INST_USER_NAME_IS_EMPTY);
+            } elseif ($password == "") {
+                $this->SetStatus(self::STATUS_INST_PASSWORD_IS_EMPTY);
+            } elseif (!$this->LogIn()) {
+                $this->SetStatus(self::STATUS_INST_NOT_AUTHENTICATED);
+            } else {
+                $this->SetStatus(IS_ACTIVE);
+            }
         }
-
     }
 
+    private function getCsrfFromCookie(){
+        $cookie = $this->ReadPropertyString('alexa_cookie');
+        $cookie_arr = explode ('; ', $cookie);
+        if (count($cookie_arr) == 0){
+            return false;
+        }
+        foreach ($cookie_arr as $item) {
+            if (strpos($item, 'csrf=') === 0){
+                $csrf_arr = explode('=', $item);
+                if (count($csrf_arr) == 2){
+                    return $csrf_arr[1];
+                } else {
+                    return false;
+                }
+            }
+        }
+
+        return false;
+    }
     private function GetAmazonURL()
     {
         $language = $this->ReadPropertyInteger("language");
@@ -806,7 +839,10 @@ class AmazonEchoIO extends IPSModule
         $csrf = '';
 
         if ($this->ReadPropertyBoolean('UseCustomCSRFandCookie')) {
-            $csrf = $this->ReadPropertyString("CSRF");
+            $csrf = $this->getCsrfFromCookie();
+            if ($csrf === false){
+                trigger_error('no valid CSRF in cookie: '. $this->ReadPropertyString('alexa_cookie'));
+            }
         } else {
             $CookiesFileName = $this->ReadPropertyString('CookiesFileName');
 
@@ -884,6 +920,7 @@ class AmazonEchoIO extends IPSModule
         $result = curl_exec($ch);
 
         if (curl_errno($ch)) {
+            $this->SendDebug(__FUNCTION__, 'Error: (' . curl_errno($ch) . ') ' . curl_error($ch), 0);
             $this->LogMessage('Error: (' . curl_errno($ch) . ') ' . curl_error($ch), KL_ERROR);
             return false;
         }
@@ -1093,11 +1130,7 @@ class AmazonEchoIO extends IPSModule
             [
                 'name'    => 'UseCustomCSRFandCookie',
                 'type'    => 'CheckBox',
-                'caption' => 'Use Custom CSRF and Cookie'],
-            [
-                'name'    => 'CSRF',
-                'type'    => 'ValidationTextBox',
-                'caption' => 'CSRF'],
+                'caption' => 'Use Custom Cookie'],
             [
                 'name'    => 'alexa_cookie',
                 'type'    => 'ValidationTextBox',
@@ -1154,6 +1187,14 @@ class AmazonEchoIO extends IPSModule
                 'caption' => 'password must not be empty.'],
             [
                 'code'    => 212,
+                'icon'    => 'error',
+                'caption' => 'cookie must not be empty.'],
+            [
+                'code'    => 213,
+                'icon'    => 'error',
+                'caption' => 'cookie without csrf.'],
+            [
+                'code'    => 214,
                 'icon'    => 'error',
                 'caption' => 'not authenticated.']];
 

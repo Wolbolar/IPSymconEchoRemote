@@ -68,8 +68,8 @@ class EchoRemote extends IPSModule
         //These lines are parsed on Symcon Startup or Instance creation
         //You cannot use variables here. Just static values.
 
-        $this->RegisterPropertyString("Devicetype", "");
-        $this->RegisterPropertyString("Devicenumber", "");
+        $this->RegisterPropertyString('Devicetype', '');
+        $this->RegisterPropertyString('Devicenumber', '');
         $this->RegisterPropertyString(
             "TuneInStations", '[{"position":1,"station":"Hit Radio FFH","station_id":"s17490"},
             {"position":2,"station":"FFH Lounge","station_id":"s84483"},
@@ -104,6 +104,8 @@ class EchoRemote extends IPSModule
             {"position":31,"station":"Costa Del Mar","station_id":"s187256"},
             {"position":32,"station":"Antenne Bayern","station_id":"s139505"}]'
         );
+
+        //        $this->RegisterPropertyString('TuneInStations', '');
         $this->RegisterPropertyInteger('updateinterval', 0);
         $this->RegisterPropertyBoolean('ExtendedInfo', false);
         $this->RegisterPropertyBoolean('AlarmInfo', false);
@@ -298,43 +300,13 @@ class EchoRemote extends IPSModule
         if (in_array('TUNE_IN', $caps)) {
             $devicenumber = $this->ReadPropertyString('Devicenumber');
             if ($devicenumber != '') {
-                $tuneinstations = $this->GetTuneInStations();
-                $this->RegisterProfileAssociation(
-                    'Echo.TuneInStation.' . $devicenumber, 'Music', '', '', 1, 32, 0, 0, vtInteger, [
-                                                             [1, $tuneinstations[1]["name"], "", -1],
-                                                             [2, $tuneinstations[2]["name"], "", -1],
-                                                             [3, $tuneinstations[3]["name"], "", -1],
-                                                             [4, $tuneinstations[4]["name"], "", -1],
-                                                             [5, $tuneinstations[5]["name"], "", -1],
-                                                             [6, $tuneinstations[6]["name"], "", -1],
-                                                             [7, $tuneinstations[7]["name"], "", -1],
-                                                             [8, $tuneinstations[8]["name"], "", -1],
-                                                             [9, $tuneinstations[9]["name"], "", -1],
-                                                             [10, $tuneinstations[10]["name"], "", -1],
-                                                             [11, $tuneinstations[11]["name"], "", -1],
-                                                             [12, $tuneinstations[12]["name"], "", -1],
-                                                             [13, $tuneinstations[13]["name"], "", -1],
-                                                             [14, $tuneinstations[14]["name"], "", -1],
-                                                             [15, $tuneinstations[15]["name"], "", -1],
-                                                             [16, $tuneinstations[16]["name"], "", -1],
-                                                             [17, $tuneinstations[17]["name"], "", -1],
-                                                             [18, $tuneinstations[18]["name"], "", -1],
-                                                             [19, $tuneinstations[19]["name"], "", -1],
-                                                             [20, $tuneinstations[20]["name"], "", -1],
-                                                             [21, $tuneinstations[21]["name"], "", -1],
-                                                             [22, $tuneinstations[22]["name"], "", -1],
-                                                             [23, $tuneinstations[23]["name"], "", -1],
-                                                             [24, $tuneinstations[24]["name"], "", -1],
-                                                             [25, $tuneinstations[25]["name"], "", -1],
-                                                             [26, $tuneinstations[26]["name"], "", -1],
-                                                             [27, $tuneinstations[27]["name"], "", -1],
-                                                             [28, $tuneinstations[28]["name"], "", -1],
-                                                             [29, $tuneinstations[29]["name"], "", -1],
-                                                             [30, $tuneinstations[30]["name"], "", -1],
-                                                             [31, $tuneinstations[31]["name"], "", -1],
-                                                             [32, $tuneinstations[32]["name"], "", -1]]
-                );
-                $this->RegisterVariableInteger("EchoTuneInRemote_" . $devicenumber, "TuneIn Radio", "Echo.TuneInStation." . $devicenumber, 5);
+                $associations = [];
+                foreach (json_decode($this->ReadPropertyString('TuneInStations'), true) as $tuneInStation) {
+                    $associations[] = [$tuneInStation['position'], $tuneInStation['station'], '', -1];
+                }
+                $profileName = 'Echo.TuneInStation.' . $devicenumber;
+                $this->RegisterProfileAssociation($profileName, 'Music', '', '', 0, 0, 0, 0, vtInteger, $associations);
+                $this->RegisterVariableInteger("EchoTuneInRemote_" . $devicenumber, "TuneIn Radio", $profileName, 5);
                 $this->EnableAction("EchoTuneInRemote_" . $devicenumber);
             }
         }
@@ -417,39 +389,19 @@ class EchoRemote extends IPSModule
         }
     }
 
-    /** GetTuneInStations
-     *
-     * @return array
-     */
-    private function GetTuneInStations()
-    {
-        $tuneinstations = [];
-        $list_json      = $this->ReadPropertyString("TuneInStations");
-        $list           = json_decode($list_json, true);
-        foreach ($list as $station) {
-
-            $present                               = $station["position"];
-            $station_name                          = $station["station"];
-            $stationid                             = $station["station_id"];
-            $tuneinstations[$present]["name"]      = $station_name;
-            $tuneinstations[$present]["stationid"] = $stationid;
-        }
-        return $tuneinstations;
-    }
-
     /** GetTuneInStationID
      *
-     * @param $present
+     * @param $preset
      *
      * @return string
      */
-    private function GetTuneInStationID(int $present)
+    private function GetTuneInStationID(int $preset)
     {
         $list_json = $this->ReadPropertyString("TuneInStations");
         $list      = json_decode($list_json, true);
         $stationid = "";
         foreach ($list as $station) {
-            if ($present == $station["position"]) {
+            if ($preset == $station["position"]) {
                 $station_name = $station["station"];
                 $stationid    = $station["station_id"];
                 $this->SendDebug(__FUNCTION__, 'station name: ' . $station_name, 0);
@@ -899,17 +851,17 @@ class EchoRemote extends IPSModule
 
     /**
      * @param string $type      : one of 'SHOPPING_ITEM' or 'TASK'
-     * @param bool $completed true: completed todos are returned
-     *                        false: not completed todos are returned
-     *                        null: all todos are returned
+     * @param bool   $completed true: completed todos are returned
+     *                          false: not completed todos are returned
+     *                          null: all todos are returned
      *
      * @return bool
      */
     public function GetToDos(string $type, bool $completed = null)
     {
         $getfields = [
-            'type'      => $type, //SHOPPING_ITEM or TASK,
-            'size'      => 500];
+            'type' => $type, //SHOPPING_ITEM or TASK,
+            'size' => 500];
 
         if (!is_null($completed)) {
             $getfields['completed'] = $completed ? 'true' : 'false';
@@ -1210,7 +1162,6 @@ class EchoRemote extends IPSModule
             $this->SetValue("Subtitle_1", $subtitle_1);
             $this->SetValue("Subtitle_2", $subtitle_2);
             $this->SetBuffer("CoverURL", $imageurl);
-
             if (!is_null($imageurl)) {
                 $this->RefreshCover($imageurl);
             }
@@ -1552,9 +1503,8 @@ class EchoRemote extends IPSModule
     {
         $this->SendDebug("Echo Remote:", "Set Station to " . $station, 0);
         $urltype = "tunein";
-        $csrf = $this->ReadPropertyString('TuneInCSRF');
         $cookie = $this->ReadPropertyString('TuneInCookie');
-        $header = $this->GetHeader($csrf, $cookie);
+        $header = $this->GetHeader($cookie);
         $postfields = '';
         $this->SendEcho($postfields, $header, $urltype, $station);
         $devicenumber = $this->ReadPropertyString('Devicenumber');
@@ -1569,9 +1519,8 @@ class EchoRemote extends IPSModule
     {
         $this->SendDebug("Echo Remote:", "Set Station to " . $station, 0);
         $urltype = "tunein";
-        $csrf = $this->ReadPropertyString('TuneInCSRF');
         $cookie = $this->ReadPropertyString('TuneInCookie');
-        $header = $this->GetHeader($csrf, $cookie);
+        $header = $this->GetHeader($cookie);
         $postfields = '';
         $this->SendEcho($postfields, $header, $urltype, $station);
         $devicenumber = $this->ReadPropertyString('Devicenumber');
@@ -1634,7 +1583,7 @@ class EchoRemote extends IPSModule
         }
 
         $ResultJSON = $this->SendDataToParent(json_encode($Data));
-        $this->SendDebug(__FUNCTION__, 'Result: ' . $ResultJSON, 0);
+        $this->SendDebug(__FUNCTION__, 'Result: ' . json_encode($ResultJSON), 0);
 
         return json_decode($ResultJSON, true); //returns an array of http_code, body and header
     }
@@ -1722,11 +1671,12 @@ class EchoRemote extends IPSModule
     {
 
         if (!IPS_VariableProfileExists($Name)) {
-            IPS_CreateVariableProfile($Name, $Vartype); // 0 boolean, 1 int, 2 float, 3 string,
+            IPS_CreateVariableProfile($Name, $Vartype); // 0 boolean, 1 int, 2 float, 3 string
+            $this->SendDebug('Variablenprofil angelegt', $Name, 0);
         } else {
             $profile = IPS_GetVariableProfile($Name);
             if ($profile['ProfileType'] != $Vartype) {
-                $this->SendDebug("Profile", 'Variable profile type does not match for profile ' . $Name, 0);
+                $this->SendDebug('Profile', 'Variable profile type does not match for profile ' . $Name, 0);
             }
         }
 
@@ -1736,6 +1686,11 @@ class EchoRemote extends IPSModule
         IPS_SetVariableProfileValues(
             $Name, $MinValue, $MaxValue, $StepSize
         ); // string $ProfilName, float $Minimalwert, float $Maximalwert, float $Schrittweite
+        $this->SendDebug(
+            'Variablenprofil konfiguriert',
+            'Name: ' . $Name . ', Icon: ' . $Icon . ', Prefix: ' . $Prefix . ', $Suffix: ' . $Suffix . ', Digits: ' . $Digits . ', MinValue: '
+            . $MinValue . ', MaxValue: ' . $MaxValue . ', StepSize: ' . $StepSize, 0
+        );
     }
 
     /**
@@ -1761,12 +1716,19 @@ class EchoRemote extends IPSModule
         $this->RegisterProfile($Name, $Icon, $Prefix, $Suffix, $MinValue, $MaxValue, $Stepsize, $Digits, $Vartype);
 
         if (is_array($Associations)) {
-            foreach ($Associations AS $Association) {
+            //zunächst werden alte Assoziationen gelöscht
+            //bool IPS_SetVariableProfileAssociation ( string $ProfilName, float $Wert, string $Name, string $Icon, integer $Farbe )
+            foreach (IPS_GetVariableProfile($Name)['Associations'] as $Association) {
+                IPS_SetVariableProfileAssociation($Name, $Association['Value'], '', '', -1);
+            }
+
+            //dann werden die aktuellen eingetragen
+            foreach ($Associations as $Association) {
                 IPS_SetVariableProfileAssociation($Name, $Association[0], $Association[1], $Association[2], $Association[3]);
             }
         } else {
             $Associations = $this->$Associations;
-            foreach ($Associations AS $code => $association) {
+            foreach ($Associations as $code => $association) {
                 IPS_SetVariableProfileAssociation($Name, $code, $this->Translate($association), $Icon, -1);
             }
         }
@@ -1797,9 +1759,9 @@ class EchoRemote extends IPSModule
      *
      * @return array
      */
-    protected function FormHead()
+    private function FormHead()
     {
-        $form = [
+        return [
             [
                 'name'    => 'Devicetype',
                 'type'    => 'ValidationTextBox',
@@ -1810,8 +1772,9 @@ class EchoRemote extends IPSModule
                 'caption' => 'device number'],
             [
                 'name'    => 'updateinterval',
-                'type'    => 'IntervalBox',
-                'caption' => 'update interval in seconds'],
+                'type'    => 'NumberSpinner',
+                'caption' => 'update interval',
+                'suffix'  => 'seconds'],
             [
                 'name'    => 'ExtendedInfo',
                 'type'    => 'CheckBox',
@@ -1832,24 +1795,28 @@ class EchoRemote extends IPSModule
                 'type'     => 'List',
                 'name'     => 'TuneInStations',
                 'caption'  => 'TuneIn stations',
-                'rowCount' => 32,
-                'add'      => false,
-                'delete'   => false,
+                'rowCount' => 20,
+                'add'      => true,
+                'delete'   => true,
                 'sort'     => [
                     'column'    => 'position',
                     'direction' => 'ascending'],
                 'columns'  => [
                     [
                         'name'    => 'position',
-                        'caption' => 'Position',
-                        'width'   => '95px',
+                        'caption' => 'Station',
+                        'width'   => '100px',
                         'save'    => true,
-                        'visible' => true],
+                        'visible' => true,
+                        'add'     => 0,
+                        'edit'    => [
+                            'type' => 'NumberSpinner']],
                     [
                         'name'    => 'station',
-                        'caption' => 'TuneIn Station',
+                        'caption' => 'Station Name',
                         'width'   => '200px',
                         'save'    => true,
+                        'add'     => '',
                         'edit'    => [
                             'type' => 'ValidationTextBox']],
                     [
@@ -1857,56 +1824,19 @@ class EchoRemote extends IPSModule
                         'caption' => 'Station ID',
                         'width'   => 'auto',
                         'save'    => true,
+                        'add'     => '',
                         'edit'    => [
                             'type' => 'ValidationTextBox'],
-                        'visible' => true]],
-                'values'   => $this->GetTuneInList()]];
-        return $form;
+                        'visible' => true]]]];
     }
 
-    private function GetTuneInList()
-    {
-        return [
-            ['position' => 1, 'station_id' => 's17490', 'station' => 'Hit Radio FFH'],
-            ['position' => 2, 'station_id' => 's84483', 'station' => 'FFH Lounge'],
-            ['position' => 3, 'station_id' => 's84489', 'station' => 'FFH Rock'],
-            ['position' => 4, 'station_id' => 's84481', 'station' => 'FFH Die 80er'],
-            ['position' => 5, 'station_id' => 's84486', 'station' => 'FFH iTunes Top 40'],
-            ['position' => 6, 'station_id' => 's84487', 'station' => 'FFH Eurodance'],
-            ['position' => 7, 'station_id' => 's97088', 'station' => 'FFH Soundtrack'],
-            ['position' => 8, 'station_id' => 's97089', 'station' => 'FFH Die 90er'],
-            ['position' => 9, 'station_id' => 's84482', 'station' => 'FFH Schlagerkult'],
-            ['position' => 10, 'station_id' => 's254526', 'station' => 'FFH iTunes Top 40'],
-            ['position' => 11, 'station_id' => 's140647', 'station' => 'The Wave - relaxing radio'],
-            ['position' => 12, 'station_id' => 's57109', 'station' => 'hr3'],
-            ['position' => 13, 'station_id' => 's140555', 'station' => 'harmony.fm'],
-            ['position' => 14, 'station_id' => 's24896', 'station' => 'SWR3'],
-            ['position' => 15, 'station_id' => 's125250', 'station' => 'Deluxe Lounge Radio'],
-            ['position' => 16, 'station_id' => 's17364', 'station' => 'Lounge-Radio.com'],
-            ['position' => 17, 'station_id' => 's255334', 'station' => 'Bayern 3'],
-            ['position' => 18, 'station_id' => 's2726', 'station' => 'planet radio'],
-            ['position' => 19, 'station_id' => 's24878', 'station' => 'YOU FM'],
-            ['position' => 20, 'station_id' => 's45087', 'station' => '1LIVE diggi'],
-            ['position' => 21, 'station_id' => 's25005', 'station' => 'Fritz vom rbb'],
-            ['position' => 22, 'station_id' => 's8007', 'station' => 'Hitradio Ö3'],
-            ['position' => 23, 'station_id' => 's8954', 'station' => 'radio ffn'],
-            ['position' => 24, 'station_id' => 's25531', 'station' => 'N-JOY'],
-            ['position' => 25, 'station_id' => 's84203', 'station' => 'bigFM'],
-            ['position' => 26, 'station_id' => 's42828', 'station' => 'Deutschlandfunk'],
-            ['position' => 27, 'station_id' => 's17492', 'station' => 'NDR 2'],
-            ['position' => 28, 'station_id' => 's20295', 'station' => 'DASDING'],
-            ['position' => 29, 'station_id' => 's10637', 'station' => 'sunshine live'],
-            ['position' => 30, 'station_id' => 's6634', 'station' => 'MDR JUMP'],
-            ['position' => 31, 'station_id' => 's187256', 'station' => 'Costa Del Mar'],
-            ['position' => 32, 'station_id' => 's139505', 'station' => 'Antenne Bayern'],];
-    }
 
     /**
      * return form actions by token
      *
      * @return array
      */
-    protected function FormActions()
+    private function FormActions()
     {
         $form = [
             [
@@ -1954,7 +1884,7 @@ class EchoRemote extends IPSModule
      *
      * @return array
      */
-    protected function FormStatus()
+    private function FormStatus()
     {
         $form = [
             [

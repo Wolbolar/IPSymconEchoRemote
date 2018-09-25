@@ -12,12 +12,14 @@
       "logoff": "abmelden",
       "checkloginstatus": "Anmeldestatus prüfen",
       "Echo language": "Echo Sprache",
-      "Use Custom CSRF and Cookie": "Benutze eigenen CSRF und Cookie",
+      "Use Custom Cookie": "Benutze eigenen Cookie",
       "Test the Registration:": "Anmeldung testen:",
       "Login Status": "Anmeldestatus",
       "Echo is accessible.": "Echo ist erreichbar.",
       "user name must not be empty.": "Benutzername darf nicht leer sein.",
       "password must not be empty.": "Passwort darf nicht leer sein.",
+      "cookie must not be empty.": "Cookie darf nicht leer sein.",
+      "cookie without csrf.": "Cookie ohne CSRF.",
       "not authenticated.": "Die Anmeldung ist fehlgeschlagen."
     }
   }

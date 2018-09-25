@@ -51,7 +51,7 @@ Modul für IP-Symcon ab Version 5.0. Ermöglicht die Fernsteuerung mit einem Ama
 
 ### a. Laden des Moduls
 
-Die IP-Symcon (min [Ver. 5.0](https://www.symcon.de/forum/threads/38222-IP-Symcon-5-0-verf%C3%BCgbar "IP-Symcon 5")) Webkonsole öffnen ( *http://<IP-SYMCON IP>:3777/console/* ). Im Objektbaum unter Kerninstanzen die Instanz __*Modules*__ durch einen doppelten Mausklick öffnen.
+Die IP-Symcon (min [Ver. 5.0](https://www.symcon.de/forum/threads/38222-IP-Symcon-5-0-verf%C3%BCgbar "IP-Symcon 5")) Webkonsole öffnen. Im Objektbaum unter Kerninstanzen die Instanz __*Modules*__ durch einen doppelten Mausklick öffnen.
 
 ![Modules](img/modules.png?raw=true "Modules")
 
@@ -84,13 +84,15 @@ Es öffnet sich das Konfigurationsformular.
 
 ![ConfigIO](img/io_config_echo.png?raw=true "Config IO")
  
-Hier ist anzugeben:
+Hier sind anzugeben:
  - Amazon Benutzername
  - Amazon Passwort
  - Sprache
- - optional CSRF und Cookie
  
- Anschließend kann im Konfigurator die Geräte eingelesen werden. Es erscheint eine Liste der verfügbaren Geräte mit _Gerätenamen_, _Gerätetyp_, _Gerätefamilie_, _Gerätenummer_ und _InstanzID_.
+ Alternativ zu Benutzername und Passwort kann auch ein gültiger Cookie verwendet werden.
+ 
+
+  Anschließend kann im Konfigurator die Geräte eingelesen werden. Es erscheint eine Liste der verfügbaren Geräte mit _Gerätenamen_, _Gerätetyp_, _Gerätefamilie_, _Gerätenummer_ und _InstanzID_.
  Das Gerät ist grün, insofern es noch nicht angelegt worden ist.
   
   ![List](img/echo_device_list.png?raw=true "Config IO")
@@ -100,6 +102,32 @@ Hier ist anzugeben:
  ![Create](img/create.png?raw=true "Config IO")
  
  _Erstellen_ drücken, die Instanz wird dann erzeugt.
+ 
+ 
+##### Ermittlung des Cookie
+Wenn beim Amazon Konto die Zwei-Schritt-Verifizierung aktiviert ist, dann ist der Anmeldeweg über den Cookie zu wählen, da vom Modul keine Zwei-Schritt-Verifizierung unterstützt wird.
+
+Wie kann der Cookie ermittelt werden?
+
+Im folgenden Beispiel wird gezeigt, wie der Cookie einer aktiven Browser Session ermittelt werden kann.
+
+In dem Beispiel nutzen wir die Entwicklertools von Chrome, andere Browser verfügen aber über ähnliche Werkzeuge. Die Bilder und Anleitung orientiert sich jetzt aber an Chrome. 
+
+Wie öffnen also zunächst die Webseite
+https://alexa.amazon.com
+und melden uns dort mit dem Amazon Account an auf den auch der Echo / Dot registriert ist. 
+
+Nun wechseln wir unter Musik, Videos und Bücher und wählen TuneIn aus. Jetzt öffnen wir die Entwicklertools mit F12: es öffnet sich auf der rechten Seite ein weiteres Fenster.
+
+Nun wählen wir einen Radiosender bei TuneIn mit Doppelklick aus. Der Radiosender sollte nun das Abspielen auf dem Echo beginnen. Gleichzeitig sehen wir im Fenster der Entwicklertools unter Netzwerk einen Eintrag mit queue-and-play.
+
+Wir öffnen jetzt den Eintrag queue-and-play (linke Spalte) mit einem Doppelklick und es öffnen sich ein weiters Fenster (rechte Spalte).
+
+In dem Fenster können wir nun Cookie Eintrag finden, den wir für das Modul benötigen. 
+Im Block Request Headers findet man ihn. Der Cookie ist ziemlich lang und muss komplett kopiert werden.
+
+(img/Cookie.jpg?raw=true "Cookie") 
+
 
 ### Webfront Ansicht
 
@@ -363,7 +391,7 @@ boolean EchoRemote_StartAlexaRoutine(integer $InstanceID, string $utterance)
 Parameter _$InstanceID_: ObjektID des Echo Remote Devices.
  
 Parameter _$utterance_: 'Sprachausdruck' der zu startenden Routine. Routinen können in der Alexa App definiert, 
-konfiguriert und aktiviert werden. Der zu übergebene String ist der Wert der in der Alexa App hinter _Alexa,_ steht.
+konfiguriert und aktiviert werden.
 
 Es wird die zum Sprachausdruck passende Routine gestartet. Im Fehlerfall wird false zurückgegeben.
 
