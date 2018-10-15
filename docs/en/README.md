@@ -37,7 +37,7 @@ Module for IP Symcon version 5.0 or higher. Enables remote control with an Amazo
  - Sing a song
  - Tell a story
        
-## 2. Voraussetzungen
+## 2. Requirements
 
  - IPS 5.0
  - Echo / Echo Dot / Echo Show
