@@ -12,8 +12,9 @@ trait BufferHelper
      */
     public function __get($name)
     {
+        /** @noinspection UnserializeExploitsInspection */
         return unserialize($this->GetBuffer($name));
-    }
+    }/** @noinspection MagicMethodsValidityInspection */
 
     /**
      * Wert einer Eigenschaft in den InstanceBuffer schreiben.

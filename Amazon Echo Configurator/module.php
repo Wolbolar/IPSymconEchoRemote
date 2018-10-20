@@ -1,4 +1,5 @@
-<?
+<?php
+/** @noinspection ALL */
 declare(strict_types=1);
 
 require_once __DIR__ . '/../libs/BufferHelper.php';
@@ -10,7 +11,7 @@ class AmazonEchoConfigurator extends IPSModule
 
     use DebugHelper;
 
-    const DEVICETYPES = [
+    private const DEVICETYPES = [
         'A2E0SNTXJVT7WK' => ['name' => 'Fire TV'],
         'ADVBD696BHNV5' => ['name' => 'Fire TV Stick (1.Gen)'],
         'A2LWARUGJLBYEW' => ['name' => 'Fire TV Stick (2.Gen)'],
@@ -34,34 +35,26 @@ class AmazonEchoConfigurator extends IPSModule
         parent::Create();
         // initiate buffer
         $this->SetBuffer($this->InstanceID . '-alexa_devices', '');
-        $this->ConnectParent("{C7F853A4-60D2-99CD-A198-2C9025E2E312}");
+        $this->ConnectParent('{C7F853A4-60D2-99CD-A198-2C9025E2E312}');
     }
 
-    /**
-     * Interne Funktion des SDK.
-     */
-    public function ApplyChanges()
-    {
-        //Never delete this line!
-        parent::ApplyChanges();
-    }
 
     /** Get Config Echo
      *
      * @return array
      */
-    private function Get_ListConfiguration()
+    private function Get_ListConfiguration(): array
     {
         $EchoRemoteInstanceIDList = IPS_GetInstanceListByModuleID('{496AB8B5-396A-40E4-AF41-32F4C48AC90D}'); // Echo Remote Devices
 
-        $devices_info = $this->SendData("GetDevices");
-        if ($devices_info['http_code'] == 200) {
+        $devices_info = $this->SendData('GetDevices');
+        if ($devices_info['http_code'] === 200) {
             $devices_JSON = $devices_info['body'];
-            $this->SendDebug("Response IO:", $devices_JSON, 0);
+            $this->SendDebug('Response IO:', $devices_JSON, 0);
             $this->SetBuffer($this->InstanceID . '-alexa_devices', $devices_JSON);
             if ($devices_JSON) {
-                $devices = json_decode($devices_JSON, true)["devices"];
-                $this->SendDebug("Echo Devices:", json_encode($devices), 0);
+                $devices = json_decode($devices_JSON, true)['devices'];
+                $this->SendDebug('Echo Devices:', json_encode($devices), 0);
             }
         } else {
             $devices = null;
@@ -77,70 +70,69 @@ class AmazonEchoConfigurator extends IPSModule
         foreach ($devices as $key => $device) {
             $instanceID  = 0;
 
-            $accountName = $device["accountName"];
-            $this->SendDebug("Echo Device", "account name: " . $accountName, 0);
+            $accountName = $device['accountName'];
+            $this->SendDebug('Echo Device', 'account name: ' . $accountName, 0);
 
-            $deviceAccountId = $device["deviceAccountId"];
-            $this->SendDebug("Echo Device", "device account id: " . $deviceAccountId, 0);
+            $deviceAccountId = $device['deviceAccountId'];
+            $this->SendDebug('Echo Device', 'device account id: ' . $deviceAccountId, 0);
 
-            $deviceFamily = $device["deviceFamily"];
-            $this->SendDebug("Echo Device", "device family: " . $deviceFamily, 0);
+            $deviceFamily = $device['deviceFamily'];
+            $this->SendDebug('Echo Device', 'device family: ' . $deviceFamily, 0);
 
-            $deviceType = $device["deviceType"];
+            $deviceType = $device['deviceType'];
             if (array_key_exists($deviceType, self::DEVICETYPES)) {
                 $device_type_name = self::DEVICETYPES[$deviceType]['name'];
             } else {
                 $device_type_name = 'unknown: ' . $deviceType;
                 $this->LogMessage('Unknown DeviceType: ' . $deviceType, KL_WARNING);
             }
-            $this->SendDebug("Echo Device", "device type: " . $deviceType . ", device type name: " . $device_type_name, 0);
+            $this->SendDebug('Echo Device', 'device type: ' . $deviceType . ', device type name: ' . $device_type_name, 0);
 
-            $serialNumber = $device["serialNumber"];
-            $this->SendDebug("Echo Device", "serial number: " . $serialNumber, 0);
+            $serialNumber = $device['serialNumber'];
+            $this->SendDebug('Echo Device', 'serial number: ' . $serialNumber, 0);
 
 
             $MyParent = IPS_GetInstance($this->InstanceID)['ConnectionID'];
             foreach ($EchoRemoteInstanceIDList as $EchoRemoteInstanceID) {
-                if (IPS_GetInstance($EchoRemoteInstanceID)['ConnectionID'] == $MyParent
-                    && $serialNumber == IPS_GetProperty(
-                        $EchoRemoteInstanceID, 'Devicenumber'
-                    )) {
+                if ((IPS_GetInstance($EchoRemoteInstanceID)['ConnectionID'] === $MyParent)
+                    && ($serialNumber === IPS_GetProperty($EchoRemoteInstanceID, 'Devicenumber'))) {
                     $instanceID = $EchoRemoteInstanceID;
                 }
             }
             $config_list[] = [
-                "instanceID"      => $instanceID,
-                "name"            => $accountName,
-                "devicetype"      => $device_type_name,
-                "devicefamily"    => $this->Translate($deviceFamily),
-                "devicenumber"    => $serialNumber,
-                "deviceaccountid" => $deviceAccountId,
-                "location"        => [
+                'instanceID'      => $instanceID,
+                'name'            => $accountName,
+                'devicetype'      => $device_type_name,
+                'devicefamily'    => $this->Translate($deviceFamily),
+                'devicenumber'    => $serialNumber,
+                'deviceaccountid' => $deviceAccountId,
+                'location'        => [
                     $this->Translate('Devices'),
-                    "Amazon Echo",
-                    "Amazon Remote"],
-                "create"          => [
-                    "moduleID"      => "{496AB8B5-396A-40E4-AF41-32F4C48AC90D}",
-                    "configuration" => [
-                        "Devicetype"   => $deviceType,
-                        "Devicenumber" => $serialNumber]]];
+                    'Amazon Echo',
+                    'Amazon Remote'],
+                'create'          => [
+                    'moduleID'      => '{496AB8B5-396A-40E4-AF41-32F4C48AC90D}',
+                    'configuration' => [
+                        'Devicetype'   => $deviceType,
+                        'Devicenumber' => $serialNumber]]];
         }
 
         return $config_list;
     }
-
     /**
      * Interne Funktion des SDK.
+     *
+     * @noinspection PhpMissingParentCallCommonInspection
      */
+
     public function GetConfigurationForm()
     {
-        $Values = $this->Get_ListConfiguration();
         $Form   = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
-        //$InstanceIDListSensors = IPS_GetInstanceListByModuleID('{A37FD212-2E5B-4B65-83F2-956CB5BBB2FA}');
+        $Form['actions'][0]['values'] = $this->Get_ListConfiguration();
 
-        $Form['actions'][0]['values'] = $Values;
         $this->SendDebug('FORM', json_encode($Form), 0);
         $this->SendDebug('FORM', json_last_error_msg(), 0);
+
         return json_encode($Form);
     }
 
@@ -164,13 +156,13 @@ class AmazonEchoConfigurator extends IPSModule
 
         $Data['Buffer'] = ['method' => $method];
 
-        if (isset($getfields)) {
+        if ($getfields !== null) {
             $Data['Buffer']['getfields'] = $getfields;
         }
-        if (isset($postfields)) {
+        if ($postfields !== null) {
             $Data['Buffer']['postfields'] = $postfields;
         }
-        if (isset($url)) {
+        if ($url !== null) {
             $Data['Buffer']['url'] = $url;
         }
 

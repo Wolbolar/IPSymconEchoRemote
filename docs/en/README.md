@@ -12,8 +12,9 @@ Module for IP Symcon version 5.0 or higher. Enables remote control with an Amazo
 1. [Features](#1-features)  
 2. [Requirements](#2-requirements)  
 3. [Installation](#3-installation)  
-4. [Function reference](#4-function_reference)  
-5. [Annex](#5-annex)  
+4. [Function reference](#4-function-reference)
+5. [Configuration](#5-configuration)
+6. [Annex](#6-annex)  
 
 ## 1. Features
 
@@ -108,7 +109,7 @@ Then highlight the desired device and open
 
  ![Webfront](img/webfront.png?raw=true "Config IO")
 
-## 4. Function reference
+## 4. Function Reference
 
 ### Echo Remote:
  
@@ -260,7 +261,7 @@ Parameter _$InstanceID_ ObjectID of the Echo Remote Device
 Plays a short story on the device
      
 
-## 5. Configuration:
+## 5. Configuration
 
 
 ### Echo Remote:  

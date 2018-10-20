@@ -1,20 +1,21 @@
 <?php
 
 declare(strict_types=1);
+
 /**
  * DebugHelper ergänzt SendDebug um die Möglichkeit Array und Objekte auszugeben.
  */
 trait DebugHelper
 {
+
     /**
      * Ergänzt SendDebug um Möglichkeit Objekte und Array auszugeben.
      *
      * @param string $Message Nachricht für Data.
      * @param mixed  $Data    Daten für die Ausgabe.
-     *
-     * @return int $Format Ausgabeformat für Strings.
+     * @param        $Format
      */
-    protected function SendDebug($Message, $Data, $Format)
+    protected function SendDebug($Message, $Data, $Format): void
     {
         if (is_object($Data)) {
             foreach ($Data as $Key => $DebugData) {
@@ -26,12 +27,10 @@ trait DebugHelper
             }
         } elseif (is_bool($Data)) {
             $this->SendDebug($Message, ($Data ? 'TRUE' : 'FALSE'), 0);
+        } elseif (IPS_GetKernelRunlevel() === KR_READY) {
+            parent::SendDebug($Message, (string) $Data, $Format);
         } else {
-            if (IPS_GetKernelRunlevel() == KR_READY) {
-                parent::SendDebug($Message, (string) $Data, $Format);
-            } else {
-                IPS_LogMessage('PRTG:' . $Message, (string) $Data);
-            }
+            IPS_LogMessage('PRTG:' . $Message, (string) $Data);
         }
     }
 }
