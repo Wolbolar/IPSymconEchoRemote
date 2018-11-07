@@ -195,15 +195,6 @@ Parameter _$seedid_ Seed ID is the _seedId_ which has to be read once per transm
 
 Parameter _$stationname_ Station Name, _station_name_ that must be read out once per transmitter as per the instructions
 
-
-**ImportedMusic**
-```php
-EchoRemote_ImportedMusic(integer $InstanceID, string $trackid)
-``` 
-Parameter _$InstanceID_ ObjectID of the Echo Remote Device
-
-Parameter _$trackid_ trackId of the imported file which has to be read once per track according to the instructions   
-
 **Text to Speech**
 ```php
 EchoRemote_TextToSpeech(integer $InstanceID, string $text_to_speech)

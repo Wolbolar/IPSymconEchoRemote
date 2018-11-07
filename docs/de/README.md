@@ -258,14 +258,6 @@ Parameter _$seedid_ Seed ID ist die _seedId_ die entsprechend der Anleitung pro 
 
 Parameter _$stationname_ Station Name der _stationName_ der entsprechend der Anleitung pro Sender einmal ausgelesen werden muss
 
-**ImportedMusic**
-```php
-EchoRemote_ImportedMusic(integer $InstanceID, string $trackid)
-``` 
-Parameter _$InstanceID_ ObjektID des Echo Remote Devices 
-
-Parameter _$trackid_ trackId des importierten Files die entsprechend der Anleitung pro Track einmal ausgelesen werden muss     
-
 **Text to Speech**
 ```php
 EchoRemote_TextToSpeech(integer $InstanceID, string $text_to_speech)

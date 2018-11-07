@@ -508,10 +508,6 @@ class AmazonEchoIO extends IPSModule
         $url         = 'https://' . $this->GetAlexaURL() . '/api/bootstrap?' . http_build_query($getfields);
         $return_data = $this->SendEcho($url, $this->GetHeader());
 
-        if ($return_data['http_code'] !== 200) {
-            return false;
-        }
-
         $return = json_decode($return_data['body']);
 
         if ($return === null) {
