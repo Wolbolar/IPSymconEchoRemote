@@ -581,9 +581,12 @@ class EchoRemote extends IPSModule
         if (is_array($Associations)) {
             //zunächst werden alte Assoziationen gelöscht
             //bool IPS_SetVariableProfileAssociation ( string $ProfilName, float $Wert, string $Name, string $Icon, integer $Farbe )
-            foreach (IPS_GetVariableProfile($Name)['Associations'] as $Association) {
-                IPS_SetVariableProfileAssociation($Name, $Association['Value'], '', '', -1);
-            }
+			if($Vartype == 1 || $Vartype == 2) // 0 boolean, 1 int, 2 float, 3 string
+			{
+				foreach (IPS_GetVariableProfile($Name)['Associations'] as $Association) {
+					IPS_SetVariableProfileAssociation($Name, $Association['Value'], '', '', -1);
+				}
+			}
 
             //dann werden die aktuellen eingetragen
             foreach ($Associations as $Association) {
