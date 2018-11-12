@@ -910,9 +910,9 @@ class EchoRemote extends IPSModule
 		}
 
 		if ($mute) {
-			$current_volume = strval($this->GetValue("EchoVolume"));
-			$this->SetBuffer("Volume", $current_volume);
-			$this->SendDebug('Echo Remote:', 'Volume Buffer 0', 0);
+			$current_volume = $this->GetValue("EchoVolume");
+			$this->SetBuffer("Volume", strval($current_volume));
+			$this->SendDebug('Echo Remote:', 'Volume Buffer '.$current_volume, 0);
 			$volume = 0;
 		}
 		if (!$mute) {
@@ -920,10 +920,11 @@ class EchoRemote extends IPSModule
 			if($last_volume == "")
 			{
 				$volume = 30;
+				$this->SetBuffer("Volume", "30");
 				$this->SendDebug('Echo Remote:', 'Volume Buffer 30', 0);
 			}
 			else{
-				$volume = $last_volume;
+				$volume = intval($last_volume);
 				$this->SendDebug('Echo Remote:', 'Volume Buffer '.$last_volume, 0);
 			}
 
