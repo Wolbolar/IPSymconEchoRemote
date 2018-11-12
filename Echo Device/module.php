@@ -910,7 +910,8 @@ class EchoRemote extends IPSModule
 		}
 
 		if ($mute) {
-			$this->SetBuffer("Volume", "0");
+			$current_volume = strval($this->GetValue("EchoVolume"));
+			$this->SetBuffer("Volume", $current_volume);
 			$this->SendDebug('Echo Remote:', 'Volume Buffer 0', 0);
 			$volume = 0;
 		}
