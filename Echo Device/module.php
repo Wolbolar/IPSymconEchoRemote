@@ -116,8 +116,10 @@ class EchoRemote extends IPSModule
         $this->RegisterPropertyBoolean('AlarmInfo', false);
         $this->RegisterPropertyBoolean('ShoppingList', false);
         $this->RegisterPropertyBoolean('TaskList', false);
+		$this->RegisterPropertyBoolean('Mute', false);
 
         $this->SetBuffer('CoverURL', '');
+		$this->SetBuffer('Volume', '');
         $this->RegisterTimer('EchoUpdate', 0, 'EchoRemote_UpdateStatus(' . $this->InstanceID . ');');
         $this->RegisterTimer('EchoAlarm', 0, 'EchoRemote_RaiseAlarm(' . $this->InstanceID . ');');
 
@@ -321,6 +323,17 @@ class EchoRemote extends IPSModule
             $this->RegisterVariableString('Subtitle_2', $this->Translate('Subtitle 2'), '', 10);
             $this->CreateMediaImage('MediaImageCover', 11);
         }
+
+		//Mute
+		if ($this->ReadPropertyBoolean('Mute')) {
+			//Mute Variable
+			$this->RegisterProfileAssociation(
+				'Echo.Remote.Mute', 'Speaker', '', '', 0, 1, 0, 0, vtBoolean, [
+					[false, $this->Translate('Unmute'), 'Speaker', -1],
+					[true, $this->Translate('Mute'), 'Speaker', -1]]
+			);
+			$this->RegisterVariableBoolean('Mute', $this->Translate('Mute'), 'Echo.Remote.Mute', 13);
+		}
 
         //support of alarm
         if ($this->ReadPropertyBoolean('AlarmInfo')) {
@@ -864,6 +877,46 @@ class EchoRemote extends IPSModule
         }
         return false;
     }
+
+	/** Mute / unmute
+	 *
+	 * @param bool $mute
+	 *
+	 * @return array|string
+	 */
+	public function Mute(bool $mute)
+	{
+		if ($mute) {
+			$this->SetBuffer("Volume", "0");
+			$volume = 0;
+		}
+		if (!$mute) {
+			$last_volume = $this->GetBuffer("Volume");
+			if($last_volume == "")
+			{
+				$volume = 30;
+			}
+			else{
+				$volume = $last_volume;
+			}
+
+		}
+
+		$getfields = [
+			'deviceSerialNumber' => $this->GetDevicenumber(),
+			'deviceType'         => $this->GetDevicetype()];
+
+		$postfields = [
+			'type'        => 'VolumeLevelCommand',
+			'volumeLevel' => $volume];
+
+		$result = $this->SendData('NpCommand', $getfields, $postfields);
+		if ($result['http_code'] === 200) {
+			$this->SetValue('EchoVolume', $volume);
+			return true;
+		}
+		return false;
+	}
 
     /** Get Player Status Information
      *
@@ -1824,6 +1877,10 @@ class EchoRemote extends IPSModule
                 'name'    => 'ExtendedInfo',
                 'type'    => 'CheckBox',
                 'caption' => 'setup variables for extended info (title, subtitle_1, subtitle_2, cover)'],
+			[
+				'name'    => 'Mute',
+				'type'    => 'CheckBox',
+				'caption' => 'setup variable for mute'],
             [
                 'name'    => 'AlarmInfo',
                 'type'    => 'CheckBox',

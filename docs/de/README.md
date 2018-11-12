@@ -170,6 +170,15 @@ Parameter _$InstanceID_ ObjektID des Echo Remote Devices
 
 Parameter _$volume_ Volume des Amazon Echo Dot, min 0 max 100
 
+**Mute / Unmute**
+```php
+EchoRemote_Mute(int $InstanceID, bool $mute)
+``` 
+Parameter _$InstanceID_ ObjektID des Echo Remote Devices
+
+Parameter _$mute_ true Setzt Volume des Amazon Echo Dot auf 0, min 0 max 100
+Parameter _$mute_ false Setzt Volume des Amazon Echo Dot auf den letzten bekannten Lautstärke Wert
+
 **Rewind30s**
 ```php
 EchoRemote_Rewind30s(int $InstanceID)
