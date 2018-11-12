@@ -116,7 +116,7 @@ class EchoRemote extends IPSModule
         $this->RegisterPropertyBoolean('AlarmInfo', false);
         $this->RegisterPropertyBoolean('ShoppingList', false);
         $this->RegisterPropertyBoolean('TaskList', false);
-		$this->RegisterPropertyBoolean('Mute', false);
+		$this->RegisterPropertyBoolean('Mute', true);
 
         $this->SetBuffer('CoverURL', '');
 		$this->SetBuffer('Volume', '');
