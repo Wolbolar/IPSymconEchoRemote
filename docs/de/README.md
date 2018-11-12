@@ -126,7 +126,7 @@ Wir öffnen jetzt den Eintrag queue-and-play (linke Spalte) mit einem Doppelklic
 In dem Fenster können wir nun Cookie Eintrag finden, den wir für das Modul benötigen. 
 Im Block Request Headers findet man ihn. Der Cookie ist ziemlich lang und muss komplett kopiert werden.
 
-(img/Cookie.jpg?raw=true "Cookie") 
+ ![Cookie](img/Cookie.jpg?raw=true "Cookie")
 
 
 ### Webfront Ansicht

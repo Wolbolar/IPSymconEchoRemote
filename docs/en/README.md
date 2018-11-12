@@ -103,6 +103,31 @@ Then highlight the desired device and open
  
  press _Create_ , the instance is then created.
 
+ 
+##### Determination of the cookie
+If two-step verification is enabled for the Amazon account, then for the login cookie must selected, as the module does not support two-step verification.
+
+How can the cookie be determined?
+
+The following example shows how to detect the cookie of an active browser session.
+
+In the example, we use Chrome's developer tools, but other browsers have similar tools. The pictures and instructions are now based on Chrome.
+
+Open the website first
+https://alexa.amazon.com
+and sign up there with the Amazon account on which also the Echo / Dot is registered.
+
+Now we switch to music, videos and books and select TuneIn. Now we open the developer tools with F12: a windows opens on the right side of the browser window.
+
+Now we select a radio station at TuneIn with a double click. The radio station should now start playing on the echo. At the same time we see an entry with queue-and-play in the Developer Tools window under Network.
+
+Now we open the entry queue-and-play (left column) with a double-click and it opens another window (right column).
+
+In the window we can now find the cookie entry we need for the module.
+In the block Request Headers you can find it. The cookie is quite long and needs to be completely copied.
+
+ ![Cookie](img/Cookie.jpg?raw=true "Cookie")
+
 
 ### Webfront View
 
