@@ -504,15 +504,7 @@ class EchoRemote extends IPSModule
             $this->TextToSpeech($Value);
         }
 		if ($Ident === 'Mute') {
-			if($Value)
-			{
-				$this->Mute(true);
-			}
-			else
-			{
-				$this->Mute(false);
-			}
-
+			$this->Mute($Value);
 		}
     }
 
@@ -898,8 +890,11 @@ class EchoRemote extends IPSModule
 	 */
 	public function Mute(bool $mute)
 	{
+		$this->SendDebug('Echo Remote:', 'Mute: '.json_encode($mute), 0);
+		$this->SetValue("Mute", $mute);
 		if ($mute) {
 			$this->SetBuffer("Volume", "0");
+			$this->SendDebug('Echo Remote:', 'Volume Buffer 0', 0);
 			$volume = 0;
 		}
 		if (!$mute) {
@@ -907,9 +902,11 @@ class EchoRemote extends IPSModule
 			if($last_volume == "")
 			{
 				$volume = 30;
+				$this->SendDebug('Echo Remote:', 'Volume Buffer 30', 0);
 			}
 			else{
 				$volume = $last_volume;
+				$this->SendDebug('Echo Remote:', 'Volume Buffer '.$last_volume, 0);
 			}
 
 		}
