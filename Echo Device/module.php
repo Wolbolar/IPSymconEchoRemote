@@ -333,6 +333,7 @@ class EchoRemote extends IPSModule
 					[true, $this->Translate('Mute'), 'Speaker', -1]]
 			);
 			$this->RegisterVariableBoolean('Mute', $this->Translate('Mute'), 'Echo.Remote.Mute', 13);
+			$this->EnableAction('Mute');
 		}
 
         //support of alarm
@@ -502,6 +503,17 @@ class EchoRemote extends IPSModule
         if ($Ident === 'EchoTTS') {
             $this->TextToSpeech($Value);
         }
+		if ($Ident === 'Mute') {
+			if($Value)
+			{
+				$this->Mute(true);
+			}
+			else
+			{
+				$this->Mute(false);
+			}
+
+		}
     }
 
     /** register profiles
