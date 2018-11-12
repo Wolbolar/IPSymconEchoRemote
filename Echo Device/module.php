@@ -329,8 +329,8 @@ class EchoRemote extends IPSModule
 			//Mute Variable
 			$this->RegisterProfileAssociation(
 				'Echo.Remote.Mute', 'Speaker', '', '', 0, 1, 0, 0, vtBoolean, [
-					[false, $this->Translate('Unmute'), 'Speaker', -1],
-					[true, $this->Translate('Mute'), 'Speaker', -1]]
+					[false, $this->Translate('Mute'), 'Speaker', 0xff3300],
+					[true, $this->Translate('Unmute'), 'Speaker', 0x00ff55]]
 			);
 			$this->RegisterVariableBoolean('Mute', $this->Translate('Mute'), 'Echo.Remote.Mute', 13);
 			$this->EnableAction('Mute');
@@ -504,7 +504,16 @@ class EchoRemote extends IPSModule
             $this->TextToSpeech($Value);
         }
 		if ($Ident === 'Mute') {
-			$this->Mute($Value);
+			if($Value)
+			{
+				$this->Mute(false);
+			}
+			else
+			{
+				$this->Mute(true);
+			}
+
+
 		}
     }
 
@@ -891,7 +900,15 @@ class EchoRemote extends IPSModule
 	public function Mute(bool $mute)
 	{
 		$this->SendDebug('Echo Remote:', 'Mute: '.json_encode($mute), 0);
-		$this->SetValue("Mute", $mute);
+		if($mute)
+		{
+			$this->SetValue("Mute", false);
+		}
+		else
+		{
+			$this->SetValue("Mute", true);
+		}
+
 		if ($mute) {
 			$this->SetBuffer("Volume", "0");
 			$this->SendDebug('Echo Remote:', 'Volume Buffer 0', 0);
