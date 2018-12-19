@@ -205,6 +205,14 @@ Parameter _$InstanceID_ ObjektID des Echo Remote Devices
 
 **GetQueueInformation**
 ```php
+EchoRemote_GetPlayerInformation(int $InstanceID)
+``` 
+Parameter _$InstanceID_ ObjektID des Echo Remote Devices 
+ 
+Liefert eine Liste mit Informationen zum aktuell abgespielten Titel bzw. zum aktuellen Sender.  
+
+**GetPlayerInformation**
+```php
 EchoRemote_GetQueueInformation(int $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices 

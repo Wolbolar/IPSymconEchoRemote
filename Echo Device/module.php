@@ -581,7 +581,7 @@ class EchoRemote extends IPSModule
         if (is_array($Associations)) {
             //zunächst werden alte Assoziationen gelöscht
             //bool IPS_SetVariableProfileAssociation ( string $ProfilName, float $Wert, string $Name, string $Icon, integer $Farbe )
-			if($Vartype == 1 || $Vartype == 2) // 0 boolean, 1 int, 2 float, 3 string
+			if($Vartype === 1 || $Vartype === 2) // 0 boolean, 1 int, 2 float, 3 string
 			{
 				foreach (IPS_GetVariableProfile($Name)['Associations'] as $Association) {
 					IPS_SetVariableProfileAssociation($Name, $Association['Value'], '', '', -1);
@@ -900,34 +900,35 @@ class EchoRemote extends IPSModule
 	 *
 	 * @return array|string
 	 */
-	public function Mute(bool $mute)
+	public function Mute(bool $mute): bool
 	{
+        $volume = 0;
 		$this->SendDebug('Echo Remote:', 'Mute: '.json_encode($mute), 0);
 		if($mute)
 		{
-			$this->SetValue("Mute", false);
+			$this->SetValue('Mute', false);
 		}
 		else
 		{
-			$this->SetValue("Mute", true);
+			$this->SetValue('Mute', true);
 		}
 
 		if ($mute) {
-			$current_volume = $this->GetValue("EchoVolume");
-			$this->SetBuffer("Volume", strval($current_volume));
+			$current_volume = $this->GetValue('EchoVolume');
+			$this->SetBuffer('Volume', (string) $current_volume);
 			$this->SendDebug('Echo Remote:', 'Volume Buffer '.$current_volume, 0);
 			$volume = 0;
 		}
 		if (!$mute) {
-			$last_volume = $this->GetBuffer("Volume");
-			if($last_volume == "")
+			$last_volume = $this->GetBuffer('Volume');
+			if($last_volume === '')
 			{
 				$volume = 30;
-				$this->SetBuffer("Volume", "30");
+				$this->SetBuffer('Volume', '30');
 				$this->SendDebug('Echo Remote:', 'Volume Buffer 30', 0);
 			}
 			else{
-				$volume = intval($last_volume);
+				$volume = (int) $last_volume;
 				$this->SendDebug('Echo Remote:', 'Volume Buffer '.$last_volume, 0);
 			}
 
@@ -1139,7 +1140,7 @@ class EchoRemote extends IPSModule
      *                          false: not completed todos are returned
      *                          null: all todos are returned
      *
-     * @return bool
+     * @return array|null
      */
     public function GetToDos(string $type, bool $completed = null): ?array
     {
@@ -1157,7 +1158,7 @@ class EchoRemote extends IPSModule
             return json_decode($result['body'], true)['values'];
         }
 
-        return false;
+        return null;
     }
 
     /** Play TuneIn station by present
@@ -1405,11 +1406,7 @@ class EchoRemote extends IPSModule
                 trigger_error('Instanz #'.$this->InstanceID.' - Unexpected state: ' . $playerInfo['state']);
         }
 
-        if (isset($playerInfo['mainArt']['url'])) {
-            $imageurl = $playerInfo['mainArt']['url'];
-        } else {
-            $imageurl = null;
-        }
+        $imageurl = $playerInfo['mainArt']['url'] ?? null;
         $this->SetStatePage(
             $imageurl, $playerInfo['infoText']['title'], $playerInfo['infoText']['subText1'], $playerInfo['infoText']['subText2']
         );
@@ -1543,8 +1540,8 @@ class EchoRemote extends IPSModule
         }
 
         foreach ($notifications as $notification) {
-            if (($notification['deviceSerialNumber'] === IPS_GetProperty($this->InstanceID, 'Devicenumber')) && ($notification['type'] === 'Alarm')
-                && ($notification['status'] === 'ON')) {
+            if (($notification['type'] === 'Alarm')
+                && ($notification['status'] === 'ON') && ($notification['deviceSerialNumber'] === IPS_GetProperty($this->InstanceID, 'Devicenumber'))) {
 
                 $alarmTime = strtotime($notification['originalDate'] . ' ' . $notification['originalTime']);
 

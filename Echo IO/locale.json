@@ -1,6 +1,7 @@
 {
   "translations": {
     "de": {
+      "active": "aktiv",
       "Amazon User Name": "Amazon Benutzer Name",
       "Amazon Password": "Amazon Passwort",
       "Please choose": "Bitte wählen",

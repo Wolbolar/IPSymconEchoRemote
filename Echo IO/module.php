@@ -21,6 +21,7 @@ class AmazonEchoIO extends IPSModule
         //You cannot use variables here. Just static values.
 
         //the following Properties can be set in the configuration form
+        $this->RegisterPropertyBoolean('active', false);
         $this->RegisterPropertyString('username', '');
         $this->RegisterPropertyString('password', '');
         $this->RegisterPropertyInteger('language', 0);
@@ -41,8 +42,11 @@ class AmazonEchoIO extends IPSModule
         //Never delete this line!
         parent::ApplyChanges();
 
-        $this->ValidateConfiguration();
-
+        if ($this->ReadPropertyBoolean('active')) {
+            $this->ValidateConfiguration();
+        } else {
+            $this->SetStatus(IS_INACTIVE);
+        }
     }
 
     /**
@@ -160,7 +164,7 @@ class AmazonEchoIO extends IPSModule
         return $language_string;
     }
 
-    private function deleteFile($FileName): bool
+    private function deleteFile(string $FileName): bool
     {
 
         if (file_exists($FileName)) {
@@ -216,7 +220,11 @@ class AmazonEchoIO extends IPSModule
         // get first cookie and write redirection target into referer
 
         $first_login = $this->GetFirstCookie();
-        $referer     = $first_login['referer'];
+        if (count($first_login['hidden fields']) === 0) {
+            $this->SendDebug(__FUNCTION__, 'no hidden fields found!', 0);
+            return false;
+        }
+        $referer = $first_login['referer'];
 
         // login empty to generate session
         $hiddenfields = $this->StartSession(
@@ -282,18 +290,15 @@ class AmazonEchoIO extends IPSModule
         //delete old cookie
         $this->deleteFile($this->ReadPropertyString('CookiesFileName'));
 
-        $url       = 'https://alexa.' . $this->GetAmazonURL();
-        $echo_data = $this->SendEchoData($url, $this->GetLoginHeader());
-        $header    = $echo_data['header'];
-        $body      = $echo_data['body'];
+        $echo_data = $this->SendEchoData('https://alexa.' . $this->GetAmazonURL(), $this->GetLoginHeader());
 
         //get location from header and build referer
-        $location = implode(preg_grep('/Location: /', $header));
+        $location = implode(preg_grep('/Location: /', $echo_data['header']));
         $referer  = str_replace('Location: ', 'Referer: ', $location);
         $this->SendDebug(__FUNCTION__, $referer, 0);
 
         //get hidden fields from body and build post data
-        $hiddenFields = $this->GetHiddenFields($body);
+        $hiddenFields = $this->GetHiddenFields($echo_data['body']);
 
         $this->SendDebug(__FUNCTION__, 'hidden fields: ' . json_encode($hiddenFields), 0);
 
@@ -308,7 +313,7 @@ class AmazonEchoIO extends IPSModule
      *
      * @return array|mixed|null|string|string[]
      */
-    private function StartSession($referer, $hiddenfields)
+    private function StartSession(string $referer, array $hiddenfields): array
     {
         ##########################################
         # login empty to generate session
@@ -322,17 +327,12 @@ class AmazonEchoIO extends IPSModule
         die Hidden Felder werden zum Abschicken der Login-Form im nächsten Schritt benötigt.
         */
 
-        //$hiddenfields = $hiddenfields['arr hidden fields'];
-
-        $url     = 'https://www.' . $this->GetAmazonURL() . '/ap/signin';
         $headers = array_merge($this->GetLoginHeader(), [$referer]);
         $this->SendDebug(__FUNCTION__, 'Send (Header): ' . json_encode($headers), 0);
-        $echo_data = $this->SendEchoData($url, $headers, $hiddenfields);
-        $body      = $echo_data['body'];
-
+        $echo_data = $this->SendEchoData('https://www.' . $this->GetAmazonURL() . '/ap/signin', $headers, $hiddenfields);
 
         //get hidden fields from body and build post data
-        $hiddenFields = $this->GetHiddenFields($body);
+        $hiddenFields = $this->GetHiddenFields($echo_data['body']);
         $this->SendDebug(__FUNCTION__, 'hidden fields: ' . json_encode($hiddenFields), 0);
 
         return $hiddenFields;
@@ -345,7 +345,7 @@ class AmazonEchoIO extends IPSModule
      *
      * @return array|mixed|null|string|string[]
      */
-    private function GetHiddenFields($body)
+    private function GetHiddenFields(string $body): array
     {
         //get hidden fields from body and return as array
         $result = explode("\n", $body);
@@ -379,7 +379,7 @@ class AmazonEchoIO extends IPSModule
      *
      * @return array
      */
-    private function GetSession($hiddenFields): array
+    private function GetSession(array $hiddenFields): array
     {
         ############################################
         # login with filled out form
@@ -392,8 +392,6 @@ class AmazonEchoIO extends IPSModule
          Aufruf von www.amazon.de/ap/signin (Referrer ist jetzt /ap/signin/<session-id>; Post Data enthält jetzt Login Informationen und Hidden Felder der vorigen Anfrage):
          => Cookie wird um gültige Login Session ergänzt und ist jetzt für den Zugriff ohne Anmeldung gültig, Weiterleitung zur ursprünglichen URL in Schritt 1. Damit ist das Cookie auch bei alexa.amazon.de gültig.
          */
-
-        $url = 'https://www.' . $this->GetAmazonURL() . '/ap/signin';
 
         //get session-id from cookie file
         $session_line = array_values(preg_grep('/\tsession-id\t/', file($this->ReadPropertyString('CookiesFileName'))));
@@ -415,7 +413,7 @@ class AmazonEchoIO extends IPSModule
                              'password' => $this->ReadPropertyString('password')]
         );
 
-        return $this->SendEchoData($url, $headers, $postfields);
+        return $this->SendEchoData('https://www.' . $this->GetAmazonURL() . '/ap/signin', $headers, $postfields);
 
     }
 
@@ -426,7 +424,7 @@ class AmazonEchoIO extends IPSModule
      *
      * @return bool
      */
-    private function CheckSuccessOfLogin($session_data): bool
+    private function CheckSuccessOfLogin(array $session_data): bool
     {
         /*
          * if [ -z "$(grep 'Location: https://alexa.*html' ${TMP}/.alexa.header2)" ] ; then
@@ -438,14 +436,15 @@ class AmazonEchoIO extends IPSModule
 
         */
 
+        $LoginFile = $this->ReadPropertyString('LoginFileName');
+
         if (count(preg_grep('/Location: https:\/\/alexa.*html/', $session_data['header'])) === 0) {
-            $LoginFile = $this->ReadPropertyString('LoginFileName');
             file_put_contents($LoginFile, $session_data['body']);
             $this->SendDebug(__FUNCTION__, ' >> login with filled out form failed. See ' . $LoginFile . ' <<', 0);
             $check = false;
         } else {
             //delete an existing html error file
-            $this->deleteFile($this->ReadPropertyString('LoginFileName'));
+            $this->deleteFile($LoginFile);
 
             $this->SendDebug(__FUNCTION__, 'login with filled out form: OK', 0);
             $check = true;
@@ -508,7 +507,11 @@ class AmazonEchoIO extends IPSModule
         $url         = 'https://' . $this->GetAlexaURL() . '/api/bootstrap?' . http_build_query($getfields);
         $return_data = $this->SendEcho($url, $this->GetHeader());
 
-        $return = json_decode($return_data['body']);
+        if ($return_data['body'] === null) {
+            $return = null;
+        } else {
+            $return = json_decode($return_data['body']);
+        }
 
         if ($return === null) {
             $this->SendDebug(__FUNCTION__, 'Not authenticated (return is null)! ', 0);
@@ -706,7 +709,7 @@ class AmazonEchoIO extends IPSModule
         if ($result['http_code'] === 200) {
 
             //$arr     = json_decode($result['body'], true)['primeStationSectionList'][0]['categories'][0]['stations'];
-            $arr = json_decode($result['body'], true)['primeStationSectionList'];
+            $arr     = json_decode($result['body'], true)['primeStationSectionList'];
             $arr_neu = [];
             foreach ($arr as $sectionKey => $section) {
                 if (!count($filterSections) || in_array($section['sectionId'], $filterSections, true)) {
@@ -796,7 +799,7 @@ class AmazonEchoIO extends IPSModule
 
         $result = $this->SendEcho($url, $header, null);
 
-        if ($result['http_code'] !==200) {
+        if ($result['http_code'] !== 200) {
             return $result;
         }
         //print_r($result);
@@ -839,6 +842,7 @@ class AmazonEchoIO extends IPSModule
         curl_setopt($ch, CURLOPT_COOKIEFILE, $this->ReadPropertyString('CookiesFileName')); //this file is read
         curl_setopt($ch, CURLOPT_COOKIEJAR, $this->ReadPropertyString('CookiesFileName'));  //this file is written
         curl_setopt($ch, CURLOPT_USERAGENT, $this->ReadPropertyString('browser'));
+        curl_setopt($ch, CURLOPT_ENCODING, '');
         curl_setopt($ch, CURLOPT_HEADER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
@@ -888,7 +892,7 @@ class AmazonEchoIO extends IPSModule
             'Accept: application/json, text/javascript, */*; q=0.01',
             'Referer: http://alexa.' . $this->GetAmazonURL() . '/spa/index.html',
             'Connection: keep-alive'];
-            //'Content-Type: application/x-www-form-urlencoded; charset=UTF-8']; //todo: experimentell auskommentiert, damit Capabilities abgefragt werden können
+        //'Content-Type: application/x-www-form-urlencoded; charset=UTF-8']; //todo: experimentell auskommentiert, damit Capabilities abgefragt werden können
 
         if ($csrf) {
             $header[] = 'csrf: ' . $csrf;
@@ -1137,7 +1141,7 @@ class AmazonEchoIO extends IPSModule
      * @return string
      * @noinspection PhpMissingParentCallCommonInspection
      */
-    public function GetConfigurationForm():string
+    public function GetConfigurationForm(): string
     {
         // return current form
         return json_encode(
@@ -1155,7 +1159,11 @@ class AmazonEchoIO extends IPSModule
      */
     private function FormHead(): array
     {
-        $form = [
+        return [
+            [
+                'name'    => 'active',
+                'type'    => 'CheckBox',
+                'caption' => 'active'],
             [
                 'name'    => 'username',
                 'type'    => 'ValidationTextBox',
@@ -1179,7 +1187,6 @@ class AmazonEchoIO extends IPSModule
                 'caption' => 'Cookie']
 
         ];
-        return $form;
     }
 
     /**
