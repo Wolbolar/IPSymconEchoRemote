@@ -1655,6 +1655,19 @@ class EchoRemote extends IPSModule
         return ($this->SendData('CustomCommand', $getfields, $postfields, $url)['http_code'] === 200);
     }
 
+    public function PlayAmazonPrimePlaylist(string $asin)
+    {
+        $url        = 'https://{AlexaURL}/api/prime/prime-playlist-queue-and-play?';
+        $getfields  = [
+            'deviceSerialNumber'   => $this->GetDevicenumber(),
+            'deviceType'           => $this->GetDevicetype(),
+            'mediaOwnerCustomerId' => $this->GetCustomerID()];
+        $postfields = ['asin' => $asin];
+        return ($this->SendData('CustomCommand', $getfields, $postfields, $url)['http_code'] === 200);
+
+    }
+
+
     public function GetAmazonPrimeStationSectionList(array $filterSections, array $filterCategories, array $stationItems)
     {
 
@@ -1694,7 +1707,7 @@ class EchoRemote extends IPSModule
 
         $url = str_replace($search, $replace, $url);
 
-        if ($postfields !== null) {
+        if ($postfields === null) {
             $this->SendDebug('CustomCommand', 'URL: ' . $url . ' (no postdata)', 0);
         } else {
             $postfields = str_replace($search, $replace, $postfields);
@@ -1809,17 +1822,11 @@ class EchoRemote extends IPSModule
         }
     }
 
-
-
-    public function PrimePlaylist(string $asin)
-    {
-        $url = 'https://{AlexaURL}/api/prime/prime-playlist-queue-and-play?deviceSerialNumber=' . $this->GetDevicenumber() . '&deviceType=' . $this->GetDevicetype() . '&mediaOwnerCustomerId=' . $this->GetCustomerID();
-        return $this->SendData_old("PrimePlaylist", $url, ['asin' => $asin]);
-    }
-
-
     */
     //</editor-fold>
+
+
+
 
     /** GetDevicetype
      *

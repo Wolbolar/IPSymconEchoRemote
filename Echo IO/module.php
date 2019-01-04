@@ -42,8 +42,36 @@ class AmazonEchoIO extends IPSModule
         //Never delete this line!
         parent::ApplyChanges();
 
-        if ($this->ReadPropertyBoolean('active')) {
-            $this->ValidateConfiguration();
+        $username  = $this->ReadPropertyString('username');
+        $password  = $this->ReadPropertyString('password');
+        $cookie    = $this->ReadPropertyString('alexa_cookie');
+        $useCookie = $this->ReadPropertyBoolean('UseCustomCSRFandCookie');
+        $active    = $this->ReadPropertyBoolean('active');
+
+        $currentProperties = json_encode(
+            [
+                'username'     => $username,
+                'password'     => $password,
+                'alexa_cookie' => $cookie,
+                'active'       => $active]
+        );
+
+        $bufferedProperties = $this->GetBuffer($this->InstanceID . '-SavedProperties');
+        if ($bufferedProperties === '' || $bufferedProperties !== $currentProperties) {
+            $this->SetBuffer($this->InstanceID . '-SavedProperties', $currentProperties);
+            $this->SetBuffer($this->InstanceID . '-failedLogins', 0);
+        }
+
+        if (json_decode($this->GetBuffer($this->InstanceID . '-failedLogins')) >= 3) {
+            $this->SendDebug(__FUNCTION__, 'count of failed logins exceeded', 0);
+            $this->SetStatus(self::STATUS_INST_NOT_AUTHENTICATED);
+
+            return;
+        }
+
+
+        if ($active) {
+            $this->ValidateConfiguration($username, $password, $cookie, $useCookie);
         } else {
             $this->SetStatus(IS_INACTIVE);
         }
@@ -57,12 +85,9 @@ class AmazonEchoIO extends IPSModule
      *
      */
 
-    private function ValidateConfiguration(): void
+    private function ValidateConfiguration($username, $password, $cookie, $useCookie): void
     {
-        $username  = $this->ReadPropertyString('username');
-        $password  = $this->ReadPropertyString('password');
-        $cookie    = $this->ReadPropertyString('alexa_cookie');
-        $useCookie = $this->ReadPropertyBoolean('UseCustomCSRFandCookie');
+
 
         if ($useCookie) {
             if ($cookie === '') {
@@ -80,8 +105,15 @@ class AmazonEchoIO extends IPSModule
             $this->SetStatus(self::STATUS_INST_PASSWORD_IS_EMPTY);
         } elseif (!$this->LogIn()) {
             $this->SetStatus(self::STATUS_INST_NOT_AUTHENTICATED);
+            $failedLogins = json_decode($this->GetBuffer($this->InstanceID . '-failedLogins')) + 1;
+            $this->SetBuffer($this->InstanceID . '-failedLogins', json_encode($failedLogins));
+
+            $errorTxt = sprintf('Number of failed LogIns: %d', json_decode($this->GetBuffer($this->InstanceID . '-failedLogins')));
+            $this->SendDebug(__FUNCTION__, $errorTxt, 0);
+            IPS_LogMessage(__CLASS__, $errorTxt);
         } else {
             $this->SetStatus(IS_ACTIVE);
+            $this->SetBuffer($this->InstanceID . '-failedLogins', json_encode(0));
         }
     }
 
@@ -207,6 +239,7 @@ class AmazonEchoIO extends IPSModule
     #
     public function LogIn(): bool
     {
+
         $this->SendDebug(__FUNCTION__, '== started ==', 0);
 
         if ($this->ReadPropertyBoolean('UseCustomCSRFandCookie')) {
@@ -222,6 +255,7 @@ class AmazonEchoIO extends IPSModule
         $first_login = $this->GetFirstCookie();
         if (count($first_login['hidden fields']) === 0) {
             $this->SendDebug(__FUNCTION__, 'no hidden fields found!', 0);
+            $this->SetBuffer($this->InstanceID . '-failedLogins', json_encode($failedLogins + 1));
             return false;
         }
         $referer = $first_login['referer'];
@@ -250,7 +284,11 @@ class AmazonEchoIO extends IPSModule
             return false;
         }
 
-        return $this->CheckLoginStatus();
+        // check Login Status
+        $ret = $this->CheckLoginStatus();
+        if (!$ret) {
+        }
+        return $ret;
     }
 
     /**
@@ -773,7 +811,7 @@ class AmazonEchoIO extends IPSModule
 
         $header = $this->GetHeader();
 
-        if ($postfields !== null) {
+        if ($postfields === null) {
             return $this->SendEcho($url, $header, null, $optpost);
         }
 

@@ -265,15 +265,23 @@ Parameter _$InstanceID_ ObjektID des Echo Remote Devices
 
 Parameter _$preset_ Positions ID der Radiostation im Modul    
 
-**AmazonMusic**
+**PlayAmazonMusic**
 ```php
-EchoRemote_AmazonMusic(integer $InstanceID, string $seedid, string $stationname)
+EchoRemote_PlayAmazonMusic(integer $InstanceID, string $seedid, string $stationname)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices 
 
-Parameter _$seedid_ Seed ID ist die _seedId_ die entsprechend der Anleitung pro Sender einmal ausgelesen werden muss  
+Parameter _$seedid_ Seed ID ist die _seedId_ die pro Sender einmal ermittelt werden muss  
 
-Parameter _$stationname_ Station Name der _stationName_ der entsprechend der Anleitung pro Sender einmal ausgelesen werden muss
+Parameter _$stationname_ Station Name der _stationName_ der pro Sender ermittelt werden muss
+
+**PlayAmazonPrimePlaylist**
+```php
+EchoRemote_PlayAmazonPrimePlaylist(integer $InstanceID, string $asin)
+``` 
+Parameter _$InstanceID_ ObjektID des Echo Remote Devices 
+
+Parameter _$asin_ Asin ist die _asin_ die entsprechend der Anleitung pro Sender einmal ausgelesen werden muss  
 
 **Text to Speech**
 ```php
