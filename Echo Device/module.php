@@ -915,7 +915,8 @@ class EchoRemote extends IPSModule
 
 		if ($mute) {
 			$current_volume = $this->GetValue('EchoVolume');
-			$this->SetBuffer('Volume', (string) $current_volume);
+            /** @noinspection UnnecessaryCastingInspection */
+            $this->SetBuffer('Volume', (string) $current_volume);
 			$this->SendDebug('Echo Remote:', 'Volume Buffer '.$current_volume, 0);
 			$volume = 0;
 		}
@@ -1335,9 +1336,9 @@ class EchoRemote extends IPSModule
 
     /** List paired bluetooth devices
      *
-     * @return string
+     * @return array|null
      */
-    public function ListPairedBluetoothDevices(): ?string
+    public function ListPairedBluetoothDevices(): ?array
     {
         $devicenumber = $this->ReadPropertyString('Devicenumber');
         $devices = $this->ListBluetooth();
@@ -1655,7 +1656,7 @@ class EchoRemote extends IPSModule
         return ($this->SendData('CustomCommand', $getfields, $postfields, $url)['http_code'] === 200);
     }
 
-    public function PlayAmazonPrimePlaylist(string $asin)
+    public function PlayAmazonPrimePlaylist(string $asin): bool
     {
         $url        = 'https://{AlexaURL}/api/prime/prime-playlist-queue-and-play?';
         $getfields  = [

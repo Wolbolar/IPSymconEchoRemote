@@ -89,19 +89,19 @@ Hier sind anzugeben:
  - Amazon Passwort
  - Sprache
  
- Alternativ zu Benutzername und Passwort kann auch ein gültiger Cookie verwendet werden.
+Alternativ zu Benutzername und Passwort kann auch ein gültiger Cookie verwendet werden.
  
 
-  Anschließend kann im Konfigurator die Geräte eingelesen werden. Es erscheint eine Liste der verfügbaren Geräte mit _Gerätenamen_, _Gerätetyp_, _Gerätefamilie_, _Gerätenummer_ und _InstanzID_.
- Das Gerät ist grün, insofern es noch nicht angelegt worden ist.
+Anschließend kann im Konfigurator die Geräte eingelesen werden. Es erscheint eine Liste der verfügbaren Geräte mit _Gerätenamen_, _Gerätetyp_, _Gerätefamilie_, _Gerätenummer_ und _InstanzID_.
+Das Gerät ist grün, insofern es noch nicht angelegt worden ist.
   
   ![List](img/echo_device_list.png?raw=true "Config IO")
   
- Dann das gewünschte Gerät markieren und auf 
+Dann das gewünschte Gerät markieren und auf 
  
  ![Create](img/create.png?raw=true "Config IO")
  
- _Erstellen_ drücken, die Instanz wird dann erzeugt.
+_Erstellen_ drücken, die Instanz wird dann erzeugt.
  
  
 ##### Ermittlung des Cookie

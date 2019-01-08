@@ -1184,7 +1184,7 @@ class AmazonEchoIO extends IPSModule
         // return current form
         return json_encode(
             [
-                'elements' => $this->FormHead(),
+                'elements' => $this->FormElements(),
                 'actions'  => $this->FormActions(),
                 'status'   => $this->FormStatus()]
         );
@@ -1195,7 +1195,7 @@ class AmazonEchoIO extends IPSModule
      *
      * @return array
      */
-    private function FormHead(): array
+    private function FormElements(): array
     {
         return [
             [

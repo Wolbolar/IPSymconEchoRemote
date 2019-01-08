@@ -1,19 +1,12 @@
 <?php
-/** @noinspection ALL */
 declare(strict_types=1);
-
-require_once __DIR__ . '/../libs/BufferHelper.php';
-require_once __DIR__ . '/../libs/DebugHelper.php';
-require_once __DIR__ . '/../libs/ConstHelper.php';
 
 class AmazonEchoConfigurator extends IPSModule
 {
 
-    use DebugHelper;
-
     private const DEVICETYPES = [
         'A2E0SNTXJVT7WK' => ['name' => 'Fire TV'],
-        'ADVBD696BHNV5' => ['name' => 'Fire TV Stick (1.Gen)'],
+        'ADVBD696BHNV5'  => ['name' => 'Fire TV Stick (1.Gen)'],
         'A2LWARUGJLBYEW' => ['name' => 'Fire TV Stick (2.Gen)'],
         'A2825NDLA7WDZV' => ['name' => 'App'],
         'AB72C64C86AW2'  => ['name' => 'Echo'],
@@ -23,21 +16,52 @@ class AmazonEchoConfigurator extends IPSModule
         'A1NL4BVLQ4L3N3' => ['name' => 'Echo Show'],
         'A1DL2DVDQVK3Q'  => ['name' => 'App'],
         'A10A33FOX2NUBK' => ['name' => 'Echo Spot'],
-        'A7WXQPH584YP'    => ['name' => 'Echo (2.Gen)'],
-        'A2M35JJZWCQOMZ'    => ['name' => 'Echo Plus'],
-        'A2IVLV5VM2W81'    => ['name' => 'Mobile Voice iOS'],
-        'A2TF17PFR55MTB'    => ['name' => 'Mobile Voice Android'],
+        'A7WXQPH584YP'   => ['name' => 'Echo (2.Gen)'],
+        'A2M35JJZWCQOMZ' => ['name' => 'Echo Plus'],
+        'A2IVLV5VM2W81'  => ['name' => 'Mobile Voice iOS'],
+        'A2TF17PFR55MTB' => ['name' => 'Mobile Voice Android'],
+        'A1JJ0KFC4ZPNJ3' => ['name' => 'Echo Input'],
+        'A3V3VA38K169FO' => ['name' => 'Fire Tablet'],
         'A3C9PE6TNYLTCH' => ['name' => 'Multiroom Musik-Gruppe']];
 
     public function Create()
     {
         //Never delete this line!
         parent::Create();
+
+        //the following Properties can be set in the configuration form
+        $this->RegisterPropertyInteger('targetCategoryID', $this->GetDefaultTargetCategory());
+
         // initiate buffer
         $this->SetBuffer($this->InstanceID . '-alexa_devices', '');
         $this->ConnectParent('{C7F853A4-60D2-99CD-A198-2C9025E2E312}');
     }
 
+    public function ApplyChanges()
+    {
+        //Never delete this line!
+        parent::ApplyChanges();
+
+        $this->RegisterReference($this->ReadPropertyInteger('targetCategoryID'));
+    }
+
+    private function GetDefaultTargetCategory(): int
+    {
+        $echoDevices = IPS_GetInstanceListByModuleID('{496AB8B5-396A-40E4-AF41-32F4C48AC90D}');
+        if (isset($echoDevices[0])) {
+            $parentId = IPS_GetParent($echoDevices[0]);
+            if (IPS_GetObject($parentId)['ObjectType'] === 0) { //Category
+                $defaultCategory = $parentId;
+            } else {
+                $defaultCategory = 0;
+            }
+        } else {
+            $defaultCategory = 0;
+        }
+
+        return $defaultCategory;
+
+    }
 
     /** Get Config Echo
      *
@@ -68,7 +92,7 @@ class AmazonEchoConfigurator extends IPSModule
         $config_list = [];
 
         foreach ($devices as $key => $device) {
-            $instanceID  = 0;
+            $instanceID = 0;
 
             $accountName = $device['accountName'];
             $this->SendDebug('Echo Device', 'account name: ' . $accountName, 0);
@@ -94,11 +118,12 @@ class AmazonEchoConfigurator extends IPSModule
 
             $MyParent = IPS_GetInstance($this->InstanceID)['ConnectionID'];
             foreach ($EchoRemoteInstanceIDList as $EchoRemoteInstanceID) {
-                if ((IPS_GetInstance($EchoRemoteInstanceID)['ConnectionID'] === $MyParent)
-                    && ($serialNumber === IPS_GetProperty($EchoRemoteInstanceID, 'Devicenumber'))) {
+                if (($serialNumber === IPS_GetProperty($EchoRemoteInstanceID, 'Devicenumber'))
+                    && (IPS_GetInstance($EchoRemoteInstanceID)['ConnectionID'] === $MyParent)) {
                     $instanceID = $EchoRemoteInstanceID;
                 }
             }
+
             $config_list[] = [
                 'instanceID'      => $instanceID,
                 'name'            => $accountName,
@@ -106,34 +131,78 @@ class AmazonEchoConfigurator extends IPSModule
                 'devicefamily'    => $this->Translate($deviceFamily),
                 'devicenumber'    => $serialNumber,
                 'deviceaccountid' => $deviceAccountId,
-                'location'        => [
-                    $this->Translate('Devices'),
-                    'Amazon Echo',
-                    'Amazon Remote'],
                 'create'          => [
                     'moduleID'      => '{496AB8B5-396A-40E4-AF41-32F4C48AC90D}',
                     'configuration' => [
                         'Devicetype'   => $deviceType,
-                        'Devicenumber' => $serialNumber]]];
+                        'Devicenumber' => $serialNumber],
+                    'location'      => $this->getPathOfCategory($this->ReadPropertyInteger('targetCategoryID'))]];
+
         }
 
         return $config_list;
     }
+
+    private function getPathOfCategory(int $categoryId): array
+    {
+        if ($categoryId === 0) {
+            return [];
+        }
+
+        $path[]   = IPS_GetName($categoryId);
+        $parentId = IPS_GetObject($categoryId)['ParentID'];
+
+        while ($parentId > 0) {
+            $path[]   = IPS_GetName($parentId);
+            $parentId = IPS_GetObject($parentId)['ParentID'];
+        }
+
+        return array_reverse($path);
+    }
+
+    /** @noinspection ReturnTypeCanBeDeclaredInspection */
+    protected function RegisterReference($ID)
+    {
+        if (method_exists('IPSModule', 'RegisterReference ')) {
+            parent::RegisterReference($ID);
+        }
+    }
+
     /**
      * Interne Funktion des SDK.
      *
      * @noinspection PhpMissingParentCallCommonInspection
      */
 
-    public function GetConfigurationForm()
+    public function GetConfigurationForm(): string
     {
-        $Form   = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
-        $Form['actions'][0]['values'] = $this->Get_ListConfiguration();
 
-        $this->SendDebug('FORM', json_encode($Form), 0);
+        $Form['elements'][] = [
+            'type'    => 'SelectCategory',
+            'name'    => 'targetCategoryID',
+            'caption' => 'Target Category'];
+        $Form['actions'][]  = [
+            'type'     => 'Configurator',
+            'name'     => 'AmazonEchoConfiguration',
+            'rowCount' => 20,
+            'add'      => false,
+            'delete'   => true,
+            'sort'     => [
+                'column'    => 'name',
+                'direction' => 'ascending'],
+            'columns'  => [
+                ['caption' => 'device name', 'name' => 'name', 'width' => 'auto'],
+                ['caption' => 'device type', 'name' => 'devicetype', 'width' => '250px'],
+                ['caption' => 'device family', 'name' => 'devicefamily', 'width' => '350px'],
+                ['caption' => 'device number', 'name' => 'devicenumber', 'width' => '250px'],
+                ['caption' => 'device account id', 'name' => 'deviceaccountid', 'width' => '250px']],
+            'values'   => $this->Get_ListConfiguration()];
+
+        $jsonForm = json_encode($Form);
+        $this->SendDebug('FORM', $jsonForm, 0);
         $this->SendDebug('FORM', json_last_error_msg(), 0);
 
-        return json_encode($Form);
+        return $jsonForm;
     }
 
 
