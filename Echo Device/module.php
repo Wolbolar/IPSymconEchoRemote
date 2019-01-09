@@ -1669,9 +1669,11 @@ class EchoRemote extends IPSModule
     }
 
 
-    public function GetAmazonPrimeStationSectionList(array $filterSections, array $filterCategories, array $stationItems)
+    public function GetAmazonPrimeStationSectionList(string $filterSections, string $filterCategories, string $stationItems)
     {
-
+		$filterSections = json_decode($filterSections, true);
+    	$filterCategories = json_decode($filterCategories, true);
+    	$stationItems = json_decode($stationItems, true);
         $getfields = [
             'deviceSerialNumber'   => $this->GetDevicenumber(),
             'deviceType'           => $this->GetDevicetype(),
@@ -1687,6 +1689,11 @@ class EchoRemote extends IPSModule
 
         return false;
     }
+
+	public function SendDelete(string $url)
+	{
+		return $this->SendData('SendDelete', null, null, $url, null);
+	}
 
     public function CustomCommand(string $url, string $postfields = null, bool $optpost = null)
     {

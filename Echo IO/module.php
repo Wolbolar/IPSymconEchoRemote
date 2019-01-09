@@ -818,6 +818,13 @@ class AmazonEchoIO extends IPSModule
         return $this->SendEcho($url, $header, json_encode($postfields), $optpost);
     }
 
+	private function SendDelete(string $url)
+	{
+		$header = $this->GetHeader();
+
+		return $this->SendEcho($url, $header, "DELETE", false);
+	}
+
     /** get JSON device list
      *
      * @param string|null $deviceType
@@ -974,8 +981,16 @@ class AmazonEchoIO extends IPSModule
         }
 
         if ($postfields !== null) {
-            $this->SendDebug(__FUNCTION__, 'Postfields: ' . $postfields, 0);
-            $options [CURLOPT_POSTFIELDS] = $postfields;
+        	if($postfields == "DELETE")
+			{
+				$this->SendDebug(__FUNCTION__, 'Type: DELETE', 0);
+				$options [CURLOPT_CUSTOMREQUEST] = "DELETE";
+			}
+        	else
+			{
+				$this->SendDebug(__FUNCTION__, 'Postfields: ' . $postfields, 0);
+				$options [CURLOPT_POSTFIELDS] = $postfields;
+			}
         }
 
         if ($optpost !== null) {
@@ -1136,6 +1151,11 @@ class AmazonEchoIO extends IPSModule
 
                 $result = $this->CustomCommand($url, $postfields, $optpost);
                 break;
+
+			case 'SendDelete':
+				$url = $buffer['url'];
+				$result = $this->SendDelete($url);
+				break;
 
             case 'GetDevices':
                 $result = $this->GetDevices();
