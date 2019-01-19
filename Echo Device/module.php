@@ -147,22 +147,11 @@ class EchoRemote extends IPSModule
 
         $this->RegisterVariables();
 
-        //todo: nach der Testphase wieder entfernen
-        $this->LogMessage('ApplyChanges durchgeführt', KL_MESSAGE);
     }
 
     private function HasActiveParent(): bool
     {
-        if (($this->ParentID > 0) && (IPS_GetInstance($this->ParentID)['InstanceStatus'] === IS_ACTIVE)) {
-            return true;
-        }
-
-        //todo: nach der Testphase wieder entfernen
-        $this->LogMessage(
-            'Parent (ConnectionID: ' . @IPS_GetInstance($this->InstanceID)['ConnectionID'] . ') ist nicht aktiv! (InstanceStatus = '
-            . IPS_GetInstance($this->ParentID)['InstanceStatus'] . ')', KL_MESSAGE
-        );
-        return false;
+        return ($this->ParentID > 0) && (IPS_GetInstance($this->ParentID)['InstanceStatus'] === IS_ACTIVE);
     }
 
     /**
@@ -481,21 +470,27 @@ class EchoRemote extends IPSModule
         if ($Ident === 'EchoActions') {
             switch ($Value) {
                 case 0: // Weather
+                    $this->SetValue('EchoActions', $Value);
                     $this->Weather();
                     break;
                 case 1: // Traffic
+                    $this->SetValue('EchoActions', $Value);
                     $this->Traffic();
                     break;
                 case 2: // Flashbriefing
+                    $this->SetValue('EchoActions', $Value);
                     $this->FlashBriefing();
                     break;
                 case 3: // Good Morning
+                    $this->SetValue('EchoActions', $Value);
                     $this->GoodMorning();
                     break;
                 case 4: // Sing a song
+                    $this->SetValue('EchoActions', $Value);
                     $this->SingASong();
                     break;
                 case 5: // tell a story
+                    $this->SetValue('EchoActions', $Value);
                     $this->TellStory();
                     break;
             }
@@ -1105,14 +1100,14 @@ class EchoRemote extends IPSModule
             'deviceSerialNumber' => $this->GetDevicenumber(),
             'deviceType'         => $this->GetDevicetype()];
 
-        $result = (array) $this->SendData('MediaState', $getfields);
+        $result = $this->SendData('MediaState', $getfields);
 
 
         //$url = 'https://{AlexaURL}/api/media/state?deviceSerialNumber=' . $this->GetDevicenumber() . '&deviceType=' . $this->GetDevicetype()
         //       . '&queueId=0e7d86f5-d5a4-4a3a-933e-5910c15d9d4f&shuffling=false&firstIndex=1&lastIndex=1&screenWidth=1920&_=1495289082979';
 
 
-        if ($result['http_code'] === 200) {
+        if (isset($result['http_code']) && ($result['http_code'] === 200)) {
             return json_decode($result['body'], true);
         }
 
@@ -1123,15 +1118,19 @@ class EchoRemote extends IPSModule
      *
      * @return mixed
      */
-    public function GetNotifications()
+    public function GetNotifications(): ?array
     {
-        $result = (array) $this->SendData('Notifications');
+        $result = $this->SendData('Notifications');
 
-        if ($result['http_code'] === 200) {
+        if (!isset($result['http_code'])){
+            trigger_error(__CLASS__.'::'.__FUNCTION__.': '.json_encode(print_r($result, true))); //todo
+            IPS_LogMessage(__CLASS__, json_encode(print_r($result, true)));
+        }
+        if (isset($result['http_code']) && ($result['http_code'] === 200)) {
             return json_decode($result['body'], true)['notifications'];
         }
 
-        return false;
+        return null;
     }
 
     /** GetToDos
@@ -1153,9 +1152,9 @@ class EchoRemote extends IPSModule
             $getfields['completed'] = $completed ? 'true' : 'false';
         }
 
-        $result = (array) $this->SendData('ToDos', $getfields);
+        $result = $this->SendData('ToDos', $getfields);
 
-        if ($result['http_code'] === 200) {
+        if (isset($result['http_code']) && ($result['http_code'] === 200)) {
             return json_decode($result['body'], true)['values'];
         }
 
@@ -1343,14 +1342,11 @@ class EchoRemote extends IPSModule
         $devicenumber = $this->ReadPropertyString('Devicenumber');
         $devices = $this->ListBluetooth();
         if ($devices) {
-            $pairedDeviceList = '';
             foreach ($devices as $key => $device) {
                 if ($devicenumber === $device['deviceSerialNumber']) {
-                    $pairedDeviceList = $device['pairedDeviceList'];
+                    return $device['pairedDeviceList'];
                 }
             }
-            return $pairedDeviceList;
-
         }
 
         return null;
@@ -1457,7 +1453,7 @@ class EchoRemote extends IPSModule
         //update Alarm
         if ($this->ReadPropertyBoolean('AlarmInfo')) {
             $notifications = $this->GetNotifications();
-            if ($notifications === false) {
+            if ($notifications === null) {
                 return false;
             }
 
