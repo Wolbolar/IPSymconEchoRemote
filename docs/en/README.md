@@ -58,7 +58,7 @@ In the _modules_ instance, press the button __*+*__ in the lower right corner.
 Add the following URL in the window that opens:
 
 ```	
-https://github.com/Wolbolar/IPSymconEchoRemote  
+https://github.com/Wolbolar/IPSymconIPSymconEchoRemote  
 ```
     
 and confirm with _OK_.
@@ -140,31 +140,31 @@ In the block Request Headers you can find it. The cookie is quite long and needs
  
 **Play**
 ```php
-EchoRemote_Play(int $InstanceID)
+ECHOREMOTE_Play(int $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjectID of the Echo Remote Device
 
 **Pause**
 ```php
-EchoRemote_Pause(int $InstanceID)
+ECHOREMOTE_Pause(int $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjectID of the Echo Remote Device
 
 **Next**
 ```php
-EchoRemote_Next(int $InstanceID)
+ECHOREMOTE_Next(int $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjectID of the Echo Remote Device
 
 **Previous**
 ```php
-EchoRemote_Previous(int $InstanceID)
+ECHOREMOTE_Previous(int $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjectID of the Echo Remote Device
 
 **SetVolume**
 ```php
-EchoRemote_SetVolume(int $InstanceID, int $volume)
+ECHOREMOTE_SetVolume(int $InstanceID, int $volume)
 ``` 
 Parameter _$InstanceID_ ObjectID of the Echo Remote Device
 
@@ -172,7 +172,7 @@ Parameter _$volume_ volume of the Amazon Echo Dot, min 0 max 100
 
 **Mute / Unmute**
 ```php
-EchoRemote_Mute(int $InstanceID, bool $mute)
+ECHOREMOTE_Mute(int $InstanceID, bool $mute)
 ``` 
 Parameter _$InstanceID_ ObjectID of the Echo Remote Device
 
@@ -181,31 +181,31 @@ Parameter _$mute_ false set the volume from the Amazon Echo to the last known va
 
 **Rewind30s**
 ```php
-EchoRemote_Rewind30s(int $InstanceID)
+ECHOREMOTE_Rewind30s(int $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjectID of the Echo Remote Device
 
 **Forward30s**
 ```php
-EchoRemote_Forward30s(int $InstanceID)
+ECHOREMOTE_Forward30s(int $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjectID of the Echo Remote Device
 
 **Shuffle**
 ```php
-EchoRemote_Shuffle(int $InstanceID, bool Shuffle)
+ECHOREMOTE_Shuffle(int $InstanceID, bool Shuffle)
 ``` 
 Parameter _$InstanceID_ ObjectID of the Echo Remote Device
 
 **Repeat**
 ```php
-EchoRemote_Repeat(int $InstanceID)
+ECHOREMOTE_Repeat(int $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjectID of the Echo Remote Device 
 
 **TuneIn**
 ```php
-EchoRemote_TuneIn(int $InstanceID, string $station)
+ECHOREMOTE_TuneIn(int $InstanceID, string $station)
 ``` 
 Parameter _$InstanceID_ ObjectID of the Echo Remote Device
 
@@ -213,7 +213,7 @@ Parameter _$station_ Station ID is the guideId which has to be read once per tra
 
 **TuneInPreset**
 ```php
-EchoRemote_TuneInPreset(int $InstanceID, int $preset)
+ECHOREMOTE_TuneInPreset(int $InstanceID, int $preset)
 ``` 
 Parameter _$InstanceID_ ObjectID of the Echo Remote Device
 
@@ -221,7 +221,7 @@ Parameter _$preset_ Position ID of the radio station in the module
 
 **AmazonMusic**
 ```php
-EchoRemote_AmazonMusic(integer $InstanceID, string $seedid, string $stationname)
+ECHOREMOTE_AmazonMusic(integer $InstanceID, string $seedid, string $stationname)
 ``` 
 Parameter _$InstanceID_ ObjectID of the Echo Remote Device 
 
@@ -231,7 +231,7 @@ Parameter _$stationname_ Station Name, _station_name_ that must be read out once
 
 **Text to Speech**
 ```php
-EchoRemote_TextToSpeech(integer $InstanceID, string $text_to_speech)
+ECHOREMOTE_TextToSpeech(integer $InstanceID, string $text_to_speech)
 ``` 
 Parameter _$InstanceID_ ObjectID of the Echo Remote Device 
 
@@ -239,7 +239,7 @@ Parameter _$text_to_speech_ Text to be read by the device
 
 **Weather Forcast**
 ```php
-EchoRemote_Weather(integer $InstanceID)
+ECHOREMOTE_Weather(integer $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjectID of the Echo Remote Device 
 
@@ -247,7 +247,7 @@ Reads the weather forcast on the device
 
 **Traffic News**
 ```php
-EchoRemote_Traffic(integer $InstanceID)
+ECHOREMOTE_Traffic(integer $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjectID of the Echo Remote Device 
 
@@ -255,7 +255,7 @@ Read traffic announcements on the device
 
 **FlashBriefing**
 ```php
-EchoRemote_FlashBriefing(integer $InstanceID)
+ECHOREMOTE_FlashBriefing(integer $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjectID of the Echo Remote Device 
 
@@ -263,7 +263,7 @@ Read a flash briefing on the device
 
 **Good Morning**
 ```php
-EchoRemote_Goodmorning(integer $InstanceID)
+ECHOREMOTE_Goodmorning(integer $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjectID of the Echo Remote Device 
 
@@ -271,7 +271,7 @@ Plays the _"Good morning message"_ on the device
 
 **Singt a song**
 ```php
-EchoRemote_SingASong(integer $InstanceID)
+ECHOREMOTE_SingASong(integer $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjectID of the Echo Remote Device 
 
@@ -279,7 +279,7 @@ Plays a song on the device
 
 **Tell Story**
 ```php
-EchoRemote_TellStory(integer $InstanceID)
+ECHOREMOTE_TellStory(integer $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjectID of the Echo Remote Device 
 

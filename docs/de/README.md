@@ -140,31 +140,31 @@ Im Block Request Headers findet man ihn. Der Cookie ist ziemlich lang und muss k
  
 **Play**
 ```php
-EchoRemote_Play(int $InstanceID)
+ECHOREMOTE_Play(int $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices
 
 **Pause**
 ```php
-EchoRemote_Pause(int $InstanceID)
+ECHOREMOTE_Pause(int $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices
 
 **Next**
 ```php
-EchoRemote_Next(int $InstanceID)
+ECHOREMOTE_Next(int $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices
 
 **Previous**
 ```php
-EchoRemote_Previous(int $InstanceID)
+ECHOREMOTE_Previous(int $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices
 
 **SetVolume**
 ```php
-EchoRemote_SetVolume(int $InstanceID, int $volume)
+ECHOREMOTE_SetVolume(int $InstanceID, int $volume)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices
 
@@ -172,7 +172,7 @@ Parameter _$volume_ Volume des Amazon Echo Dot, min 0 max 100
 
 **Mute / Unmute**
 ```php
-EchoRemote_Mute(int $InstanceID, bool $mute)
+ECHOREMOTE_Mute(int $InstanceID, bool $mute)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices
 
@@ -181,31 +181,31 @@ Parameter _$mute_ false Setzt Volume des Amazon Echo Dot auf den letzten bekannt
 
 **Rewind30s**
 ```php
-EchoRemote_Rewind30s(int $InstanceID)
+ECHOREMOTE_Rewind30s(int $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices
 
 **Forward30s**
 ```php
-EchoRemote_Forward30s(int $InstanceID)
+ECHOREMOTE_Forward30s(int $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices
 
 **Shuffle**
 ```php
-EchoRemote_Shuffle(int $InstanceID, bool Shuffle)
+ECHOREMOTE_Shuffle(int $InstanceID, bool Shuffle)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices
 
 **Repeat**
 ```php
-EchoRemote_Repeat(int $InstanceID)
+ECHOREMOTE_Repeat(int $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices  
 
 **GetQueueInformation**
 ```php
-EchoRemote_GetPlayerInformation(int $InstanceID)
+ECHOREMOTE_GetPlayerInformation(int $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices 
  
@@ -213,7 +213,7 @@ Liefert eine Liste mit Informationen zum aktuell abgespielten Titel bzw. zum akt
 
 **GetPlayerInformation**
 ```php
-EchoRemote_GetQueueInformation(int $InstanceID)
+ECHOREMOTE_GetQueueInformation(int $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices 
  
@@ -221,7 +221,7 @@ Liefert eine Liste mit den Media Einträgen der aktuellen Abspielliste.
 
 **GetNotifications**
 ```php
-EchoRemote_GetNotifications(int $InstanceID)
+ECHOREMOTE_GetNotifications(int $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices 
  
@@ -229,7 +229,7 @@ Liefert eine Liste mit den aktuellen Weckern.
 
 **GetToDos**
 ```php
-EchoRemote_GetToDos(int $InstanceID, string $type, bool $completed)
+ECHOREMOTE_GetToDos(int $InstanceID, string $type, bool $completed)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices
 
@@ -241,7 +241,7 @@ Liefert eine Liste mit den Einträgen der aktuellen Einkaufsliste oder To-Do-Lis
 
 **JumpToMediaId**
 ```php
-EchoRemote_JumpToMediaId(int $InstanceID, string MediaID)
+ECHOREMOTE_JumpToMediaId(int $InstanceID, string MediaID)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices 
  
@@ -251,7 +251,7 @@ Springt zu der angegebenen ID der aktuellen Abspielliste.
 
 **TuneIn**
 ```php
-EchoRemote_TuneIn(int $InstanceID, string $station)
+ECHOREMOTE_TuneIn(int $InstanceID, string $station)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices
 
@@ -259,7 +259,7 @@ Parameter _$station_ Station ID ist die guideId die entsprechend der Anleitung p
 
 **TuneInPreset**
 ```php
-EchoRemote_TuneInPreset(int $InstanceID, int $preset)
+ECHOREMOTE_TuneInPreset(int $InstanceID, int $preset)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices
 
@@ -267,7 +267,7 @@ Parameter _$preset_ Positions ID der Radiostation im Modul
 
 **PlayAmazonMusic**
 ```php
-EchoRemote_PlayAmazonMusic(integer $InstanceID, string $seedid, string $stationname)
+ECHOREMOTE_PlayAmazonMusic(integer $InstanceID, string $seedid, string $stationname)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices 
 
@@ -277,7 +277,7 @@ Parameter _$stationname_ Station Name der _stationName_ der pro Sender ermittelt
 
 **PlayAmazonPrimePlaylist**
 ```php
-EchoRemote_PlayAmazonPrimePlaylist(integer $InstanceID, string $asin)
+ECHOREMOTE_PlayAmazonPrimePlaylist(integer $InstanceID, string $asin)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices 
 
@@ -285,7 +285,7 @@ Parameter _$asin_ Asin ist die _asin_ die entsprechend der Anleitung pro Sender 
 
 **Text to Speech**
 ```php
-EchoRemote_TextToSpeech(integer $InstanceID, string $text_to_speech)
+ECHOREMOTE_TextToSpeech(integer $InstanceID, string $text_to_speech)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices 
 
@@ -293,7 +293,7 @@ Parameter _$text_to_speech_ Text der von dem Gerät vorgelesen werden soll
 
 **Wettervorhersage**
 ```php
-EchoRemote_Weather(integer $InstanceID)
+ECHOREMOTE_Weather(integer $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices 
 
@@ -301,7 +301,7 @@ Liest den Wetterbericht auf dem Gerät vor
 
 **Verkehrsmeldungen**
 ```php
-EchoRemote_Traffic(integer $InstanceID)
+ECHOREMOTE_Traffic(integer $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices 
 
@@ -309,7 +309,7 @@ Liest Verkehrsmeldungen auf dem Gerät vor
 
 **FlashBriefing**
 ```php
-EchoRemote_FlashBriefing(integer $InstanceID)
+ECHOREMOTE_FlashBriefing(integer $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices 
 
@@ -317,7 +317,7 @@ Liest ein Flash Briefing auf dem Gerät vor
 
 **Guten Morgen**
 ```php
-EchoRemote_Goodmorning(integer $InstanceID)
+ECHOREMOTE_Goodmorning(integer $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices 
 
@@ -325,7 +325,7 @@ Spielt die _"Guten Morgen Mitteilung"_ auf dem Gerät ab
 
 **Singt ein Lied**
 ```php
-EchoRemote_SingASong(integer $InstanceID)
+ECHOREMOTE_SingASong(integer $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices 
 
@@ -333,7 +333,7 @@ Spielt ein Lied auf dem Gerät ab
 
 **Erzählt Geschichte**
 ```php
-EchoRemote_TellStory(integer $InstanceID)
+ECHOREMOTE_TellStory(integer $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices 
 
@@ -341,7 +341,7 @@ Spielt ein kurze Geschichte auf dem Gerät ab
      
 **Ermitteln die Bluetooth Verbindungen**
 ```php
-array EchoRemote_ListPairedBluetoothDevices(integer $InstanceID)
+array ECHOREMOTE_ListPairedBluetoothDevices(integer $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices 
 
@@ -349,7 +349,7 @@ Es werden die für das Gerät angelegten Bluetooth Verbindungen ermittelt. Hinwe
 
 Beispiel:
 ```php
-$devices = EchoRemote_ListPairedBluetoothDevices(47111);
+$devices = ECHOREMOTE_ListPairedBluetoothDevices(47111);
 
 var_dump($devices);
 ```
@@ -380,7 +380,7 @@ array(1) {
 
 **Verbinden eines Bluetooth Gerätes**
 ```php
-EchoRemote_ConnectBluetooth(integer $InstanceID, string $bluetooth_address)
+ECHOREMOTE_ConnectBluetooth(integer $InstanceID, string $bluetooth_address)
 ``` 
 Parameter _$InstanceID_: ObjektID des Echo Remote Devices.
  
@@ -390,12 +390,12 @@ Es wird der Verbindungsaufbau zu dem angegeben Gerät initiiert.
 
 Beispiel:
 ```php
-EchoRemote_ConnectBluetooth(47111, '00:16:94:25:7B:93');
+ECHOREMOTE_ConnectBluetooth(47111, '00:16:94:25:7B:93');
 ```
 
 **Trennen einer Bluetooth Verbindung**
 ```php
-EchoRemote_DisconnectBluetooth(integer $InstanceID)
+ECHOREMOTE_DisconnectBluetooth(integer $InstanceID)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices 
 
@@ -403,7 +403,7 @@ Es wird eine bestehende Bluetooth Verbindung getrennt.
 
 **Starten einer Routine**
 ```php
-boolean EchoRemote_StartAlexaRoutine(integer $InstanceID, string $utterance)
+boolean ECHOREMOTE_StartAlexaRoutine(integer $InstanceID, string $utterance)
 ``` 
 Parameter _$InstanceID_: ObjektID des Echo Remote Devices.
  
@@ -414,25 +414,25 @@ Es wird die zum Sprachausdruck passende Routine gestartet. Im Fehlerfall wird fa
 
 Beispiel:
 ```php
-EchoRemote_StartAlexaRoutine(47111, 'Starte meinen Tag');
+ECHOREMOTE_StartAlexaRoutine(47111, 'Starte meinen Tag');
 ```
 
 ### AmazonEchoIO:
 **Anmelden**
 ```php
-boolean EchoIO_LogIn(integer $InstanceID)
+boolean ECHOIO_LogIn(integer $InstanceID)
 ``` 
 Parameter _$InstanceID_: ObjektID der EchoIO Instanz.
 
 **Abmelden**
 ```php
-boolean EchoIO_LogOff(integer $InstanceID)
+boolean ECHOIO_LogOff(integer $InstanceID)
 ``` 
 Parameter _$InstanceID_: ObjektID der EchoIO Instanz.
 
 **Anmeldestatus überprüfen**
 ```php
-boolean EchoIO_CheckLoginStatus(integer $InstanceID)
+boolean ECHOIO_CheckLoginStatus(integer $InstanceID)
 ``` 
 Parameter _$InstanceID_: ObjektID der EchoIO Instanz.
 
