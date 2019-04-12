@@ -51,7 +51,10 @@ Modul für IP-Symcon ab Version 5.0. Ermöglicht die Fernsteuerung mit einem Ama
 
 ### a. Laden des Moduls
 
-Die IP-Symcon (min [Ver. 5.0](https://www.symcon.de/forum/threads/38222-IP-Symcon-5-0-verf%C3%BCgbar "IP-Symcon 5")) Webkonsole öffnen. Im Objektbaum unter Kerninstanzen die Instanz __*Modules*__ durch einen doppelten Mausklick öffnen.
+Das Modul 'Echo Remote' wird ab Symcon Version 5.1 über den Module Store installiert. Es findet sich unter der Gategorie 'Geräte'
+
+##### Symcon Version 5.0 
+Die Webkonsole öffnen, im Objektbaum unter Kerninstanzen die Instanz __*Modules*__ durch einen doppelten Mausklick öffnen.
 
 ![Modules](img/modules.png?raw=true "Modules")
 
@@ -87,21 +90,16 @@ Es öffnet sich das Konfigurationsformular.
 Hier sind anzugeben:
  - Amazon Benutzername
  - Amazon Passwort
+ - Amazon 2FA Code (falls in Amazon die Zwei-Schritt-Verifizierung eingestellt ist)
  - Sprache
- 
+
+Vielen Dank an dieser Stelle an ok1982, der die Unterstützung der Zwei-Schritt-Verifizierung ermöglicht hat. Eine Beschreibung, wie die Verfizierung einzurichten ist findet ihr hier:
+
+<a href="https://www.symcon.de/forum/attachment.php?attachmentid=48519&d=1554833431">Anleitung 2FA.pdf</a>
+
 Alternativ zu Benutzername und Passwort kann auch ein gültiger Cookie verwendet werden.
  
 
-Anschließend kann im Konfigurator die Geräte eingelesen werden. Es erscheint eine Liste der verfügbaren Geräte mit _Gerätenamen_, _Gerätetyp_, _Gerätefamilie_, _Gerätenummer_ und _InstanzID_.
-Das Gerät ist grün, insofern es noch nicht angelegt worden ist.
-  
-  ![List](img/echo_device_list.png?raw=true "Config IO")
-  
-Dann das gewünschte Gerät markieren und auf 
- 
- ![Create](img/create.png?raw=true "Config IO")
- 
-_Erstellen_ drücken, die Instanz wird dann erzeugt.
  
  
 ##### Ermittlung des Cookie
@@ -127,6 +125,19 @@ In dem Fenster können wir nun Cookie Eintrag finden, den wir für das Modul ben
 Im Block Request Headers findet man ihn. Der Cookie ist ziemlich lang und muss komplett kopiert werden.
 
  ![Cookie](img/Cookie.jpg?raw=true "Cookie")
+
+#### Benutzung des Konfigurators
+Nach der Einrichtung der IO-Instanz können im Konfigurator die Geräte eingelesen werden. Es erscheint eine Liste der verfügbaren Geräte mit _Gerätenamen_, _Gerätetyp_, _Gerätefamilie_, _Gerätenummer_ und _InstanzID_.
+Das Gerät ist grün, insofern es noch nicht angelegt worden ist.
+  
+  ![List](img/echo_device_list.png?raw=true "Config IO")
+  
+Dann das gewünschte Gerät markieren und auf 
+ 
+ ![Create](img/create.png?raw=true "Config IO")
+ 
+_Erstellen_ drücken, die Instanz wird dann erzeugt.
+
 
 
 ### Webfront Ansicht

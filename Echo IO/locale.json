@@ -21,7 +21,9 @@
       "password must not be empty.": "Passwort darf nicht leer sein.",
       "cookie must not be empty.": "Cookie darf nicht leer sein.",
       "cookie without csrf.": "Cookie ohne CSRF.",
-      "not authenticated.": "Die Anmeldung ist fehlgeschlagen."
+      "not authenticated.": "Die Anmeldung ist fehlgeschlagen.",
+      "Get OTP": "Generiere OTP",
+      "Amazon 2FA": "Amazon 2FA (QR-Code Daten / leer = deaktiviert)"
     }
   }
 }

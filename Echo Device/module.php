@@ -149,7 +149,7 @@ class EchoRemote extends IPSModule
 
     }
 
-    private function HasActiveParent(): bool
+    protected function HasActiveParent(): bool
     {
         return ($this->ParentID > 0) && (IPS_GetInstance($this->ParentID)['InstanceStatus'] === IS_ACTIVE);
     }
@@ -386,7 +386,7 @@ class EchoRemote extends IPSModule
      * @return mixed
      */
     private function SendData(string $method, array $getfields = null, array $postfields = null, $url = null, $optpost = null, $automation = null,
-                              $additionalData = null)
+                              $additionalData = null): ?array
     {
         $this->SendDebug(
             __FUNCTION__,
@@ -421,10 +421,19 @@ class EchoRemote extends IPSModule
         if ($ResultJSON) {
             $this->SendDebug(__FUNCTION__, 'Result: ' . json_encode($ResultJSON), 0);
 
-            return json_decode($ResultJSON, true); //returns an array of http_code, body and header
+            $ret = json_decode($ResultJSON, true);
+            if ($ret) {
+                return $ret; //returns an array of http_code, body and header
+            }
         }
 
-        return false;
+        IPS_LogMessage(
+            __CLASS__ . '::' . __FUNCTION__, sprintf(
+            '\'%s\' (#%s): SendDataToParent returned with %s. $Data = %s', IPS_GetName($this->InstanceID), $this->InstanceID,
+            json_encode($ResultJSON), json_encode($Data))
+        );
+
+        return null;
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
@@ -1122,10 +1131,6 @@ class EchoRemote extends IPSModule
     {
         $result = $this->SendData('Notifications');
 
-        if (!isset($result['http_code'])){
-            trigger_error(__CLASS__.'::'.__FUNCTION__.': '.json_encode(print_r($result, true))); //todo
-            IPS_LogMessage(__CLASS__, json_encode(print_r($result, true)));
-        }
         if (isset($result['http_code']) && ($result['http_code'] === 200)) {
             return json_decode($result['body'], true)['notifications'];
         }
@@ -1275,7 +1280,7 @@ class EchoRemote extends IPSModule
     {
         foreach ($automations as $automation) {
             foreach ($automation['triggers'] as $trigger) {
-                if ($trigger['payload']['utterance'] === $utterance) {
+                if (isset($trigger['payload']['utterance']) && $trigger['payload']['utterance'] === $utterance) {
                     return $automation;
                 }
             }
@@ -1588,7 +1593,8 @@ class EchoRemote extends IPSModule
         return $html;
     }
 
-    public function PlayAlbum(string $album, string $artist, bool $shuffle = false): bool
+    public function PlayAlbum(string $album, string $artist, /** @noinspection ParameterDefaultValueIsNotNullInspection */
+                              bool $shuffle = false): bool
     {
         return $this->PlayCloudplayer($shuffle, ['albumArtistName' => $artist, 'albumName' => $album]);
     }
@@ -1598,7 +1604,8 @@ class EchoRemote extends IPSModule
         return $this->PlayCloudplayer(false, ['trackId' => $track_id, 'playQueuePrime' => true]);
     }
 
-    public function PlayPlaylist(string $playlist_id, bool $shuffle = false): bool
+    public function PlayPlaylist(string $playlist_id, /** @noinspection ParameterDefaultValueIsNotNullInspection */
+                                 bool $shuffle = false): bool
     {
         return $this->PlayCloudplayer($shuffle, ['playlistId' => $playlist_id, 'playQueuePrime' => true]);
     }
@@ -1688,7 +1695,7 @@ class EchoRemote extends IPSModule
 
 	public function SendDelete(string $url)
 	{
-		return $this->SendData('SendDelete', null, null, $url, null);
+		return $this->SendData('SendDelete', null, null, $url);
 	}
 
     public function CustomCommand(string $url, string $postfields = null, bool $optpost = null)
@@ -1726,17 +1733,14 @@ class EchoRemote extends IPSModule
     //**************************************************************************************************************************
 
     // die folgenden Funktionen sind noch im Test:
-    private function SearchMusicTuneIn(string $query)
-    {
-        //todo: anpassen und public machen
-        $url = 'https://layla.amazon.de/api/tunein/search?query=' . $query . '&mediaOwnerCustomerId=' . $this->GetCustomerID();
-        return $this->SendData('CustomCommand', null, null, $url);
-    }
+    /*
+        private function SearchMusicTuneIn(string $query)
+        {
+            //todo: anpassen und public machen
+            $url = 'https://layla.amazon.de/api/tunein/search?query=' . $query . '&mediaOwnerCustomerId=' . $this->GetCustomerID();
+            return $this->SendData('CustomCommand', null, null, $url);
+        }
 
-    /** Gets own songs in the library
-     *
-     * @return string
-     */
     private function GetTracks(): string
     {
         //todo: anpassen und public machen
@@ -1775,6 +1779,7 @@ class EchoRemote extends IPSModule
             . '&deviceType=' . $this->GetDevicetype() . '&mediaOwnerCustomerId=' . $this->GetCustomerID();
         return $this->SendData('CustomCommand', null, null, $url);
     }
+*/
     //</editor-fold>
 
     //<editor-fold desc="not supported functions">

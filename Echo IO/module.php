@@ -1,4 +1,4 @@
-<?php /** @noinspection ALL */
+<?php
 declare(strict_types=1);
 
 // Modul für Amazon Echo Remote
@@ -24,6 +24,7 @@ class AmazonEchoIO extends IPSModule
         $this->RegisterPropertyBoolean('active', false);
         $this->RegisterPropertyString('username', '');
         $this->RegisterPropertyString('password', '');
+        $this->RegisterPropertyString('amazon2fa', '');
         $this->RegisterPropertyInteger('language', 0);
         $this->RegisterPropertyBoolean('UseCustomCSRFandCookie', false);
         $this->RegisterPropertyString('alexa_cookie', '');
@@ -59,10 +60,10 @@ class AmazonEchoIO extends IPSModule
         $bufferedProperties = $this->GetBuffer($this->InstanceID . '-SavedProperties');
         if ($bufferedProperties === '' || $bufferedProperties !== $currentProperties) {
             $this->SetBuffer($this->InstanceID . '-SavedProperties', $currentProperties);
-            $this->SetBuffer($this->InstanceID . '-failedLogins', 0);
+            $this->SetBuffer($this->InstanceID . '-failedLogins', json_encode(0));
         }
 
-        if (json_decode($this->GetBuffer($this->InstanceID . '-failedLogins')) >= 3) {
+        if (json_decode($this->GetBuffer($this->InstanceID . '-failedLogins'), false) >= 3) {
             $this->SendDebug(__FUNCTION__, 'count of failed logins exceeded', 0);
             $this->SetStatus(self::STATUS_INST_NOT_AUTHENTICATED);
 
@@ -82,7 +83,10 @@ class AmazonEchoIO extends IPSModule
      * wurden. Die Funktionen werden, mit dem selbst eingerichteten Prefix, in PHP und JSON-RPC wiefolgt zur Verfügung
      * gestellt:
      *
-     *
+     * @param $username
+     * @param $password
+     * @param $cookie
+     * @param $useCookie
      */
 
     private function ValidateConfiguration($username, $password, $cookie, $useCookie): void
@@ -94,26 +98,26 @@ class AmazonEchoIO extends IPSModule
                 $this->SetStatus(self::STATUS_INST_COOKIE_IS_EMPTY);
             } elseif ($this->getCsrfFromCookie() === false) {
                 $this->SetStatus(self::STATUS_INST_COOKIE_WITHOUT_CSRF);
-            } /** @noinspection NotOptimalIfConditionsInspection */ elseif (!$this->LogIn()) {
-                $this->SetStatus(self::STATUS_INST_NOT_AUTHENTICATED);
-            } else {
+            } /** @noinspection NotOptimalIfConditionsInspection */ elseif ($this->LogIn()) {
                 $this->SetStatus(IS_ACTIVE);
+            } else {
+                $this->SetStatus(self::STATUS_INST_NOT_AUTHENTICATED);
             }
         } elseif ($username === '') {
             $this->SetStatus(self::STATUS_INST_USER_NAME_IS_EMPTY);
         } elseif ($password === '') {
             $this->SetStatus(self::STATUS_INST_PASSWORD_IS_EMPTY);
-        } elseif (!$this->LogIn()) {
-            $this->SetStatus(self::STATUS_INST_NOT_AUTHENTICATED);
-            $failedLogins = json_decode($this->GetBuffer($this->InstanceID . '-failedLogins')) + 1;
-            $this->SetBuffer($this->InstanceID . '-failedLogins', json_encode($failedLogins));
-
-            $errorTxt = sprintf('Number of failed LogIns: %d', json_decode($this->GetBuffer($this->InstanceID . '-failedLogins')));
-            $this->SendDebug(__FUNCTION__, $errorTxt, 0);
-            IPS_LogMessage(__CLASS__, $errorTxt);
-        } else {
+        } elseif ($this->LogIn()) {
             $this->SetStatus(IS_ACTIVE);
             $this->SetBuffer($this->InstanceID . '-failedLogins', json_encode(0));
+        } else {
+            $this->SetStatus(self::STATUS_INST_NOT_AUTHENTICATED);
+            $failedLogins = json_decode($this->GetBuffer($this->InstanceID . '-failedLogins'), false) + 1;
+            $this->SetBuffer($this->InstanceID . '-failedLogins', json_encode($failedLogins));
+
+            $errorTxt = sprintf('Number of failed LogIns: %d', json_decode($this->GetBuffer($this->InstanceID . '-failedLogins'), false));
+            $this->SendDebug(__FUNCTION__, $errorTxt, 0);
+            IPS_LogMessage(__CLASS__, $errorTxt);
         }
     }
 
@@ -222,7 +226,7 @@ class AmazonEchoIO extends IPSModule
 
         $headers = [
             'DNT: 1',
-            'Connection: keep-alive',]; //the header must not contain any cookie
+            'Connection: keep-alive']; //the header must not contain any cookie
 
         $return = $this->SendEchoData($url, $headers);
 
@@ -255,6 +259,7 @@ class AmazonEchoIO extends IPSModule
         $first_login = $this->GetFirstCookie();
         if (count($first_login['hidden fields']) === 0) {
             $this->SendDebug(__FUNCTION__, 'no hidden fields found!', 0);
+            $failedLogins = json_decode($this->GetBuffer($this->InstanceID . '-failedLogins'), false);
             $this->SetBuffer($this->InstanceID . '-failedLogins', json_encode($failedLogins + 1));
             return false;
         }
@@ -284,11 +289,68 @@ class AmazonEchoIO extends IPSModule
             return false;
         }
 
-        // check Login Status
-        $ret = $this->CheckLoginStatus();
-        if (!$ret) {
+        return $this->CheckLoginStatus();
+    }
+
+    public function GetOTP()
+    {
+        // returns Amzon 2FA OTP Code if Seed is set, otherwise an empty String
+        $Seed = str_replace(' ', '', $this->ReadPropertyString('amazon2fa'));
+        if( $Seed !== '' )
+        {
+            $res = $this->GetAmazon2FACode($Seed, 6, 30);
+            if($res['TTL'] < 3 )
+            {
+                sleep(4); // Wait till a fresh code is generated
+                $res = $this->GetAmazon2FACode($Seed, 6, 30);
+            }
+            return $res['OTP'];
         }
-        return $ret;
+        return '';
+    }
+
+    private function GetAmazon2FACode($Seed, $OtpLength, $OtpKeyRegen)
+    {
+        /**
+         * Based on the 2FA Example found on: https://www.idontplaydarts.com/2011/07/google-totp-two-factor-authentication-for-php/
+         **/
+        // Current Timestamp
+        $timestamp = floor(microtime(true)/$OtpKeyRegen);
+        // Lookuptable for Base32
+        $lut = array(
+            'A' =>0, 'B' =>1, 'C' =>2, 'D' =>3, 'E' =>4, 'F' =>5, 'G' =>6, 'H' =>7,
+            'I' =>8, 'J' =>9, 'K' =>10, 'L' =>11, 'M' =>12, 'N' =>13, 'O' =>14, 'P' =>15,
+            'Q' =>16, 'R' =>17, 'S' =>18, 'T' =>19, 'U' =>20, 'V' =>21, 'W' =>22, 'X' =>23,
+            'Y' =>24, 'Z' =>25, '2' =>26, '3' =>27, '4' =>28, '5' =>29, '6' =>30, '7' =>31);
+        // Decode Base32 Seed
+        $b32 = strtoupper($Seed);
+        $n = $j = 0;
+        $key = '';
+        if (!preg_match('/^[ABCDEFGHIJKLMNOPQRSTUVWXYZ234567]+$/', $b32, $match)) {
+            trigger_error('Invalid characters in the base32 string.');
+            return null;
+        }
+        for ($i = 0, $iMax = strlen($b32); $i < $iMax; $i++)
+        {
+            $n <<= 5; 			  // Move buffer left by 5 to make room
+            $n += $lut[$b32[$i]]; // Add value into buffer
+            $j += 5;			  // Keep track of number of bits in buffer
+            if ($j >= 8) { $j -= 8; $key .= chr(($n & (0xFF << $j)) >> $j); }
+        }
+        // Check Binary Key
+        if (strlen($key) < 8) {
+            trigger_error('Secret key is too short. Must be at least 16 base 32 characters');
+            return null;
+        }
+        // Generate OTA Code based on Seed and Current Timestamp
+        $h = hash_hmac ('sha1', pack('N*', 0) . pack('N*', $timestamp), $key, true);  // NOTE: Counter must be 64-bit int
+        $o = ord($h[19]) & 0xf;
+        $ota_code = ( ((ord($h[$o+0])&0x7f)<<24) | ((ord($h[$o+1])&0xff)<<16) | ((ord($h[$o+2])&0xff)<<8) | (ord($h[$o+3])&0xff) ) % (10 ** $OtpLength);
+        // Output Debug Info
+        //echo("Code Valid for: " . ($OtpKeyRegen - round(microtime(true) - ($timestamp*$OtpKeyRegen), 0)) );
+
+        // Return OTP Code
+        return ['OTP' => str_pad((string) $ota_code, $OtpLength, '0', STR_PAD_LEFT), 'TTL' => $OtpKeyRegen - round(microtime(true) - ($timestamp * $OtpKeyRegen))];
     }
 
     /**
@@ -448,7 +510,7 @@ class AmazonEchoIO extends IPSModule
         $postfields = array_merge(
             $hiddenFields, [
                              'email'    => $this->ReadPropertyString('username'),
-                             'password' => $this->ReadPropertyString('password')]
+                             'password' => $this->ReadPropertyString('password') . $this->GetOTP()]
         );
 
         return $this->SendEchoData('https://www.' . $this->GetAmazonURL() . '/ap/signin', $headers, $postfields);
@@ -548,7 +610,7 @@ class AmazonEchoIO extends IPSModule
         if ($return_data['body'] === null) {
             $return = null;
         } else {
-            $return = json_decode($return_data['body']);
+            $return = json_decode($return_data['body'], false);
         }
 
         if ($return === null) {
@@ -561,16 +623,16 @@ class AmazonEchoIO extends IPSModule
             );
 
             $authenticated = false;
-        } elseif ($return->authentication->authenticated === false) {
+        } elseif ($return->authentication->authenticated) {
+            $this->SetBuffer('customerID', $return->authentication->customerId);
+            $this->SendDebug(__FUNCTION__, 'CustomerID: ' . $return->authentication->customerId, 0);
+            $authenticated = true;
+        } else {
             $this->SendDebug(
                 __FUNCTION__, 'Not authenticated (property authenticated is false)! ' . $return_data['body'], 0
             );
 
             $authenticated = false;
-        } else {
-            $this->SetBuffer('customerID', $return->authentication->customerId);
-            $this->SendDebug(__FUNCTION__, 'CustomerID: ' . $return->authentication->customerId, 0);
-            $authenticated = true;
         }
 
         if (!$authenticated) {
@@ -614,7 +676,7 @@ class AmazonEchoIO extends IPSModule
 
         $header = $this->GetHeader();
 
-        return $this->SendEcho($url, $header, null);
+        return $this->SendEcho($url, $header);
     }
 
     private function NpQueue(array $getfields)
@@ -623,7 +685,7 @@ class AmazonEchoIO extends IPSModule
 
         $header = $this->GetHeader();
 
-        return $this->SendEcho($url, $header, null);
+        return $this->SendEcho($url, $header);
     }
 
     private function BehaviorsPreview(array $postfields)
@@ -648,7 +710,7 @@ class AmazonEchoIO extends IPSModule
 
         $sequence = [
             '@type'     => 'com.amazon.alexa.behaviors.model.Sequence',
-            'startNode' => $startNode,];
+            'startNode' => $startNode];
 
 
         $postfields = [
@@ -706,7 +768,7 @@ class AmazonEchoIO extends IPSModule
 
         $header = $this->GetHeader();
 
-        return $this->SendEcho($url, $header, null);
+        return $this->SendEcho($url, $header);
     }
 
     private function Notifications()
@@ -724,7 +786,7 @@ class AmazonEchoIO extends IPSModule
 
         $header = $this->GetHeader();
 
-        return $this->SendEcho($url, $header, null);
+        return $this->SendEcho($url, $header);
     }
 
     private function Activities($getfields)
@@ -733,7 +795,7 @@ class AmazonEchoIO extends IPSModule
 
         $header = $this->GetHeader();
 
-        return $this->SendEcho($url, $header, null); //it seems as if postfields are not supported within this command
+        return $this->SendEcho($url, $header); //it seems as if postfields are not supported within this command
     }
 
     private function PrimeSections($getfields, $filterSections, $filterCategories, $stationItems)
@@ -742,7 +804,7 @@ class AmazonEchoIO extends IPSModule
 
         $header = $this->GetHeader();
 
-        $result = $this->SendEcho($url, $header, null);
+        $result = $this->SendEcho($url, $header);
 
         if ($result['http_code'] === 200) {
 
@@ -818,12 +880,12 @@ class AmazonEchoIO extends IPSModule
         return $this->SendEcho($url, $header, json_encode($postfields), $optpost);
     }
 
-	private function SendDelete(string $url)
-	{
-		$header = $this->GetHeader();
+    private function SendDelete(string $url)
+    {
+        $header = $this->GetHeader();
 
-		return $this->SendEcho($url, $header, "DELETE", false);
-	}
+        return $this->SendEcho($url, $header, 'DELETE', false);
+    }
 
     /** get JSON device list
      *
@@ -833,8 +895,13 @@ class AmazonEchoIO extends IPSModule
      *
      * @return mixed
      */
-    private function GetDevices(string $deviceType = null, string $serialNumber = null, bool $cached = false)
+    private function GetDevices(string $deviceType = null, string $serialNumber = null, bool $cached = null)
     {
+
+        if (!isset($cached)){
+            $cached = false;
+        }
+
         $header = $this->GetHeader();
 
         $getfields = [
@@ -842,7 +909,7 @@ class AmazonEchoIO extends IPSModule
 
         $url = 'https://' . $this->GetAlexaURL() . '/api/devices-v2/device?' . http_build_query($getfields);
 
-        $result = $this->SendEcho($url, $header, null);
+        $result = $this->SendEcho($url, $header);
 
         if ($result['http_code'] !== 200) {
             return $result;
@@ -981,16 +1048,16 @@ class AmazonEchoIO extends IPSModule
         }
 
         if ($postfields !== null) {
-        	if($postfields == "DELETE")
-			{
-				$this->SendDebug(__FUNCTION__, 'Type: DELETE', 0);
-				$options [CURLOPT_CUSTOMREQUEST] = "DELETE";
-			}
-        	else
-			{
-				$this->SendDebug(__FUNCTION__, 'Postfields: ' . $postfields, 0);
-				$options [CURLOPT_POSTFIELDS] = $postfields;
-			}
+            if($postfields === 'DELETE')
+            {
+                $this->SendDebug(__FUNCTION__, 'Type: DELETE', 0);
+                $options [CURLOPT_CUSTOMREQUEST] = 'DELETE';
+            }
+            else
+            {
+                $this->SendDebug(__FUNCTION__, 'Postfields: ' . $postfields, 0);
+                $options [CURLOPT_POSTFIELDS] = $postfields;
+            }
         }
 
         if ($optpost !== null) {
@@ -1017,7 +1084,7 @@ class AmazonEchoIO extends IPSModule
         //eine Fehlerbehandlung macht hier leider keinen Sinn, da 400 auch kommt, wenn z.b. der Bildschirm (Show) ausgeschaltet ist
 
         return $this->getReturnValues($info, $result);
-    }
+    }/** @noinspection PhpMissingParentCallCommonInspection */
 
     /**
      * @param $JSONString
@@ -1029,7 +1096,7 @@ class AmazonEchoIO extends IPSModule
     {
         $this->SendDebug(__FUNCTION__, 'Incoming: ' . $JSONString, 0);
         // Empfangene Daten von der Device Instanz
-        $data = json_decode($JSONString)->Buffer;
+        $data = json_decode($JSONString, false)->Buffer;
 
         if (!property_exists($data, 'method')) {
             trigger_error('Property \'method\' is missing');
@@ -1133,16 +1200,8 @@ class AmazonEchoIO extends IPSModule
                 break;
 
             case 'CustomCommand':
-                if (isset($buffer['postfields'])) {
-                    $postfields = $buffer['postfields'];
-                } else {
-                    $postfields = null;
-                }
-                if (isset($buffer['optpost'])) {
-                    $optpost = $buffer['optpost'];
-                } else {
-                    $optpost = null;
-                }
+                $postfields = $buffer['postfields'] ?? null;
+                $optpost    = $buffer['optpost'] ?? null;
                 if (isset($buffer['getfields'])) {
                     $url = $buffer['url'] . http_build_query($buffer['getfields']);
                 } else {
@@ -1152,10 +1211,10 @@ class AmazonEchoIO extends IPSModule
                 $result = $this->CustomCommand($url, $postfields, $optpost);
                 break;
 
-			case 'SendDelete':
-				$url = $buffer['url'];
-				$result = $this->SendDelete($url);
-				break;
+            case 'SendDelete':
+                $url = $buffer['url'];
+                $result = $this->SendDelete($url);
+                break;
 
             case 'GetDevices':
                 $result = $this->GetDevices();
@@ -1192,6 +1251,7 @@ class AmazonEchoIO extends IPSModule
     /***********************************************************
      * Configuration Form
      ***********************************************************/
+    /** @noinspection PhpMissingParentCallCommonInspection */
 
     /**
      * build configuration form
@@ -1231,6 +1291,10 @@ class AmazonEchoIO extends IPSModule
                 'type'    => 'PasswordTextBox',
                 'caption' => 'Amazon Password'],
             [
+                'name'    => 'amazon2fa',
+                'type'    => 'PasswordTextBox',
+                'caption' => 'Amazon 2FA'],
+            [
                 'name'    => 'language',
                 'type'    => 'Select',
                 'caption' => 'Echo language',
@@ -1269,7 +1333,11 @@ class AmazonEchoIO extends IPSModule
             [
                 'type'    => 'Button',
                 'caption' => 'Login Status',
-                'onClick' => "if (EchoIO_CheckLoginStatus(\$id)){echo 'Sie sind angemeldet.';} else {echo 'Sie sind nicht angemeldet.';}"],];
+                'onClick' => "if (EchoIO_CheckLoginStatus(\$id)){echo 'Sie sind angemeldet.';} else {echo 'Sie sind nicht angemeldet.';}"],
+            [
+                'type'    => 'Button',
+                'caption' => 'Get OTP',
+                'onClick' => "echo 'Amazon OTP: ' . EchoIO_GetOTP(\$id);"]];
 
 
         return $form;
