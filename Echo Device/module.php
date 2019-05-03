@@ -3,15 +3,17 @@
 //<editor-fold desc="declarations">
 declare(strict_types=1);
 
-require_once __DIR__ . '/../libs/BufferHelper.php';
-require_once __DIR__ . '/../libs/DebugHelper.php';
-require_once __DIR__ . '/../libs/ConstHelper.php';
+require_once __DIR__ . '/../libs/EchoBufferHelper.php';
+require_once __DIR__ . '/../libs/EchoDebugHelper.php';
 //</editor-fold>
 
 // Modul für Amazon Echo Remote
 
 class EchoRemote extends IPSModule
 {
+
+	use EchoBufferHelper,
+		EchoDebugHelper;
 
     private const STATUS_INST_DEVICETYPE_IS_EMPTY = 210; // devicetype must not be empty.
     private const STATUS_INST_DEVICENUMBER_IS_EMPTY = 211; // devicenumber must not be empty
