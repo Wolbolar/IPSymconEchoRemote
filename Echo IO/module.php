@@ -1,10 +1,15 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/../libs/EchoBufferHelper.php';
+require_once __DIR__ . '/../libs/EchoDebugHelper.php';
+
 // Modul für Amazon Echo Remote
 
 class AmazonEchoIO extends IPSModule
 {
+	use EchoBufferHelper,
+		EchoDebugHelper;
 
     private const STATUS_INST_USER_NAME_IS_EMPTY = 210; // user name must not be empty.
     private const STATUS_INST_PASSWORD_IS_EMPTY = 211; // password must not be empty.
