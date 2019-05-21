@@ -51,30 +51,71 @@ Modul für IP-Symcon ab Version 5.0. Ermöglicht die Fernsteuerung mit einem Ama
 
 ### a. Laden des Moduls
 
-Das Modul 'Echo Remote' wird ab Symcon Version 5.1 über den Module Store installiert. Es findet sich unter der Gategorie 'Geräte'
+Die Webconsole von IP-Symcon mit _http://<IP-Symcon IP>:3777/console/_ öffnen. 
 
-##### Symcon Version 5.0 
-Die Webkonsole öffnen, im Objektbaum unter Kerninstanzen die Instanz __*Modules*__ durch einen doppelten Mausklick öffnen.
 
-![Modules](img/modules.png?raw=true "Modules")
+Anschließend oben rechts auf das Symbol für den Modulstore (IP-Symcon > 5.1) klicken
 
-In der _Modules_ Instanz rechts unten auf den Button __*+*__ drücken.
+![Store](img/store_icon.png?raw=true "open store")
 
-![ModulesAdd](img/plus_add.png?raw=true "Hinzufügen")
- 
-In dem sich öffnenden Fenster folgende URL hinzufügen:
+Im Suchfeld nun
 
-```	
-https://github.com/Wolbolar/IPSymconEchoRemote  
 ```
-    
-und mit _OK_ bestätigen.    
-    
-Anschließend erscheint ein Eintrag für das Modul in der Liste der Instanz _Modules_ 
+Echo Remote
+```  
+
+eingeben
+
+![Store](img/module_store_search.png?raw=true "module search")
+
+und schließend das Modul auswählen und auf _Installieren_
+
+![Store](img/install.png?raw=true "install")
+
+drücken.
+
+
+#### Alternatives Installieren über Modules Instanz (IP-Symcon < 5.1)
+
+Die Webconsole von IP-Symcon mit _http://<IP-Symcon IP>:3777/console/_ öffnen. 
+
+Anschließend den Objektbaum _Öffnen_.
+
+![Objektbaum](img/objektbaum.png?raw=true "Objektbaum")	
+
+Die Instanz _'Modules'_ unterhalb von Kerninstanzen im Objektbaum von IP-Symcon (>=Ver. 5.x) mit einem Doppelklick öffnen und das  _Plus_ Zeichen drücken.
+
+![Modules](img/Modules.png?raw=true "Modules")	
+
+![Plus](img/plus.png?raw=true "Plus")	
+
+![ModulURL](img/add_module.png?raw=true "Add Module")
+ 
+Im Feld die folgende URL eintragen und mit _OK_ bestätigen:
+
+```
+https://github.com/Wolbolar/IPSymconEchoRemote 
+```  
+	        
+Anschließend erscheint ein Eintrag für das Modul in der Liste der Instanz _Modules_    
+
+Es wird im Standard der Zweig (Branch) _master_ geladen, dieser enthält aktuelle Änderungen und Anpassungen.
+Nur der Zweig _master_ wird aktuell gehalten.
+
+![Master](img/master.png?raw=true "master") 
+
+Sollte eine ältere Version von IP-Symcon die kleiner ist als Version 5.1 eingesetzt werden, ist auf das Zahnrad rechts in der Liste zu klicken.
+Es öffnet sich ein weiteres Fenster,
+
+![SelectBranch](img/select_branch.png?raw=true "select branch") 
+
+hier kann man auf einen anderen Zweig wechseln, für ältere Versionen kleiner als 5.1 ist hier
+_Old-Version_ auszuwählen. 
+
 
 ### b. Gruppen und Geräte in Amazon App benennen  
 
-
+In der Alexa App alle Geräte benennen.
 
 ### c. Einrichtung in IP-Symcon
 
