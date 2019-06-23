@@ -30,7 +30,7 @@ trait EchoDebugHelper
         } elseif (IPS_GetKernelRunlevel() === KR_READY) {
             parent::SendDebug($Message, (string) $Data, $Format);
         } else {
-            IPS_LogMessage('PRTG:' . $Message, (string) $Data);
+            IPS_LogMessage('EchoRemote:' . $Message, (string) $Data);
         }
     }
 }
