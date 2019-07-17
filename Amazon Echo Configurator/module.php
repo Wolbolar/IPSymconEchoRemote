@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 require_once __DIR__ . '/../libs/EchoBufferHelper.php';
@@ -6,8 +7,8 @@ require_once __DIR__ . '/../libs/EchoDebugHelper.php';
 
 class AmazonEchoConfigurator extends IPSModule
 {
-	use EchoBufferHelper,
-		EchoDebugHelper;
+    use EchoBufferHelper,
+        EchoDebugHelper;
 
     private const DEVICETYPES = [
         'A2E0SNTXJVT7WK' => ['name' => 'Fire TV'],
@@ -16,7 +17,7 @@ class AmazonEchoConfigurator extends IPSModule
         'A2825NDLA7WDZV' => ['name' => 'App'],
         'AB72C64C86AW2'  => ['name' => 'Echo'],
         'A3S5BH2HU6VAYF' => ['name' => 'Echo Dot (2.Gen)'],
-		'A32DOYMUN6DTXA' => ['name' => 'Echo Dot (3.Gen)'],
+        'A32DOYMUN6DTXA' => ['name' => 'Echo Dot (3.Gen)'],
         'AILBSA2LNTOYL'  => ['name' => 'Reverb App'],
         'A15ERDAKK5HQQG' => ['name' => 'Sonos'],
         'A1NL4BVLQ4L3N3' => ['name' => 'Echo Show'],
@@ -121,7 +122,6 @@ class AmazonEchoConfigurator extends IPSModule
             $serialNumber = $device['serialNumber'];
             $this->SendDebug('Echo Device', 'serial number: ' . $serialNumber, 0);
 
-
             $MyParent = IPS_GetInstance($this->InstanceID)['ConnectionID'];
             foreach ($EchoRemoteInstanceIDList as $EchoRemoteInstanceID) {
                 if (($serialNumber === IPS_GetProperty($EchoRemoteInstanceID, 'Devicenumber'))
@@ -179,7 +179,6 @@ class AmazonEchoConfigurator extends IPSModule
      *
      * @noinspection PhpMissingParentCallCommonInspection
      */
-
     public function GetConfigurationForm(): string
     {
 
@@ -210,7 +209,6 @@ class AmazonEchoConfigurator extends IPSModule
 
         return $jsonForm;
     }
-
 
     /** Sends Request to IO and get response.
      *
