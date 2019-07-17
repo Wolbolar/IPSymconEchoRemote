@@ -8,14 +8,13 @@ require_once __DIR__ . '/../libs/EchoDebugHelper.php';
 
 class AmazonEchoIO extends IPSModule
 {
-	use EchoBufferHelper,
-		EchoDebugHelper;
+    use EchoBufferHelper, EchoDebugHelper;
 
-    private const STATUS_INST_USER_NAME_IS_EMPTY = 210; // user name must not be empty.
-    private const STATUS_INST_PASSWORD_IS_EMPTY = 211; // password must not be empty.
-    private const STATUS_INST_COOKIE_IS_EMPTY = 212; // cookie must not be empty.
+    private const STATUS_INST_USER_NAME_IS_EMPTY  = 210; // user name must not be empty.
+    private const STATUS_INST_PASSWORD_IS_EMPTY   = 211; // password must not be empty.
+    private const STATUS_INST_COOKIE_IS_EMPTY     = 212; // cookie must not be empty.
     private const STATUS_INST_COOKIE_WITHOUT_CSRF = 213; // cookie must include csrf.
-    private const STATUS_INST_NOT_AUTHENTICATED = 214; // authentication must be performed.
+    private const STATUS_INST_NOT_AUTHENTICATED   = 214; // authentication must be performed.
 
     public function Create()
     {
@@ -301,11 +300,9 @@ class AmazonEchoIO extends IPSModule
     {
         // returns Amzon 2FA OTP Code if Seed is set, otherwise an empty String
         $Seed = str_replace(' ', '', $this->ReadPropertyString('amazon2fa'));
-        if( $Seed !== '' )
-        {
+        if ($Seed !== '') {
             $res = $this->GetAmazon2FACode($Seed, 6, 30);
-            if($res['TTL'] < 3 )
-            {
+            if ($res['TTL'] < 3) {
                 sleep(4); // Wait till a fresh code is generated
                 $res = $this->GetAmazon2FACode($Seed, 6, 30);
             }
@@ -320,27 +317,57 @@ class AmazonEchoIO extends IPSModule
          * Based on the 2FA Example found on: https://www.idontplaydarts.com/2011/07/google-totp-two-factor-authentication-for-php/
          **/
         // Current Timestamp
-        $timestamp = floor(microtime(true)/$OtpKeyRegen);
+        $timestamp = floor(microtime(true) / $OtpKeyRegen);
         // Lookuptable for Base32
-        $lut = array(
-            'A' =>0, 'B' =>1, 'C' =>2, 'D' =>3, 'E' =>4, 'F' =>5, 'G' =>6, 'H' =>7,
-            'I' =>8, 'J' =>9, 'K' =>10, 'L' =>11, 'M' =>12, 'N' =>13, 'O' =>14, 'P' =>15,
-            'Q' =>16, 'R' =>17, 'S' =>18, 'T' =>19, 'U' =>20, 'V' =>21, 'W' =>22, 'X' =>23,
-            'Y' =>24, 'Z' =>25, '2' =>26, '3' =>27, '4' =>28, '5' =>29, '6' =>30, '7' =>31);
+        $lut = [
+            'A' => 0,
+            'B' => 1,
+            'C' => 2,
+            'D' => 3,
+            'E' => 4,
+            'F' => 5,
+            'G' => 6,
+            'H' => 7,
+            'I' => 8,
+            'J' => 9,
+            'K' => 10,
+            'L' => 11,
+            'M' => 12,
+            'N' => 13,
+            'O' => 14,
+            'P' => 15,
+            'Q' => 16,
+            'R' => 17,
+            'S' => 18,
+            'T' => 19,
+            'U' => 20,
+            'V' => 21,
+            'W' => 22,
+            'X' => 23,
+            'Y' => 24,
+            'Z' => 25,
+            '2' => 26,
+            '3' => 27,
+            '4' => 28,
+            '5' => 29,
+            '6' => 30,
+            '7' => 31];
         // Decode Base32 Seed
         $b32 = strtoupper($Seed);
-        $n = $j = 0;
+        $n   = $j = 0;
         $key = '';
         if (!preg_match('/^[ABCDEFGHIJKLMNOPQRSTUVWXYZ234567]+$/', $b32, $match)) {
             trigger_error('Invalid characters in the base32 string.');
             return null;
         }
-        for ($i = 0, $iMax = strlen($b32); $i < $iMax; $i++)
-        {
-            $n <<= 5; 			  // Move buffer left by 5 to make room
+        for ($i = 0, $iMax = strlen($b32); $i < $iMax; $i++) {
+            $n <<= 5;              // Move buffer left by 5 to make room
             $n += $lut[$b32[$i]]; // Add value into buffer
-            $j += 5;			  // Keep track of number of bits in buffer
-            if ($j >= 8) { $j -= 8; $key .= chr(($n & (0xFF << $j)) >> $j); }
+            $j += 5;              // Keep track of number of bits in buffer
+            if ($j >= 8) {
+                $j   -= 8;
+                $key .= chr(($n & (0xFF << $j)) >> $j);
+            }
         }
         // Check Binary Key
         if (strlen($key) < 8) {
@@ -348,14 +375,18 @@ class AmazonEchoIO extends IPSModule
             return null;
         }
         // Generate OTA Code based on Seed and Current Timestamp
-        $h = hash_hmac ('sha1', pack('N*', 0) . pack('N*', $timestamp), $key, true);  // NOTE: Counter must be 64-bit int
-        $o = ord($h[19]) & 0xf;
-        $ota_code = ( ((ord($h[$o+0])&0x7f)<<24) | ((ord($h[$o+1])&0xff)<<16) | ((ord($h[$o+2])&0xff)<<8) | (ord($h[$o+3])&0xff) ) % (10 ** $OtpLength);
+        $h        = hash_hmac('sha1', pack('N*', 0) . pack('N*', $timestamp), $key, true);  // NOTE: Counter must be 64-bit int
+        $o        = ord($h[19]) & 0xf;
+        $ota_code =
+            (((ord($h[$o + 0]) & 0x7f) << 24) | ((ord($h[$o + 1]) & 0xff) << 16) | ((ord($h[$o + 2]) & 0xff) << 8) | (ord($h[$o + 3]) & 0xff)) % (10
+                                                                                                                                                  ** $OtpLength);
         // Output Debug Info
         //echo("Code Valid for: " . ($OtpKeyRegen - round(microtime(true) - ($timestamp*$OtpKeyRegen), 0)) );
 
         // Return OTP Code
-        return ['OTP' => str_pad((string) $ota_code, $OtpLength, '0', STR_PAD_LEFT), 'TTL' => $OtpKeyRegen - round(microtime(true) - ($timestamp * $OtpKeyRegen))];
+        return [
+            'OTP' => str_pad((string) $ota_code, $OtpLength, '0', STR_PAD_LEFT),
+            'TTL' => $OtpKeyRegen - round(microtime(true) - ($timestamp * $OtpKeyRegen))];
     }
 
     /**
@@ -903,7 +934,7 @@ class AmazonEchoIO extends IPSModule
     private function GetDevices(string $deviceType = null, string $serialNumber = null, bool $cached = null)
     {
 
-        if (!isset($cached)){
+        if (!isset($cached)) {
             $cached = false;
         }
 
@@ -1053,13 +1084,10 @@ class AmazonEchoIO extends IPSModule
         }
 
         if ($postfields !== null) {
-            if($postfields === 'DELETE')
-            {
+            if ($postfields === 'DELETE') {
                 $this->SendDebug(__FUNCTION__, 'Type: DELETE', 0);
                 $options [CURLOPT_CUSTOMREQUEST] = 'DELETE';
-            }
-            else
-            {
+            } else {
                 $this->SendDebug(__FUNCTION__, 'Postfields: ' . $postfields, 0);
                 $options [CURLOPT_POSTFIELDS] = $postfields;
             }
@@ -1217,7 +1245,7 @@ class AmazonEchoIO extends IPSModule
                 break;
 
             case 'SendDelete':
-                $url = $buffer['url'];
+                $url    = $buffer['url'];
                 $result = $this->SendDelete($url);
                 break;
 
