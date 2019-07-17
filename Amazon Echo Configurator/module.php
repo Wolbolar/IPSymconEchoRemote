@@ -1,13 +1,14 @@
 <?php
+
 declare(strict_types=1);
 
-require_once __DIR__ . '/../libs/EchoBufferHelper.php';
-require_once __DIR__ . '/../libs/EchoDebugHelper.php';
+require_once __DIR__.'/../libs/EchoBufferHelper.php';
+require_once __DIR__.'/../libs/EchoDebugHelper.php';
 
 class AmazonEchoConfigurator extends IPSModule
 {
-	use EchoBufferHelper,
-		EchoDebugHelper;
+    use EchoBufferHelper,
+        EchoDebugHelper;
 
     private const DEVICETYPES = [
         'A2E0SNTXJVT7WK' => ['name' => 'Fire TV'],
@@ -16,7 +17,7 @@ class AmazonEchoConfigurator extends IPSModule
         'A2825NDLA7WDZV' => ['name' => 'App'],
         'AB72C64C86AW2'  => ['name' => 'Echo'],
         'A3S5BH2HU6VAYF' => ['name' => 'Echo Dot (2.Gen)'],
-		'A32DOYMUN6DTXA' => ['name' => 'Echo Dot (3.Gen)'],
+        'A32DOYMUN6DTXA' => ['name' => 'Echo Dot (3.Gen)'],
         'AILBSA2LNTOYL'  => ['name' => 'Reverb App'],
         'A15ERDAKK5HQQG' => ['name' => 'Sonos'],
         'A1NL4BVLQ4L3N3' => ['name' => 'Echo Show'],
@@ -28,7 +29,7 @@ class AmazonEchoConfigurator extends IPSModule
         'A2TF17PFR55MTB' => ['name' => 'Mobile Voice Android'],
         'A1JJ0KFC4ZPNJ3' => ['name' => 'Echo Input'],
         'A3V3VA38K169FO' => ['name' => 'Fire Tablet'],
-        'A3C9PE6TNYLTCH' => ['name' => 'Multiroom Musik-Gruppe']];
+        'A3C9PE6TNYLTCH' => ['name' => 'Multiroom Musik-Gruppe'], ];
 
     public function Create()
     {
@@ -39,7 +40,7 @@ class AmazonEchoConfigurator extends IPSModule
         $this->RegisterPropertyInteger('targetCategoryID', $this->GetDefaultTargetCategory());
 
         // initiate buffer
-        $this->SetBuffer($this->InstanceID . '-alexa_devices', '');
+        $this->SetBuffer($this->InstanceID.'-alexa_devices', '');
         $this->ConnectParent('{C7F853A4-60D2-99CD-A198-2C9025E2E312}');
     }
 
@@ -66,7 +67,6 @@ class AmazonEchoConfigurator extends IPSModule
         }
 
         return $defaultCategory;
-
     }
 
     /** Get Config Echo
@@ -81,7 +81,7 @@ class AmazonEchoConfigurator extends IPSModule
         if ($devices_info['http_code'] === 200) {
             $devices_JSON = $devices_info['body'];
             $this->SendDebug('Response IO:', $devices_JSON, 0);
-            $this->SetBuffer($this->InstanceID . '-alexa_devices', $devices_JSON);
+            $this->SetBuffer($this->InstanceID.'-alexa_devices', $devices_JSON);
             if ($devices_JSON) {
                 $devices = json_decode($devices_JSON, true)['devices'];
                 $this->SendDebug('Echo Devices:', json_encode($devices), 0);
@@ -101,26 +101,25 @@ class AmazonEchoConfigurator extends IPSModule
             $instanceID = 0;
 
             $accountName = $device['accountName'];
-            $this->SendDebug('Echo Device', 'account name: ' . $accountName, 0);
+            $this->SendDebug('Echo Device', 'account name: '.$accountName, 0);
 
             $deviceAccountId = $device['deviceAccountId'];
-            $this->SendDebug('Echo Device', 'device account id: ' . $deviceAccountId, 0);
+            $this->SendDebug('Echo Device', 'device account id: '.$deviceAccountId, 0);
 
             $deviceFamily = $device['deviceFamily'];
-            $this->SendDebug('Echo Device', 'device family: ' . $deviceFamily, 0);
+            $this->SendDebug('Echo Device', 'device family: '.$deviceFamily, 0);
 
             $deviceType = $device['deviceType'];
             if (array_key_exists($deviceType, self::DEVICETYPES)) {
                 $device_type_name = self::DEVICETYPES[$deviceType]['name'];
             } else {
-                $device_type_name = 'unknown: ' . $deviceType;
-                $this->LogMessage('Unknown DeviceType: ' . $deviceType, KL_WARNING);
+                $device_type_name = 'unknown: '.$deviceType;
+                $this->LogMessage('Unknown DeviceType: '.$deviceType, KL_WARNING);
             }
-            $this->SendDebug('Echo Device', 'device type: ' . $deviceType . ', device type name: ' . $device_type_name, 0);
+            $this->SendDebug('Echo Device', 'device type: '.$deviceType.', device type name: '.$device_type_name, 0);
 
             $serialNumber = $device['serialNumber'];
-            $this->SendDebug('Echo Device', 'serial number: ' . $serialNumber, 0);
-
+            $this->SendDebug('Echo Device', 'serial number: '.$serialNumber, 0);
 
             $MyParent = IPS_GetInstance($this->InstanceID)['ConnectionID'];
             foreach ($EchoRemoteInstanceIDList as $EchoRemoteInstanceID) {
@@ -141,9 +140,8 @@ class AmazonEchoConfigurator extends IPSModule
                     'moduleID'      => '{496AB8B5-396A-40E4-AF41-32F4C48AC90D}',
                     'configuration' => [
                         'Devicetype'   => $deviceType,
-                        'Devicenumber' => $serialNumber],
-                    'location'      => $this->getPathOfCategory($this->ReadPropertyInteger('targetCategoryID'))]];
-
+                        'Devicenumber' => $serialNumber, ],
+                    'location'      => $this->getPathOfCategory($this->ReadPropertyInteger('targetCategoryID')), ], ];
         }
 
         return $config_list;
@@ -155,11 +153,11 @@ class AmazonEchoConfigurator extends IPSModule
             return [];
         }
 
-        $path[]   = IPS_GetName($categoryId);
+        $path[] = IPS_GetName($categoryId);
         $parentId = IPS_GetObject($categoryId)['ParentID'];
 
         while ($parentId > 0) {
-            $path[]   = IPS_GetName($parentId);
+            $path[] = IPS_GetName($parentId);
             $parentId = IPS_GetObject($parentId)['ParentID'];
         }
 
@@ -179,15 +177,13 @@ class AmazonEchoConfigurator extends IPSModule
      *
      * @noinspection PhpMissingParentCallCommonInspection
      */
-
     public function GetConfigurationForm(): string
     {
-
         $Form['elements'][] = [
             'type'    => 'SelectCategory',
             'name'    => 'targetCategoryID',
-            'caption' => 'Target Category'];
-        $Form['actions'][]  = [
+            'caption' => 'Target Category', ];
+        $Form['actions'][] = [
             'type'     => 'Configurator',
             'name'     => 'AmazonEchoConfiguration',
             'rowCount' => 20,
@@ -195,14 +191,14 @@ class AmazonEchoConfigurator extends IPSModule
             'delete'   => true,
             'sort'     => [
                 'column'    => 'name',
-                'direction' => 'ascending'],
+                'direction' => 'ascending', ],
             'columns'  => [
                 ['caption' => 'device name', 'name' => 'name', 'width' => 'auto'],
                 ['caption' => 'device type', 'name' => 'devicetype', 'width' => '250px'],
                 ['caption' => 'device family', 'name' => 'devicefamily', 'width' => '350px'],
                 ['caption' => 'device number', 'name' => 'devicenumber', 'width' => '250px'],
-                ['caption' => 'device account id', 'name' => 'deviceaccountid', 'width' => '250px']],
-            'values'   => $this->Get_ListConfiguration()];
+                ['caption' => 'device account id', 'name' => 'deviceaccountid', 'width' => '250px'], ],
+            'values'   => $this->Get_ListConfiguration(), ];
 
         $jsonForm = json_encode($Form);
         $this->SendDebug('FORM', $jsonForm, 0);
@@ -210,7 +206,6 @@ class AmazonEchoConfigurator extends IPSModule
 
         return $jsonForm;
     }
-
 
     /** Sends Request to IO and get response.
      *
@@ -224,7 +219,7 @@ class AmazonEchoConfigurator extends IPSModule
     private function SendData(string $method, array $getfields = null, array $postfields = null, string $url = null)
     {
         $this->SendDebug(
-            __FUNCTION__, 'Method: ' . $method . ', Getfields: ' . json_encode($getfields) . ', Postfields: ' . json_encode($postfields), 0
+            __FUNCTION__, 'Method: '.$method.', Getfields: '.json_encode($getfields).', Postfields: '.json_encode($postfields), 0
         );
 
         $Data['DataID'] = '{2BD76048-32BD-7D8B-AB6C-626D5C6D7253}';
@@ -242,7 +237,7 @@ class AmazonEchoConfigurator extends IPSModule
         }
 
         $ResultJSON = $this->SendDataToParent(json_encode($Data));
-        $this->SendDebug(__FUNCTION__, 'Result: ' . $ResultJSON, 0);
+        $this->SendDebug(__FUNCTION__, 'Result: '.$ResultJSON, 0);
 
         return json_decode($ResultJSON, true); //returns an array of http_code, body and header
     }

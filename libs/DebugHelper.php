@@ -7,7 +7,6 @@ declare(strict_types=1);
  */
 trait DebugHelper
 {
-
     /**
      * Ergänzt SendDebug um Möglichkeit Objekte und Array auszugeben.
      *
@@ -19,18 +18,18 @@ trait DebugHelper
     {
         if (is_object($Data)) {
             foreach ($Data as $Key => $DebugData) {
-                $this->SendDebug($Message . ':' . $Key, $DebugData, 0);
+                $this->SendDebug($Message.':'.$Key, $DebugData, 0);
             }
         } elseif (is_array($Data)) {
             foreach ($Data as $Key => $DebugData) {
-                $this->SendDebug($Message . ':' . $Key, $DebugData, 0);
+                $this->SendDebug($Message.':'.$Key, $DebugData, 0);
             }
         } elseif (is_bool($Data)) {
             $this->SendDebug($Message, ($Data ? 'TRUE' : 'FALSE'), 0);
         } elseif (IPS_GetKernelRunlevel() === KR_READY) {
             parent::SendDebug($Message, (string) $Data, $Format);
         } else {
-            IPS_LogMessage('PRTG:' . $Message, (string) $Data);
+            IPS_LogMessage('PRTG:'.$Message, (string) $Data);
         }
     }
 }
