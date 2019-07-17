@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-require_once __DIR__.'/../libs/EchoBufferHelper.php';
-require_once __DIR__.'/../libs/EchoDebugHelper.php';
+require_once __DIR__ . '/../libs/EchoBufferHelper.php';
+require_once __DIR__ . '/../libs/EchoDebugHelper.php';
 
 // Modul für Amazon Echo Remote
 
@@ -11,11 +11,11 @@ class AmazonEchoIO extends IPSModule
 {
     use EchoBufferHelper, EchoDebugHelper;
 
-    private const STATUS_INST_USER_NAME_IS_EMPTY = 210; // user name must not be empty.
-    private const STATUS_INST_PASSWORD_IS_EMPTY = 211; // password must not be empty.
-    private const STATUS_INST_COOKIE_IS_EMPTY = 212; // cookie must not be empty.
+    private const STATUS_INST_USER_NAME_IS_EMPTY  = 210; // user name must not be empty.
+    private const STATUS_INST_PASSWORD_IS_EMPTY   = 211; // password must not be empty.
+    private const STATUS_INST_COOKIE_IS_EMPTY     = 212; // cookie must not be empty.
     private const STATUS_INST_COOKIE_WITHOUT_CSRF = 213; // cookie must include csrf.
-    private const STATUS_INST_NOT_AUTHENTICATED = 214; // authentication must be performed.
+    private const STATUS_INST_NOT_AUTHENTICATED   = 214; // authentication must be performed.
 
     public function Create()
     {
@@ -38,8 +38,9 @@ class AmazonEchoIO extends IPSModule
         $this->RegisterPropertyString(
             'browser', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:58.0) Gecko/20100101 Firefox/58.0'
         );
-        $this->RegisterPropertyString('CookiesFileName', IPS_GetKernelDir().'alexa_cookie.txt');
-        $this->RegisterPropertyString('LoginFileName', IPS_GetKernelDir().'alexa_login.html');
+        $this->RegisterPropertyString('CookiesFileName', IPS_GetKernelDir() . 'alexa_cookie.txt');
+        $this->RegisterPropertyString('LoginFileName', IPS_GetKernelDir() . 'alexa_login.html');
+
     }
 
     public function ApplyChanges()
@@ -47,27 +48,27 @@ class AmazonEchoIO extends IPSModule
         //Never delete this line!
         parent::ApplyChanges();
 
-        $username = $this->ReadPropertyString('username');
-        $password = $this->ReadPropertyString('password');
-        $cookie = $this->ReadPropertyString('alexa_cookie');
+        $username  = $this->ReadPropertyString('username');
+        $password  = $this->ReadPropertyString('password');
+        $cookie    = $this->ReadPropertyString('alexa_cookie');
         $useCookie = $this->ReadPropertyBoolean('UseCustomCSRFandCookie');
-        $active = $this->ReadPropertyBoolean('active');
+        $active    = $this->ReadPropertyBoolean('active');
 
         $currentProperties = json_encode(
             [
                 'username'     => $username,
                 'password'     => $password,
                 'alexa_cookie' => $cookie,
-                'active'       => $active, ]
+                'active'       => $active]
         );
 
-        $bufferedProperties = $this->GetBuffer($this->InstanceID.'-SavedProperties');
+        $bufferedProperties = $this->GetBuffer($this->InstanceID . '-SavedProperties');
         if ($bufferedProperties === '' || $bufferedProperties !== $currentProperties) {
-            $this->SetBuffer($this->InstanceID.'-SavedProperties', $currentProperties);
-            $this->SetBuffer($this->InstanceID.'-failedLogins', json_encode(0));
+            $this->SetBuffer($this->InstanceID . '-SavedProperties', $currentProperties);
+            $this->SetBuffer($this->InstanceID . '-failedLogins', json_encode(0));
         }
 
-        if (json_decode($this->GetBuffer($this->InstanceID.'-failedLogins'), false) >= 3) {
+        if (json_decode($this->GetBuffer($this->InstanceID . '-failedLogins'), false) >= 3) {
             $this->SendDebug(__FUNCTION__, 'count of failed logins exceeded', 0);
             $this->SetStatus(self::STATUS_INST_NOT_AUTHENTICATED);
 
@@ -93,12 +94,13 @@ class AmazonEchoIO extends IPSModule
      */
     private function ValidateConfiguration($username, $password, $cookie, $useCookie): void
     {
+
         if ($useCookie) {
             if ($cookie === '') {
                 $this->SetStatus(self::STATUS_INST_COOKIE_IS_EMPTY);
             } elseif ($this->getCsrfFromCookie() === false) {
                 $this->SetStatus(self::STATUS_INST_COOKIE_WITHOUT_CSRF);
-            } /* @noinspection NotOptimalIfConditionsInspection */ elseif ($this->LogIn()) {
+            } /** @noinspection NotOptimalIfConditionsInspection */ elseif ($this->LogIn()) {
                 $this->SetStatus(IS_ACTIVE);
             } else {
                 $this->SetStatus(self::STATUS_INST_NOT_AUTHENTICATED);
@@ -109,13 +111,13 @@ class AmazonEchoIO extends IPSModule
             $this->SetStatus(self::STATUS_INST_PASSWORD_IS_EMPTY);
         } elseif ($this->LogIn()) {
             $this->SetStatus(IS_ACTIVE);
-            $this->SetBuffer($this->InstanceID.'-failedLogins', json_encode(0));
+            $this->SetBuffer($this->InstanceID . '-failedLogins', json_encode(0));
         } else {
             $this->SetStatus(self::STATUS_INST_NOT_AUTHENTICATED);
-            $failedLogins = json_decode($this->GetBuffer($this->InstanceID.'-failedLogins'), false) + 1;
-            $this->SetBuffer($this->InstanceID.'-failedLogins', json_encode($failedLogins));
+            $failedLogins = json_decode($this->GetBuffer($this->InstanceID . '-failedLogins'), false) + 1;
+            $this->SetBuffer($this->InstanceID . '-failedLogins', json_encode($failedLogins));
 
-            $errorTxt = sprintf('Number of failed LogIns: %d', json_decode($this->GetBuffer($this->InstanceID.'-failedLogins'), false));
+            $errorTxt = sprintf('Number of failed LogIns: %d', json_decode($this->GetBuffer($this->InstanceID . '-failedLogins'), false));
             $this->SendDebug(__FUNCTION__, $errorTxt, 0);
             IPS_LogMessage(__CLASS__, $errorTxt);
         }
@@ -123,7 +125,7 @@ class AmazonEchoIO extends IPSModule
 
     private function getCsrfFromCookie()
     {
-        $cookie = $this->ReadPropertyString('alexa_cookie');
+        $cookie     = $this->ReadPropertyString('alexa_cookie');
         $cookie_arr = explode('; ', $cookie);
         if (count($cookie_arr) === 0) {
             return false;
@@ -153,7 +155,7 @@ class AmazonEchoIO extends IPSModule
                 break;
 
             default:
-                trigger_error('Unexpected language: '.$language);
+                trigger_error('Unexpected language: ' . $language);
                 $amazon_url = '';
         }
 
@@ -173,7 +175,7 @@ class AmazonEchoIO extends IPSModule
                 break;
 
             default:
-                trigger_error('Unexpected language: '.$language);
+                trigger_error('Unexpected language: ' . $language);
                 $alexa_url = '';
         }
 
@@ -193,7 +195,7 @@ class AmazonEchoIO extends IPSModule
                 break;
 
             default:
-                trigger_error('Unexpected language: '.$language);
+                trigger_error('Unexpected language: ' . $language);
                 $language_string = '';
         }
 
@@ -202,38 +204,36 @@ class AmazonEchoIO extends IPSModule
 
     private function deleteFile(string $FileName): bool
     {
+
         if (file_exists($FileName)) {
             $Success = unlink($FileName);
 
             if ($Success) { //the cookie file was deleted successfully
-                $this->SendDebug(__FUNCTION__, 'File \''.$FileName.'\' was deleted', 0);
-
+                $this->SendDebug(__FUNCTION__, 'File \'' . $FileName . '\' was deleted', 0);
                 return true;
             }
-            $this->SendDebug(__FUNCTION__, 'File \''.$FileName.'\' was not deleted', 0);
-
+            $this->SendDebug(__FUNCTION__, 'File \'' . $FileName . '\' was not deleted', 0);
             return false;
         }
 
-        $this->SendDebug(__FUNCTION__, 'File \''.$FileName.'\' does not exist', 0);
-
+        $this->SendDebug(__FUNCTION__, 'File \'' . $FileName . '\' does not exist', 0);
         return true;
+
     }
 
     public function LogOff(): bool
     {
         $this->SendDebug(__FUNCTION__, '== started ==', 0);
-        $url = $this->GetAlexaURL().'/logout';
+        $url = $this->GetAlexaURL() . '/logout';
 
         $headers = [
             'DNT: 1',
-            'Connection: keep-alive', ]; //the header must not contain any cookie
+            'Connection: keep-alive']; //the header must not contain any cookie
 
         $return = $this->SendEchoData($url, $headers);
 
         if ($return['http_code'] === 200) { //OK
             $this->SetStatus(self::STATUS_INST_NOT_AUTHENTICATED);
-
             return $this->deleteFile($this->ReadPropertyString('CookiesFileName'));
         }
 
@@ -245,6 +245,7 @@ class AmazonEchoIO extends IPSModule
     //
     public function LogIn(): bool
     {
+
         $this->SendDebug(__FUNCTION__, '== started ==', 0);
 
         if ($this->ReadPropertyBoolean('UseCustomCSRFandCookie')) {
@@ -260,9 +261,8 @@ class AmazonEchoIO extends IPSModule
         $first_login = $this->GetFirstCookie();
         if (count($first_login['hidden fields']) === 0) {
             $this->SendDebug(__FUNCTION__, 'no hidden fields found!', 0);
-            $failedLogins = json_decode($this->GetBuffer($this->InstanceID.'-failedLogins'), false);
-            $this->SetBuffer($this->InstanceID.'-failedLogins', json_encode($failedLogins + 1));
-
+            $failedLogins = json_decode($this->GetBuffer($this->InstanceID . '-failedLogins'), false);
+            $this->SetBuffer($this->InstanceID . '-failedLogins', json_encode($failedLogins + 1));
             return false;
         }
         $referer = $first_login['referer'];
@@ -303,10 +303,8 @@ class AmazonEchoIO extends IPSModule
                 sleep(4); // Wait till a fresh code is generated
                 $res = $this->GetAmazon2FACode($Seed, 6, 30);
             }
-
             return $res['OTP'];
         }
-
         return '';
     }
 
@@ -350,34 +348,32 @@ class AmazonEchoIO extends IPSModule
             '4' => 28,
             '5' => 29,
             '6' => 30,
-            '7' => 31, ];
+            '7' => 31];
         // Decode Base32 Seed
         $b32 = strtoupper($Seed);
-        $n = $j = 0;
+        $n   = $j = 0;
         $key = '';
         if (!preg_match('/^[ABCDEFGHIJKLMNOPQRSTUVWXYZ234567]+$/', $b32, $match)) {
             trigger_error('Invalid characters in the base32 string.');
-
-            return;
+            return null;
         }
         for ($i = 0, $iMax = strlen($b32); $i < $iMax; $i++) {
             $n <<= 5;              // Move buffer left by 5 to make room
             $n += $lut[$b32[$i]]; // Add value into buffer
             $j += 5;              // Keep track of number of bits in buffer
             if ($j >= 8) {
-                $j -= 8;
+                $j   -= 8;
                 $key .= chr(($n & (0xFF << $j)) >> $j);
             }
         }
         // Check Binary Key
         if (strlen($key) < 8) {
             trigger_error('Secret key is too short. Must be at least 16 base 32 characters');
-
-            return;
+            return null;
         }
         // Generate OTA Code based on Seed and Current Timestamp
-        $h = hash_hmac('sha1', pack('N*', 0).pack('N*', $timestamp), $key, true);  // NOTE: Counter must be 64-bit int
-        $o = ord($h[19]) & 0xf;
+        $h        = hash_hmac('sha1', pack('N*', 0) . pack('N*', $timestamp), $key, true);  // NOTE: Counter must be 64-bit int
+        $o        = ord($h[19]) & 0xf;
         $ota_code =
             (((ord($h[$o + 0]) & 0x7f) << 24) | ((ord($h[$o + 1]) & 0xff) << 16) | ((ord($h[$o + 2]) & 0xff) << 8) | (ord($h[$o + 3]) & 0xff)) % (10
                                                                                                                                                   ** $OtpLength);
@@ -387,7 +383,7 @@ class AmazonEchoIO extends IPSModule
         // Return OTP Code
         return [
             'OTP' => str_pad((string) $ota_code, $OtpLength, '0', STR_PAD_LEFT),
-            'TTL' => $OtpKeyRegen - round(microtime(true) - ($timestamp * $OtpKeyRegen)), ];
+            'TTL' => $OtpKeyRegen - round(microtime(true) - ($timestamp * $OtpKeyRegen))];
     }
 
     /**
@@ -398,10 +394,10 @@ class AmazonEchoIO extends IPSModule
     private function GetLoginHeader(): array
     {
         return [
-            'Accept-Language: '.$this->GetLanguage(),
+            'Accept-Language: ' . $this->GetLanguage(),
             'DNT: 1',
             'Connection: keep-alive',
-            'Upgrade-Insecure-Requests: 1', ];
+            'Upgrade-Insecure-Requests: 1'];
     }
 
     /**
@@ -427,17 +423,17 @@ class AmazonEchoIO extends IPSModule
         //delete old cookie
         $this->deleteFile($this->ReadPropertyString('CookiesFileName'));
 
-        $echo_data = $this->SendEchoData('https://alexa.'.$this->GetAmazonURL(), $this->GetLoginHeader());
+        $echo_data = $this->SendEchoData('https://alexa.' . $this->GetAmazonURL(), $this->GetLoginHeader());
 
         //get location from header and build referer
         $location = implode(preg_grep('/Location: /', $echo_data['header']));
-        $referer = str_replace('Location: ', 'Referer: ', $location);
+        $referer  = str_replace('Location: ', 'Referer: ', $location);
         $this->SendDebug(__FUNCTION__, $referer, 0);
 
         //get hidden fields from body and build post data
         $hiddenFields = $this->GetHiddenFields($echo_data['body']);
 
-        $this->SendDebug(__FUNCTION__, 'hidden fields: '.json_encode($hiddenFields), 0);
+        $this->SendDebug(__FUNCTION__, 'hidden fields: ' . json_encode($hiddenFields), 0);
 
         return ['referer' => $referer, 'hidden fields' => $hiddenFields];
     }
@@ -465,12 +461,12 @@ class AmazonEchoIO extends IPSModule
         */
 
         $headers = array_merge($this->GetLoginHeader(), [$referer]);
-        $this->SendDebug(__FUNCTION__, 'Send (Header): '.json_encode($headers), 0);
-        $echo_data = $this->SendEchoData('https://www.'.$this->GetAmazonURL().'/ap/signin', $headers, $hiddenfields);
+        $this->SendDebug(__FUNCTION__, 'Send (Header): ' . json_encode($headers), 0);
+        $echo_data = $this->SendEchoData('https://www.' . $this->GetAmazonURL() . '/ap/signin', $headers, $hiddenfields);
 
         //get hidden fields from body and build post data
         $hiddenFields = $this->GetHiddenFields($echo_data['body']);
-        $this->SendDebug(__FUNCTION__, 'hidden fields: '.json_encode($hiddenFields), 0);
+        $this->SendDebug(__FUNCTION__, 'hidden fields: ' . json_encode($hiddenFields), 0);
 
         return $hiddenFields;
     }
@@ -496,17 +492,16 @@ class AmazonEchoIO extends IPSModule
         $hiddenFields = explode("\n", $hiddenFields);
         $hiddenFields = preg_grep('/value=\"/', $hiddenFields);
 
-        $pattern = '^.*name="([^"]+)".*value="([^"]+)".*';
+        $pattern     = '^.*name="([^"]+)".*value="([^"]+)".*';
         $replacement = '\1=\2';
 
-        $hiddenFields = preg_replace('/'.$pattern.'/', $replacement, $hiddenFields);
+        $hiddenFields = preg_replace('/' . $pattern . '/', $replacement, $hiddenFields);
 
         $arrhiddenFields = [];
         foreach ($hiddenFields as $hiddenfield) {
-            $field = explode('=', $hiddenfield, 2);
+            $field                      = explode('=', $hiddenfield, 2);
             $arrhiddenFields[$field[0]] = $field[1];
         }
-
         return $arrhiddenFields;
     }
 
@@ -533,25 +528,26 @@ class AmazonEchoIO extends IPSModule
 
         //get session-id from cookie file
         $session_line = array_values(preg_grep('/\tsession-id\t/', file($this->ReadPropertyString('CookiesFileName'))));
-        $session_id = preg_split('/\s+/', $session_line[0])[6];
-        $this->SendDebug(__FUNCTION__, 'Session ID: '.$session_id, 0);
+        $session_id   = preg_split('/\s+/', $session_line[0])[6];
+        $this->SendDebug(__FUNCTION__, 'Session ID: ' . $session_id, 0);
 
         // build referer
-        $referer = 'Referer: https://www.'.$this->GetAmazonURL().'/ap/signin/'.$session_id;
-        $this->SendDebug(__FUNCTION__, 'referer: '.$referer, 0);
+        $referer = 'Referer: https://www.' . $this->GetAmazonURL() . '/ap/signin/' . $session_id;
+        $this->SendDebug(__FUNCTION__, 'referer: ' . $referer, 0);
 
-        $headers = $this->GetLoginHeader();
+        $headers   = $this->GetLoginHeader();
         $headers[] = $referer;
 
-        $this->SendDebug(__FUNCTION__, 'Send (Header): '.json_encode($headers), 0);
+        $this->SendDebug(__FUNCTION__, 'Send (Header): ' . json_encode($headers), 0);
 
         $postfields = array_merge(
             $hiddenFields, [
                              'email'    => $this->ReadPropertyString('username'),
-                             'password' => $this->ReadPropertyString('password').$this->GetOTP(), ]
+                             'password' => $this->ReadPropertyString('password') . $this->GetOTP()]
         );
 
-        return $this->SendEchoData('https://www.'.$this->GetAmazonURL().'/ap/signin', $headers, $postfields);
+        return $this->SendEchoData('https://www.' . $this->GetAmazonURL() . '/ap/signin', $headers, $postfields);
+
     }
 
     /**
@@ -577,7 +573,7 @@ class AmazonEchoIO extends IPSModule
 
         if (count(preg_grep('/Location: https:\/\/alexa.*html/', $session_data['header'])) === 0) {
             file_put_contents($LoginFile, $session_data['body']);
-            $this->SendDebug(__FUNCTION__, ' >> login with filled out form failed. See '.$LoginFile.' <<', 0);
+            $this->SendDebug(__FUNCTION__, ' >> login with filled out form failed. See ' . $LoginFile . ' <<', 0);
             $check = false;
         } else {
             //delete an existing html error file
@@ -586,7 +582,6 @@ class AmazonEchoIO extends IPSModule
             $this->SendDebug(__FUNCTION__, 'login with filled out form: OK', 0);
             $check = true;
         }
-
         return $check;
     }
 
@@ -608,15 +603,15 @@ class AmazonEchoIO extends IPSModule
         => CSRF wird ins Cookie geschrieben
         */
 
-        $url = 'https://'.$this->GetAlexaURL().'/api/language';
+        $url = 'https://' . $this->GetAlexaURL() . '/api/language';
 
         // build referer
-        $referer = 'Referer: https://alexa.'.$this->GetAmazonURL().'/spa/index.html';
-        $this->SendDebug(__FUNCTION__, 'referer: '.$referer, 0);
+        $referer = 'Referer: https://alexa.' . $this->GetAmazonURL() . '/spa/index.html';
+        $this->SendDebug(__FUNCTION__, 'referer: ' . $referer, 0);
 
         //build origin
-        $origin = 'Origin: https://alexa.'.$this->GetAmazonURL();
-        $this->SendDebug(__FUNCTION__, 'Origin: '.$origin, 0);
+        $origin = 'Origin: https://alexa.' . $this->GetAmazonURL();
+        $this->SendDebug(__FUNCTION__, 'Origin: ' . $origin, 0);
         $headers = array_merge($this->GetLoginHeader(), [$referer, $origin]);
 
         return $this->SendEchoData($url, $headers);
@@ -642,7 +637,7 @@ class AmazonEchoIO extends IPSModule
 
         $getfields = ['version' => $guiversion];
 
-        $url = 'https://'.$this->GetAlexaURL().'/api/bootstrap?'.http_build_query($getfields);
+        $url         = 'https://' . $this->GetAlexaURL() . '/api/bootstrap?' . http_build_query($getfields);
         $return_data = $this->SendEcho($url, $this->GetHeader());
 
         if ($return_data['body'] === null) {
@@ -657,17 +652,17 @@ class AmazonEchoIO extends IPSModule
             $authenticated = false;
         } elseif (!property_exists($return, 'authentication')) {
             $this->SendDebug(
-                __FUNCTION__, 'Not authenticated (property authentication not found)! '.$return_data['body'], 0
+                __FUNCTION__, 'Not authenticated (property authentication not found)! ' . $return_data['body'], 0
             );
 
             $authenticated = false;
         } elseif ($return->authentication->authenticated) {
             $this->SetBuffer('customerID', $return->authentication->customerId);
-            $this->SendDebug(__FUNCTION__, 'CustomerID: '.$return->authentication->customerId, 0);
+            $this->SendDebug(__FUNCTION__, 'CustomerID: ' . $return->authentication->customerId, 0);
             $authenticated = true;
         } else {
             $this->SendDebug(
-                __FUNCTION__, 'Not authenticated (property authenticated is false)! '.$return_data['body'], 0
+                __FUNCTION__, 'Not authenticated (property authenticated is false)! ' . $return_data['body'], 0
             );
 
             $authenticated = false;
@@ -679,6 +674,7 @@ class AmazonEchoIO extends IPSModule
         }
 
         return $authenticated;
+
     }
 
     private function getReturnValues(array $info, string $result): array
@@ -686,20 +682,20 @@ class AmazonEchoIO extends IPSModule
         $HeaderSize = $info['header_size'];
 
         $http_code = $info['http_code'];
-        $this->SendDebug(__FUNCTION__, 'Response (http_code): '.$http_code, 0);
+        $this->SendDebug(__FUNCTION__, 'Response (http_code): ' . $http_code, 0);
 
         $header = explode("\n", substr($result, 0, $HeaderSize));
-        $this->SendDebug(__FUNCTION__, 'Response (header): '.json_encode($header), 0);
+        $this->SendDebug(__FUNCTION__, 'Response (header): ' . json_encode($header), 0);
 
         $body = substr($result, $HeaderSize);
-        $this->SendDebug(__FUNCTION__, 'Response (body): '.$body, 0);
+        $this->SendDebug(__FUNCTION__, 'Response (body): ' . $body, 0);
 
         return ['http_code' => $http_code, 'header' => $header, 'body' => $body];
     }
 
     private function NpCommand(array $getfields, array $postfields)
     {
-        $url = 'https://'.$this->GetAlexaURL().'/api/np/command?'.http_build_query($getfields);
+        $url = 'https://' . $this->GetAlexaURL() . '/api/np/command?' . http_build_query($getfields);
 
         $header = $this->GetHeader();
 
@@ -708,7 +704,7 @@ class AmazonEchoIO extends IPSModule
 
     private function NpPlayer(array $getfields)
     {
-        $url = 'https://'.$this->GetAlexaURL().'/api/np/player?'.http_build_query($getfields);
+        $url = 'https://' . $this->GetAlexaURL() . '/api/np/player?' . http_build_query($getfields);
 
         $header = $this->GetHeader();
 
@@ -717,7 +713,7 @@ class AmazonEchoIO extends IPSModule
 
     private function NpQueue(array $getfields)
     {
-        $url = 'https://'.$this->GetAlexaURL().'/api/np/queue?'.http_build_query($getfields);
+        $url = 'https://' . $this->GetAlexaURL() . '/api/np/queue?' . http_build_query($getfields);
 
         $header = $this->GetHeader();
 
@@ -726,13 +722,14 @@ class AmazonEchoIO extends IPSModule
 
     private function BehaviorsPreview(array $postfields)
     {
-        $url = 'https://alexa.'.$this->GetAmazonURL().'/api/behaviors/preview';
+
+        $url = 'https://alexa.' . $this->GetAmazonURL() . '/api/behaviors/preview';
 
         $operationPayload = [
             'deviceType'         => $postfields['deviceType'],
             'deviceSerialNumber' => $postfields['deviceSerialNumber'],
             'locale'             => $this->GetLanguage(),
-            'customerId'         => $postfields['customerId'], ];
+            'customerId'         => $postfields['customerId']];
 
         if (isset($postfields['textToSpeak'])) {
             $operationPayload['textToSpeak'] = $postfields['textToSpeak'];
@@ -741,16 +738,16 @@ class AmazonEchoIO extends IPSModule
         $startNode = [
             '@type'            => 'com.amazon.alexa.behaviors.model.OpaquePayloadOperationNode',
             'type'             => $postfields['type'],
-            'operationPayload' => $operationPayload, ];
+            'operationPayload' => $operationPayload];
 
         $sequence = [
             '@type'     => 'com.amazon.alexa.behaviors.model.Sequence',
-            'startNode' => $startNode, ];
+            'startNode' => $startNode];
 
         $postfields = [
             'behaviorId'   => 'PREVIEW',
             'sequenceJson' => json_encode($sequence),
-            'status'       => 'ENABLED', ];
+            'status'       => 'ENABLED'];
 
         $header = $this->GetHeader();
 
@@ -759,7 +756,8 @@ class AmazonEchoIO extends IPSModule
 
     private function BehaviorsPreviewAutomation(array $deviceinfos, array $automation)
     {
-        $url = 'https://alexa.'.$this->GetAmazonURL().'/api/behaviors/preview';
+
+        $url = 'https://alexa.' . $this->GetAmazonURL() . '/api/behaviors/preview';
 
         $header = $this->GetHeader();
 
@@ -767,7 +765,7 @@ class AmazonEchoIO extends IPSModule
             [
                 'behaviorId'   => $automation['automationId'],
                 'sequenceJson' => json_encode($automation['sequence']),
-                'status'       => 'ENABLED', ]
+                'status'       => 'ENABLED']
         );
 
         $postfields = str_replace(
@@ -779,7 +777,7 @@ class AmazonEchoIO extends IPSModule
 
     private function TuneinQueueandplay(array $getfields, array $postfields)
     {
-        $url = 'https://'.$this->GetAlexaURL().'/api/tunein/queue-and-play?'.http_build_query($getfields);
+        $url = 'https://' . $this->GetAlexaURL() . '/api/tunein/queue-and-play?' . http_build_query($getfields);
 
         $header = $this->GetHeader();
 
@@ -788,7 +786,7 @@ class AmazonEchoIO extends IPSModule
 
     private function CloudplayerQueueandplay(array $getfields, array $postfields)
     {
-        $url = 'https://'.$this->GetAlexaURL().'/api/cloudplayer/queue-and-play?'.http_build_query($getfields);
+        $url = 'https://' . $this->GetAlexaURL() . '/api/cloudplayer/queue-and-play?' . http_build_query($getfields);
 
         $header = $this->GetHeader();
 
@@ -797,7 +795,7 @@ class AmazonEchoIO extends IPSModule
 
     private function MediaState($getfields)
     {
-        $url = 'https://'.$this->GetAlexaURL().'/api/media/state?'.http_build_query($getfields);
+        $url = 'https://' . $this->GetAlexaURL() . '/api/media/state?' . http_build_query($getfields);
 
         $header = $this->GetHeader();
 
@@ -806,7 +804,7 @@ class AmazonEchoIO extends IPSModule
 
     private function Notifications()
     {
-        $url = 'https://'.$this->GetAlexaURL().'/api/notifications?';
+        $url = 'https://' . $this->GetAlexaURL() . '/api/notifications?';
 
         $header = $this->GetHeader();
 
@@ -815,7 +813,7 @@ class AmazonEchoIO extends IPSModule
 
     private function ToDos($getfields)
     {
-        $url = 'https://'.$this->GetAlexaURL().'/api/todos?'.http_build_query($getfields);
+        $url = 'https://' . $this->GetAlexaURL() . '/api/todos?' . http_build_query($getfields);
 
         $header = $this->GetHeader();
 
@@ -824,7 +822,7 @@ class AmazonEchoIO extends IPSModule
 
     private function Activities($getfields)
     {
-        $url = 'https://'.$this->GetAlexaURL().'/api/activities?'.http_build_query($getfields);
+        $url = 'https://' . $this->GetAlexaURL() . '/api/activities?' . http_build_query($getfields);
 
         $header = $this->GetHeader();
 
@@ -833,7 +831,7 @@ class AmazonEchoIO extends IPSModule
 
     private function PrimeSections($getfields, $filterSections, $filterCategories, $stationItems)
     {
-        $url = 'https://'.$this->GetAlexaURL().'/api/prime/prime-sections?'.http_build_query($getfields);
+        $url = 'https://' . $this->GetAlexaURL() . '/api/prime/prime-sections?' . http_build_query($getfields);
 
         $header = $this->GetHeader();
 
@@ -842,15 +840,15 @@ class AmazonEchoIO extends IPSModule
         if ($result['http_code'] === 200) {
 
             //$arr     = json_decode($result['body'], true)['primeStationSectionList'][0]['categories'][0]['stations'];
-            $arr = json_decode($result['body'], true)['primeStationSectionList'];
+            $arr     = json_decode($result['body'], true)['primeStationSectionList'];
             $arr_neu = [];
             foreach ($arr as $sectionKey => $section) {
                 if (!count($filterSections) || in_array($section['sectionId'], $filterSections, true)) {
-                    $arr_neu[$sectionKey]['sectionId'] = $section['sectionId'];
+                    $arr_neu[$sectionKey]['sectionId']   = $section['sectionId'];
                     $arr_neu[$sectionKey]['sectionName'] = $section['sectionName'];
                     foreach ($section['categories'] as $categoryKey => $category) {
                         if (!count($filterCategories) || in_array($category['categoryId'], $filterCategories, true)) {
-                            $arr_neu[$sectionKey]['categories'][$categoryKey]['categoryId'] = $category['categoryId'];
+                            $arr_neu[$sectionKey]['categories'][$categoryKey]['categoryId']   = $category['categoryId'];
                             $arr_neu[$sectionKey]['categories'][$categoryKey]['categoryName'] = $category['categoryName'];
                             foreach ($category['stations'] as $stationKey => $station) {
                                 foreach ($station as $itemName => $item) {
@@ -866,6 +864,7 @@ class AmazonEchoIO extends IPSModule
             //echo substr(print_r($arr['primeStationSectionList'], true), 0, 100000);
             //$result['body'] = json_encode(strlen(json_encode($arr_neu)));
             $result['body'] = json_encode($arr_neu);
+
         }
 
         return $result;
@@ -874,7 +873,7 @@ class AmazonEchoIO extends IPSModule
     private function BluetoothDisconnect($getfields)
     {
         $url =
-            'https://'.$this->GetAlexaURL().'/api/bluetooth/disconnect-sink/'.$getfields['deviceType'].'/'.$getfields['deviceSerialNumber'];
+            'https://' . $this->GetAlexaURL() . '/api/bluetooth/disconnect-sink/' . $getfields['deviceType'] . '/' . $getfields['deviceSerialNumber'];
 
         $header = $this->GetHeader();
 
@@ -883,7 +882,7 @@ class AmazonEchoIO extends IPSModule
 
     private function BluetoothConnect($getfields, $postfields)
     {
-        $url = 'https://'.$this->GetAlexaURL().'/api/bluetooth/pair-sink/'.$getfields['deviceType'].'/'.$getfields['deviceSerialNumber'];
+        $url = 'https://' . $this->GetAlexaURL() . '/api/bluetooth/pair-sink/' . $getfields['deviceType'] . '/' . $getfields['deviceSerialNumber'];
 
         $header = $this->GetHeader();
 
@@ -892,7 +891,7 @@ class AmazonEchoIO extends IPSModule
 
     private function GetBluetoothDevices()
     {
-        $url = 'https://'.$this->GetAlexaURL().'/api/bluetooth?cached=false';
+        $url = 'https://' . $this->GetAlexaURL() . '/api/bluetooth?cached=false';
 
         $header = $this->GetHeader();
 
@@ -929,6 +928,7 @@ class AmazonEchoIO extends IPSModule
      */
     private function GetDevices(string $deviceType = null, string $serialNumber = null, bool $cached = null)
     {
+
         if (!isset($cached)) {
             $cached = false;
         }
@@ -936,9 +936,9 @@ class AmazonEchoIO extends IPSModule
         $header = $this->GetHeader();
 
         $getfields = [
-            'cached' => $cached ? 'true' : 'false', ];
+            'cached' => $cached ? 'true' : 'false'];
 
-        $url = 'https://'.$this->GetAlexaURL().'/api/devices-v2/device?'.http_build_query($getfields);
+        $url = 'https://' . $this->GetAlexaURL() . '/api/devices-v2/device?' . http_build_query($getfields);
 
         $result = $this->SendEcho($url, $header);
 
@@ -949,7 +949,7 @@ class AmazonEchoIO extends IPSModule
         //if the info is needed for a single device
         if (($deviceType !== null) && ($serialNumber !== null)) {
             $devices_arr = json_decode($result['body'], true);
-            $myDevice = null;
+            $myDevice    = null;
             foreach ($devices_arr['devices'] as $key => $device) {
                 if (($device['deviceType'] === $deviceType) && ($device['serialNumber'] === $serialNumber)) {
                     $myDevice = $device;
@@ -959,7 +959,7 @@ class AmazonEchoIO extends IPSModule
                 }
             }
             $devices_arr['devices'] = [$myDevice];
-            $result['body'] = json_encode($devices_arr);
+            $result['body']         = json_encode($devices_arr);
         }
 
         return $result;
@@ -969,14 +969,15 @@ class AmazonEchoIO extends IPSModule
     {
         $header = $this->GetHeader();
 
-        $url = 'https://'.$this->GetAlexaURL().'/api/behaviors/automations';
+        $url = 'https://' . $this->GetAlexaURL() . '/api/behaviors/automations';
 
         return $this->SendEcho($url, $header);
+
     }
 
     private function SendEchoData(string $url, array $header, array $postfields = null): array
     {
-        $this->SendDebug(__FUNCTION__, 'url: '.$url, 0);
+        $this->SendDebug(__FUNCTION__, 'url: ' . $url, 0);
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
@@ -997,7 +998,7 @@ class AmazonEchoIO extends IPSModule
 
         $result = curl_exec($ch);
         if (curl_errno($ch)) {
-            trigger_error('Error:'.curl_error($ch));
+            trigger_error('Error:' . curl_error($ch));
         }
         $info = curl_getinfo($ch);
         curl_close($ch);
@@ -1007,12 +1008,13 @@ class AmazonEchoIO extends IPSModule
 
     private function GetHeader(): array
     {
+
         $csrf = '';
 
         if ($this->ReadPropertyBoolean('UseCustomCSRFandCookie')) {
             $csrf = $this->getCsrfFromCookie();
             if ($csrf === false) {
-                trigger_error('no valid CSRF in cookie: '.$this->ReadPropertyString('alexa_cookie'));
+                trigger_error('no valid CSRF in cookie: ' . $this->ReadPropertyString('alexa_cookie'));
             }
         } else {
             $CookiesFileName = $this->ReadPropertyString('CookiesFileName');
@@ -1027,16 +1029,16 @@ class AmazonEchoIO extends IPSModule
         }
 
         $header = [
-            'User-Agent: '.$this->ReadPropertyString('browser'),
+            'User-Agent: ' . $this->ReadPropertyString('browser'),
             'Accept-Encoding: gzip, deflate, br',
             'Accept-Language:  de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7',
             'Accept: application/json, text/javascript, */*; q=0.01',
-            'Referer: http://alexa.'.$this->GetAmazonURL().'/spa/index.html',
-            'Connection: keep-alive', ];
+            'Referer: http://alexa.' . $this->GetAmazonURL() . '/spa/index.html',
+            'Connection: keep-alive'];
         //'Content-Type: application/x-www-form-urlencoded; charset=UTF-8']; //todo: experimentell auskommentiert, damit Capabilities abgefragt werden können
 
         if ($csrf) {
-            $header[] = 'csrf: '.$csrf;
+            $header[] = 'csrf: ' . $csrf;
         }
 
         return $header;
@@ -1053,7 +1055,7 @@ class AmazonEchoIO extends IPSModule
      */
     private function SendEcho(string $url, array $header, string $postfields = null, bool $optpost = null)
     {
-        $this->SendDebug(__FUNCTION__, 'Header: '.json_encode($header), 0);
+        $this->SendDebug(__FUNCTION__, 'Header: ' . json_encode($header), 0);
 
         $ch = curl_init();
 
@@ -1065,7 +1067,7 @@ class AmazonEchoIO extends IPSModule
             CURLINFO_HEADER_OUT    => true,
             CURLOPT_ENCODING       => '',
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1, ];
+            CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1];
 
         if ($this->ReadPropertyBoolean('UseCustomCSRFandCookie')) {
             $options[CURLOPT_COOKIE] = $this->ReadPropertyString('alexa_cookie'); //this content is read
@@ -1078,7 +1080,7 @@ class AmazonEchoIO extends IPSModule
                 $this->SendDebug(__FUNCTION__, 'Type: DELETE', 0);
                 $options[CURLOPT_CUSTOMREQUEST] = 'DELETE';
             } else {
-                $this->SendDebug(__FUNCTION__, 'Postfields: '.$postfields, 0);
+                $this->SendDebug(__FUNCTION__, 'Postfields: ' . $postfields, 0);
                 $options[CURLOPT_POSTFIELDS] = $postfields;
             }
         }
@@ -1087,23 +1089,22 @@ class AmazonEchoIO extends IPSModule
             $options[CURLOPT_POST] = $optpost;
         }
 
-        $this->SendDebug(__FUNCTION__, 'Options: '.json_encode($options), 0);
+        $this->SendDebug(__FUNCTION__, 'Options: ' . json_encode($options), 0);
         curl_setopt_array($ch, $options);
 
         $result = curl_exec($ch);
 
         if (curl_errno($ch)) {
-            $this->SendDebug(__FUNCTION__, 'Error: ('.curl_errno($ch).') '.curl_error($ch), 0);
-            $this->LogMessage('Error: ('.curl_errno($ch).') '.curl_error($ch), KL_ERROR);
-
+            $this->SendDebug(__FUNCTION__, 'Error: (' . curl_errno($ch) . ') ' . curl_error($ch), 0);
+            $this->LogMessage('Error: (' . curl_errno($ch) . ') ' . curl_error($ch), KL_ERROR);
             return false;
         }
 
-        $info = curl_getinfo($ch);
+        $info      = curl_getinfo($ch);
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-        $this->SendDebug(__FUNCTION__, 'Send to URL: '.print_r($url, true), 0);
-        $this->SendDebug(__FUNCTION__, 'Curl Info: '.$http_code.' '.print_r($info, true), 0);
+        $this->SendDebug(__FUNCTION__, 'Send to URL: ' . print_r($url, true), 0);
+        $this->SendDebug(__FUNCTION__, 'Curl Info: ' . $http_code . ' ' . print_r($info, true), 0);
         curl_close($ch);
         //eine Fehlerbehandlung macht hier leider keinen Sinn, da 400 auch kommt, wenn z.b. der Bildschirm (Show) ausgeschaltet ist
 
@@ -1120,24 +1121,23 @@ class AmazonEchoIO extends IPSModule
      */
     public function ForwardData($JSONString)
     {
-        $this->SendDebug(__FUNCTION__, 'Incoming: '.$JSONString, 0);
+        $this->SendDebug(__FUNCTION__, 'Incoming: ' . $JSONString, 0);
         // Empfangene Daten von der Device Instanz
         $data = json_decode($JSONString, false)->Buffer;
 
         if (!property_exists($data, 'method')) {
             trigger_error('Property \'method\' is missing');
-
             return false;
         }
 
-        $this->SendDebug(__FUNCTION__, '== started == (Method \''.$data->method.'\')', 0);
+        $this->SendDebug(__FUNCTION__, '== started == (Method \'' . $data->method . '\')', 0);
         //$this->SendDebug(__FUNCTION__, 'Method: ' . $data->method, 0);
 
         $buffer = json_decode($JSONString, true)['Buffer'];
 
         switch ($data->method) {
             case 'NpCommand':
-                $getfields = $buffer['getfields'];
+                $getfields  = $buffer['getfields'];
                 $postfields = $buffer['postfields'];
 
                 $result = $this->NpCommand($getfields, $postfields);
@@ -1168,19 +1168,19 @@ class AmazonEchoIO extends IPSModule
 
             case 'BehaviorsPreviewAutomation':
                 $deviceinfos = $buffer['postfields']; //the postfields contain the device infos
-                $automation = $buffer['automation'];
-                $result = $this->BehaviorsPreviewAutomation($deviceinfos, $automation);
+                $automation  = $buffer['automation'];
+                $result      = $this->BehaviorsPreviewAutomation($deviceinfos, $automation);
                 break;
 
             case 'CloudplayerQueueandplay':
-                $getfields = $buffer['getfields'];
+                $getfields  = $buffer['getfields'];
                 $postfields = $buffer['postfields'];
 
                 $result = $this->CloudplayerQueueandplay($getfields, $postfields);
                 break;
 
             case 'TuneinQueueandplay':
-                $getfields = $buffer['getfields'];
+                $getfields  = $buffer['getfields'];
                 $postfields = $buffer['postfields'];
 
                 $result = $this->TuneinQueueandplay($getfields, $postfields);
@@ -1215,7 +1215,7 @@ class AmazonEchoIO extends IPSModule
                 break;
 
             case 'BluetoothPairSink':
-                $getfields = $buffer['getfields'];
+                $getfields  = $buffer['getfields'];
                 $postfields = $buffer['postfields'];
 
                 $result = $this->BluetoothConnect($getfields, $postfields);
@@ -1228,9 +1228,9 @@ class AmazonEchoIO extends IPSModule
 
             case 'CustomCommand':
                 $postfields = $buffer['postfields'] ?? null;
-                $optpost = $buffer['optpost'] ?? null;
+                $optpost    = $buffer['optpost'] ?? null;
                 if (isset($buffer['getfields'])) {
-                    $url = $buffer['url'].http_build_query($buffer['getfields']);
+                    $url = $buffer['url'] . http_build_query($buffer['getfields']);
                 } else {
                     $url = $buffer['url'];
                 }
@@ -1239,7 +1239,7 @@ class AmazonEchoIO extends IPSModule
                 break;
 
             case 'SendDelete':
-                $url = $buffer['url'];
+                $url    = $buffer['url'];
                 $result = $this->SendDelete($url);
                 break;
 
@@ -1259,20 +1259,19 @@ class AmazonEchoIO extends IPSModule
 
             case 'GetCustomerID':
                 $result = ['http_code' => 200, 'header' => '', 'body' => $this->GetBuffer('customerID')];
-                $this->SendDebug(__FUNCTION__, 'Return: '.$this->GetBuffer('customerID'), 0);
+                $this->SendDebug(__FUNCTION__, 'Return: ' . $this->GetBuffer('customerID'), 0);
 
                 break;
 
             default:
-                trigger_error('Method \''.$data->method.'\' not yet supported');
-
+                trigger_error('Method \'' . $data->method . '\' not yet supported');
                 return false;
         }
 
         $ret = json_encode($result);
-        $this->SendDebug(__FUNCTION__, 'Return: '.strlen($ret).' Zeichen', 0);
-
+        $this->SendDebug(__FUNCTION__, 'Return: ' . strlen($ret) . ' Zeichen', 0);
         return $ret;
+
     }
 
     /***********************************************************
@@ -1293,7 +1292,7 @@ class AmazonEchoIO extends IPSModule
             [
                 'elements' => $this->FormElements(),
                 'actions'  => $this->FormActions(),
-                'status'   => $this->FormStatus(), ]
+                'status'   => $this->FormStatus()]
         );
     }
 
@@ -1308,32 +1307,32 @@ class AmazonEchoIO extends IPSModule
             [
                 'name'    => 'active',
                 'type'    => 'CheckBox',
-                'caption' => 'active', ],
+                'caption' => 'active'],
             [
                 'name'    => 'username',
                 'type'    => 'ValidationTextBox',
-                'caption' => 'Amazon User Name', ],
+                'caption' => 'Amazon User Name'],
             [
                 'name'    => 'password',
                 'type'    => 'PasswordTextBox',
-                'caption' => 'Amazon Password', ],
+                'caption' => 'Amazon Password'],
             [
                 'name'    => 'amazon2fa',
                 'type'    => 'PasswordTextBox',
-                'caption' => 'Amazon 2FA', ],
+                'caption' => 'Amazon 2FA'],
             [
                 'name'    => 'language',
                 'type'    => 'Select',
                 'caption' => 'Echo language',
-                'options' => $this->GetEchoLanguageList(), ],
+                'options' => $this->GetEchoLanguageList()],
             [
                 'name'    => 'UseCustomCSRFandCookie',
                 'type'    => 'CheckBox',
-                'caption' => 'Use Custom Cookie', ],
+                'caption' => 'Use Custom Cookie'],
             [
                 'name'    => 'alexa_cookie',
                 'type'    => 'ValidationTextBox',
-                'caption' => 'Cookie', ],
+                'caption' => 'Cookie']
 
         ];
     }
@@ -1348,23 +1347,23 @@ class AmazonEchoIO extends IPSModule
         $form = [
             [
                 'type'    => 'Label',
-                'caption' => 'Test the Registration:', ],
+                'caption' => 'Test the Registration:'],
             [
                 'type'    => 'Button',
                 'caption' => 'login',
-                'onClick' => "if (EchoIO_LogIn(\$id)){echo 'Die Anmeldung war erfolgreich.';} else {echo 'Bei der Anmeldung ist ein Fehler aufgetreten.';}", ],
+                'onClick' => "if (EchoIO_LogIn(\$id)){echo 'Die Anmeldung war erfolgreich.';} else {echo 'Bei der Anmeldung ist ein Fehler aufgetreten.';}"],
             [
                 'type'    => 'Button',
                 'caption' => 'logoff',
-                'onClick' => "if (EchoIO_LogOff(\$id)){echo 'Die Abmeldung war erfolgreich.';} else {echo 'Bei der Abmeldung ist ein Fehler aufgetreten.';}", ],
+                'onClick' => "if (EchoIO_LogOff(\$id)){echo 'Die Abmeldung war erfolgreich.';} else {echo 'Bei der Abmeldung ist ein Fehler aufgetreten.';}"],
             [
                 'type'    => 'Button',
                 'caption' => 'Login Status',
-                'onClick' => "if (EchoIO_CheckLoginStatus(\$id)){echo 'Sie sind angemeldet.';} else {echo 'Sie sind nicht angemeldet.';}", ],
+                'onClick' => "if (EchoIO_CheckLoginStatus(\$id)){echo 'Sie sind angemeldet.';} else {echo 'Sie sind nicht angemeldet.';}"],
             [
                 'type'    => 'Button',
                 'caption' => 'Get OTP',
-                'onClick' => "echo 'Amazon OTP: ' . EchoIO_GetOTP(\$id);", ], ];
+                'onClick' => "echo 'Amazon OTP: ' . EchoIO_GetOTP(\$id);"]];
 
         return $form;
     }
@@ -1380,23 +1379,23 @@ class AmazonEchoIO extends IPSModule
             [
                 'code'    => 210,
                 'icon'    => 'error',
-                'caption' => 'user name must not be empty.', ],
+                'caption' => 'user name must not be empty.'],
             [
                 'code'    => 211,
                 'icon'    => 'error',
-                'caption' => 'password must not be empty.', ],
+                'caption' => 'password must not be empty.'],
             [
                 'code'    => 212,
                 'icon'    => 'error',
-                'caption' => 'cookie must not be empty.', ],
+                'caption' => 'cookie must not be empty.'],
             [
                 'code'    => 213,
                 'icon'    => 'error',
-                'caption' => 'cookie without csrf.', ],
+                'caption' => 'cookie without csrf.'],
             [
                 'code'    => 214,
                 'icon'    => 'error',
-                'caption' => 'not authenticated.', ], ];
+                'caption' => 'not authenticated.']];
 
         return $form;
     }
@@ -1406,14 +1405,13 @@ class AmazonEchoIO extends IPSModule
         $options = [
             [
                 'caption' => 'Please choose',
-                'value'   => -1, ],
+                'value'   => -1],
             [
                 'caption' => 'german',
-                'value'   => 0, ],
+                'value'   => 0],
             [
                 'caption' => 'english',
-                'value'   => 1, ], ];
-
+                'value'   => 1]];
         return $options;
     }
 }

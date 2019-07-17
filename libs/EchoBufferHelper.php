@@ -13,11 +13,9 @@ trait EchoBufferHelper
      */
     public function __get($name)
     {
-        /* @noinspection UnserializeExploitsInspection */
+        /** @noinspection UnserializeExploitsInspection */
         return unserialize($this->GetBuffer($name));
-    }
-
-    /** @noinspection MagicMethodsValidityInspection */
+    }/** @noinspection MagicMethodsValidityInspection */
 
     /**
      * Wert einer Eigenschaft in den InstanceBuffer schreiben.

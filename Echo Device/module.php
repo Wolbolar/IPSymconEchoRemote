@@ -3,8 +3,8 @@
 //<editor-fold desc="declarations">
 declare(strict_types=1);
 
-require_once __DIR__.'/../libs/EchoBufferHelper.php';
-require_once __DIR__.'/../libs/EchoDebugHelper.php';
+require_once __DIR__ . '/../libs/EchoBufferHelper.php';
+require_once __DIR__ . '/../libs/EchoDebugHelper.php';
 //</editor-fold>
 
 // Modul für Amazon Echo Remote
@@ -13,12 +13,12 @@ class EchoRemote extends IPSModule
 {
     use EchoBufferHelper, EchoDebugHelper;
 
-    private const STATUS_INST_DEVICETYPE_IS_EMPTY = 210; // devicetype must not be empty.
+    private const STATUS_INST_DEVICETYPE_IS_EMPTY   = 210; // devicetype must not be empty.
     private const STATUS_INST_DEVICENUMBER_IS_EMPTY = 211; // devicenumber must not be empty
 
     private $customerID = '';
 
-    private $ParentID = 0;
+    private $ParentID   = 0;
 
     public function Create()
     {
@@ -85,13 +85,14 @@ class EchoRemote extends IPSModule
 
         $this->SetBuffer('CoverURL', '');
         $this->SetBuffer('Volume', '');
-        $this->RegisterTimer('EchoUpdate', 0, 'EchoRemote_UpdateStatus('.$this->InstanceID.');');
-        $this->RegisterTimer('EchoAlarm', 0, 'EchoRemote_RaiseAlarm('.$this->InstanceID.');');
+        $this->RegisterTimer('EchoUpdate', 0, 'EchoRemote_UpdateStatus(' . $this->InstanceID . ');');
+        $this->RegisterTimer('EchoAlarm', 0, 'EchoRemote_RaiseAlarm(' . $this->InstanceID . ');');
 
         $this->ConnectParent('{C7F853A4-60D2-99CD-A198-2C9025E2E312}');
 
         //we will wait until the kernel is ready
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
+
     }
 
     public function ApplyChanges()
@@ -110,6 +111,7 @@ class EchoRemote extends IPSModule
         $this->RegisterParent();
 
         $this->RegisterVariables();
+
     }
 
     protected function HasActiveParent(): bool
@@ -126,7 +128,7 @@ class EchoRemote extends IPSModule
     protected function RegisterParent(): int
     {
         $OldParentId = $this->ParentID;
-        $ParentId = @IPS_GetInstance($this->InstanceID)['ConnectionID'];
+        $ParentId    = @IPS_GetInstance($this->InstanceID)['ConnectionID'];
         if ($ParentId !== $OldParentId) {
             if ($OldParentId > 0) {
                 $this->UnregisterMessage($OldParentId, IM_CHANGESTATUS);
@@ -138,13 +140,13 @@ class EchoRemote extends IPSModule
             }
             $this->ParentID = $ParentId;
         }
-
         return $ParentId;
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
     public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
     {
+
         switch ($Message) {
             case IM_CHANGESTATUS:
                 if ($Data[0] === IS_ACTIVE) {
@@ -165,6 +167,7 @@ class EchoRemote extends IPSModule
 
     private function ValidateConfiguration(): bool
     {
+
         $this->SetTimerInterval('EchoAlarm', 0);
         if ($this->ReadPropertyString('Devicetype') === '') {
             $this->SetStatus(self::STATUS_INST_DEVICETYPE_IS_EMPTY);
@@ -192,7 +195,7 @@ class EchoRemote extends IPSModule
             return;
         }
 
-        $this->SendDebug(__FUNCTION__, 'Device Info: '.print_r($device_info, true), 0);
+        $this->SendDebug(__FUNCTION__, 'Device Info: ' . print_r($device_info, true), 0);
         $caps = $device_info['capabilities'];
 
         //Remote Variable
@@ -203,7 +206,7 @@ class EchoRemote extends IPSModule
                              [2, $this->Translate('Pause/Stop'), 'Sleep', -1],
                              [3, $this->Translate('Play'), 'Script', -1],
                              [4, $this->Translate('Next'), 'HollowLargeArrowRight', -1],
-                             [5, $this->Translate('Forward 30s'), 'HollowDoubleArrowRight', -1], ]
+                             [5, $this->Translate('Forward 30s'), 'HollowDoubleArrowRight', -1]]
         );
         $this->RegisterVariableInteger('EchoRemote', 'Remote', 'Echo.Remote', 1);
         $this->EnableAction('EchoRemote');
@@ -240,7 +243,7 @@ class EchoRemote extends IPSModule
                                   [2, $this->Translate('Flash Briefing'), '', -1],
                                   [3, $this->Translate('Good morning'), '', -1],
                                   [4, $this->Translate('Sing a song'), '', -1],
-                                  [5, $this->Translate('Tell a story'), '', -1], ]
+                                  [5, $this->Translate('Tell a story'), '', -1]]
             );
             $this->RegisterVariableInteger('EchoActions', 'Actions', 'Echo.Actions', 6);
             $this->EnableAction('EchoActions');
@@ -257,10 +260,10 @@ class EchoRemote extends IPSModule
                 foreach (json_decode($this->ReadPropertyString('TuneInStations'), true) as $tuneInStation) {
                     $associations[] = [$tuneInStation['position'], $tuneInStation['station'], '', -1];
                 }
-                $profileName = 'Echo.TuneInStation.'.$devicenumber;
+                $profileName = 'Echo.TuneInStation.' . $devicenumber;
                 $this->RegisterProfileAssociation($profileName, 'Music', '', '', 0, 0, 0, 0, VARIABLETYPE_INTEGER, $associations);
-                $this->RegisterVariableInteger('EchoTuneInRemote_'.$devicenumber, 'TuneIn Radio', $profileName, 5);
-                $this->EnableAction('EchoTuneInRemote_'.$devicenumber);
+                $this->RegisterVariableInteger('EchoTuneInRemote_' . $devicenumber, 'TuneIn Radio', $profileName, 5);
+                $this->EnableAction('EchoTuneInRemote_' . $devicenumber);
             }
         }
 
@@ -278,7 +281,7 @@ class EchoRemote extends IPSModule
             $this->RegisterProfileAssociation(
                 'Echo.Remote.Mute', 'Speaker', '', '', 0, 1, 0, 0, VARIABLETYPE_BOOLEAN, [
                                       [false, $this->Translate('Mute'), 'Speaker', 0xff3300],
-                                      [true, $this->Translate('Unmute'), 'Speaker', 0x00ff55], ]
+                                      [true, $this->Translate('Unmute'), 'Speaker', 0x00ff55]]
             );
             $this->RegisterVariableBoolean('Mute', $this->Translate('Mute'), 'Echo.Remote.Mute', 13);
             $this->EnableAction('Mute');
@@ -344,6 +347,7 @@ class EchoRemote extends IPSModule
         }
 
         return false;
+
     }
 
     /** Sends Request to IO and get response.
@@ -363,8 +367,8 @@ class EchoRemote extends IPSModule
     {
         $this->SendDebug(
             __FUNCTION__,
-            'Method: '.$method.', Getfields: '.json_encode($getfields).', Postfields: '.json_encode($postfields).', URL: '.$url
-            .', Option Post: '.(int) $optpost.', Automation: '.json_encode($automation), 0
+            'Method: ' . $method . ', Getfields: ' . json_encode($getfields) . ', Postfields: ' . json_encode($postfields) . ', URL: ' . $url
+            . ', Option Post: ' . (int) $optpost . ', Automation: ' . json_encode($automation), 0
         );
 
         $Data['DataID'] = '{8E187D67-F330-2B1D-8C6E-B37896D7AE3E}';
@@ -392,7 +396,7 @@ class EchoRemote extends IPSModule
 
         $ResultJSON = $this->SendDataToParent(json_encode($Data));
         if ($ResultJSON) {
-            $this->SendDebug(__FUNCTION__, 'Result: '.json_encode($ResultJSON), 0);
+            $this->SendDebug(__FUNCTION__, 'Result: ' . json_encode($ResultJSON), 0);
 
             $ret = json_decode($ResultJSON, true);
             if ($ret) {
@@ -401,7 +405,7 @@ class EchoRemote extends IPSModule
         }
 
         IPS_LogMessage(
-            __CLASS__.'::'.__FUNCTION__, sprintf(
+            __CLASS__ . '::' . __FUNCTION__, sprintf(
                                                '\'%s\' (#%s): SendDataToParent returned with %s. $Data = %s', IPS_GetName($this->InstanceID),
                                                $this->InstanceID, json_encode($ResultJSON), json_encode($Data)
                                            )
@@ -414,7 +418,7 @@ class EchoRemote extends IPSModule
     public function RequestAction($Ident, $Value)
     {
         $devicenumber = $this->ReadPropertyString('Devicenumber');
-        $this->SendDebug('Echo Remote:', 'Request Action trigger device '.$devicenumber.' by Ident '.$Ident, 0);
+        $this->SendDebug('Echo Remote:', 'Request Action trigger device ' . $devicenumber . ' by Ident ' . $Ident, 0);
         if ($Ident === 'EchoRemote') {
             switch ($Value) {
                 case 0: // Rewind30s
@@ -446,7 +450,7 @@ class EchoRemote extends IPSModule
         if ($Ident === 'EchoVolume') {
             $this->SetVolume($Value);
         }
-        if ($Ident === 'EchoTuneInRemote_'.$devicenumber) {
+        if ($Ident === 'EchoTuneInRemote_' . $devicenumber) {
             $stationid = $this->GetTuneInStationID($Value);
             $this->TuneIn($stationid);
         }
@@ -487,6 +491,7 @@ class EchoRemote extends IPSModule
             } else {
                 $this->Mute(true);
             }
+
         }
     }
 
@@ -505,10 +510,11 @@ class EchoRemote extends IPSModule
      */
     private function RegisterProfile($Name, $Icon, $Prefix, $Suffix, $MinValue, $MaxValue, $StepSize, $Digits, $Vartype): void
     {
+
         if (IPS_VariableProfileExists($Name)) {
             $profile = IPS_GetVariableProfile($Name);
             if ($profile['ProfileType'] !== $Vartype) {
-                $this->SendDebug('Profile', 'Variable profile type does not match for profile '.$Name, 0);
+                $this->SendDebug('Profile', 'Variable profile type does not match for profile ' . $Name, 0);
             }
         } else {
             IPS_CreateVariableProfile($Name, $Vartype); // 0 boolean, 1 int, 2 float, 3 string
@@ -523,8 +529,8 @@ class EchoRemote extends IPSModule
         ); // string $ProfilName, float $Minimalwert, float $Maximalwert, float $Schrittweite
         $this->SendDebug(
             'Variablenprofil konfiguriert',
-            'Name: '.$Name.', Icon: '.$Icon.', Prefix: '.$Prefix.', $Suffix: '.$Suffix.', Digits: '.$Digits.', MinValue: '
-            .$MinValue.', MaxValue: '.$MaxValue.', StepSize: '.$StepSize, 0
+            'Name: ' . $Name . ', Icon: ' . $Icon . ', Prefix: ' . $Prefix . ', $Suffix: ' . $Suffix . ', Digits: ' . $Digits . ', MinValue: '
+            . $MinValue . ', MaxValue: ' . $MaxValue . ', StepSize: ' . $StepSize, 0
         );
     }
 
@@ -553,7 +559,8 @@ class EchoRemote extends IPSModule
         if (is_array($Associations)) {
             //zunächst werden alte Assoziationen gelöscht
             //bool IPS_SetVariableProfileAssociation ( string $ProfilName, float $Wert, string $Name, string $Icon, integer $Farbe )
-            if ($Vartype === 1 || $Vartype === 2) { // 0 boolean, 1 int, 2 float, 3 string
+            if ($Vartype === 1 || $Vartype === 2) // 0 boolean, 1 int, 2 float, 3 string
+            {
                 foreach (IPS_GetVariableProfile($Name)['Associations'] as $Association) {
                     IPS_SetVariableProfileAssociation($Name, $Association['Value'], '', '', -1);
                 }
@@ -574,24 +581,23 @@ class EchoRemote extends IPSModule
     private function SetEchoInterval(): void
     {
         $echointerval = $this->ReadPropertyInteger('updateinterval');
-        $interval = $echointerval * 1000;
+        $interval     = $echointerval * 1000;
         $this->SetTimerInterval('EchoUpdate', $interval);
     }
 
     private function Covername(): string
     {
-        $name = IPS_GetName($this->InstanceID);
-        $search = ['ä', 'ö', 'ü', 'Ä', 'Ö', 'Ü', 'ß', ' '];
+        $name    = IPS_GetName($this->InstanceID);
+        $search  = ['ä', 'ö', 'ü', 'Ä', 'Ö', 'Ü', 'ß', ' '];
         $replace = ['ae', 'oe', 'ue', 'Ae', 'Oe', 'Ue', 'ss', '_'];
-
-        return 'echocover'.str_replace($search, $replace, $name);
+        return 'echocover' . str_replace($search, $replace, $name);
     }
 
     private function CreateMediaImage(string $ident, int $position): void
     {
         $covername = $this->Covername();
-        $picurl = $this->GetBuffer('CoverURL'); // Cover URL
-        $ImageFile = IPS_GetKernelDir().'media'.DIRECTORY_SEPARATOR.$covername.'.png';  // Image-Datei
+        $picurl    = $this->GetBuffer('CoverURL'); // Cover URL
+        $ImageFile = IPS_GetKernelDir() . 'media' . DIRECTORY_SEPARATOR . $covername . '.png';  // Image-Datei
 
         $MediaID = @$this->GetIDForIdent($ident);
         if ($MediaID === false) {
@@ -603,7 +609,7 @@ class EchoRemote extends IPSModule
                 // set transparent image
                 $Content =
                     'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='; // Transparent png 1x1 Base64
-                $data = base64_decode($Content);
+                $data    = base64_decode($Content);
                 file_put_contents($ImageFile, $data); // save PNG
             }
             $MediaID = IPS_CreateMedia(1);                  // Image im MedienPool anlegen
@@ -631,17 +637,16 @@ class EchoRemote extends IPSModule
     private function GetTuneInStationID(int $preset): string
     {
         $list_json = $this->ReadPropertyString('TuneInStations');
-        $list = json_decode($list_json, true);
+        $list      = json_decode($list_json, true);
         $stationid = '';
         foreach ($list as $station) {
             if ($preset === $station['position']) {
                 $station_name = $station['station'];
-                $stationid = $station['station_id'];
-                $this->SendDebug(__FUNCTION__, 'station name: '.$station_name, 0);
-                $this->SendDebug(__FUNCTION__, 'station id: '.$stationid, 0);
+                $stationid    = $station['station_id'];
+                $this->SendDebug(__FUNCTION__, 'station name: ' . $station_name, 0);
+                $this->SendDebug(__FUNCTION__, 'station id: ' . $stationid, 0);
             }
         }
-
         return $stationid;
     }
 
@@ -654,20 +659,19 @@ class EchoRemote extends IPSModule
     private function GetTuneInStationPresetPosition(string $guideId)
     {
         $presetPosition = false;
-        $list_json = $this->ReadPropertyString('TuneInStations');
-        $list = json_decode($list_json, true);
+        $list_json      = $this->ReadPropertyString('TuneInStations');
+        $list           = json_decode($list_json, true);
         foreach ($list as $station) {
             if ($guideId === $station['station_id']) {
                 $presetPosition = $station['position'];
-                $station_name = $station['station'];
-                $stationid = $station['station_id'];
-                $this->SendDebug(__FUNCTION__, 'preset position: '.$presetPosition, 0);
-                $this->SendDebug(__FUNCTION__, 'station name: '.$station_name, 0);
-                $this->SendDebug(__FUNCTION__, 'station id: '.$stationid, 0);
+                $station_name   = $station['station'];
+                $stationid      = $station['station_id'];
+                $this->SendDebug(__FUNCTION__, 'preset position: ' . $presetPosition, 0);
+                $this->SendDebug(__FUNCTION__, 'station name: ' . $station_name, 0);
+                $this->SendDebug(__FUNCTION__, 'station id: ' . $stationid, 0);
                 break;
             }
         }
-
         return $presetPosition;
     }
 
@@ -680,7 +684,7 @@ class EchoRemote extends IPSModule
         //Alarmzeit setzen
         $oldAlarmTime = $this->GetValue('nextAlarmTime');
         $this->SetValue('lastAlarmTime', $oldAlarmTime);
-        $this->SendDebug(__FUNCTION__, 'lastAlarmTime set to '.$oldAlarmTime.' ('.date(DATE_RSS, $oldAlarmTime).')', 0);
+        $this->SendDebug(__FUNCTION__, 'lastAlarmTime set to ' . $oldAlarmTime . ' (' . date(DATE_RSS, $oldAlarmTime) . ')', 0);
 
         //Timer deaktivieren
         $this->SetTimerInterval('EchoAlarm', 0);
@@ -697,10 +701,8 @@ class EchoRemote extends IPSModule
         $result = $this->PlayCommand('RewindCommand');
         if ($result['http_code'] === 200) {
             $this->SetValue('EchoRemote', 0);
-
             return true;
         }
-
         return false;
     }
 
@@ -713,10 +715,8 @@ class EchoRemote extends IPSModule
         $result = $this->PlayCommand('PreviousCommand');
         if ($result['http_code'] === 200) {
             $this->SetValue('EchoRemote', 1);
-
             return true;
         }
-
         return false;
     }
 
@@ -729,10 +729,8 @@ class EchoRemote extends IPSModule
         $result = $this->PlayCommand('PauseCommand');
         if ($result['http_code'] === 200) {
             $this->SetValue('EchoRemote', 2);
-
             return true;
         }
-
         return false;
     }
 
@@ -745,10 +743,8 @@ class EchoRemote extends IPSModule
         $result = $this->PlayCommand('PlayCommand');
         if ($result['http_code'] === 200) {
             $this->SetValue('EchoRemote', 3);
-
             return true;
         }
-
         return false;
     }
 
@@ -761,10 +757,8 @@ class EchoRemote extends IPSModule
         $result = $this->PlayCommand('NextCommand');
         if ($result['http_code'] === 200) {
             $this->SetValue('EchoRemote', 4);
-
             return true;
         }
-
         return false;
     }
 
@@ -778,11 +772,11 @@ class EchoRemote extends IPSModule
     {
         $getfields = [
             'deviceSerialNumber' => $this->GetDevicenumber(),
-            'deviceType'         => $this->GetDevicetype(), ];
+            'deviceType'         => $this->GetDevicetype()];
 
         $postfields = [
             'type'    => 'JumpCommand',
-            'mediaId' => $mediaID, ];
+            'mediaId' => $mediaID];
 
         $result = $this->SendData('NpCommand', $getfields, $postfields);
 
@@ -798,10 +792,8 @@ class EchoRemote extends IPSModule
         $result = $this->PlayCommand('ForwardCommand');
         if ($result['http_code'] === 200) {
             $this->SetValue('EchoRemote', 5);
-
             return true;
         }
-
         return false;
     }
 
@@ -862,19 +854,17 @@ class EchoRemote extends IPSModule
 
         $getfields = [
             'deviceSerialNumber' => $this->GetDevicenumber(),
-            'deviceType'         => $this->GetDevicetype(), ];
+            'deviceType'         => $this->GetDevicetype()];
 
         $postfields = [
             'type'        => 'VolumeLevelCommand',
-            'volumeLevel' => $volume, ];
+            'volumeLevel' => $volume];
 
         $result = $this->SendData('NpCommand', $getfields, $postfields);
         if ($result['http_code'] === 200) {
             $this->SetValue('EchoVolume', $volume);
-
             return true;
         }
-
         return false;
     }
 
@@ -887,7 +877,7 @@ class EchoRemote extends IPSModule
     public function Mute(bool $mute): bool
     {
         $volume = 0;
-        $this->SendDebug('Echo Remote:', 'Mute: '.json_encode($mute), 0);
+        $this->SendDebug('Echo Remote:', 'Mute: ' . json_encode($mute), 0);
         if ($mute) {
             $this->SetValue('Mute', false);
         } else {
@@ -896,9 +886,9 @@ class EchoRemote extends IPSModule
 
         if ($mute) {
             $current_volume = $this->GetValue('EchoVolume');
-            /* @noinspection UnnecessaryCastingInspection */
+            /** @noinspection UnnecessaryCastingInspection */
             $this->SetBuffer('Volume', (string) $current_volume);
-            $this->SendDebug('Echo Remote:', 'Volume Buffer '.$current_volume, 0);
+            $this->SendDebug('Echo Remote:', 'Volume Buffer ' . $current_volume, 0);
             $volume = 0;
         }
         if (!$mute) {
@@ -909,25 +899,24 @@ class EchoRemote extends IPSModule
                 $this->SendDebug('Echo Remote:', 'Volume Buffer 30', 0);
             } else {
                 $volume = (int) $last_volume;
-                $this->SendDebug('Echo Remote:', 'Volume Buffer '.$last_volume, 0);
+                $this->SendDebug('Echo Remote:', 'Volume Buffer ' . $last_volume, 0);
             }
+
         }
 
         $getfields = [
             'deviceSerialNumber' => $this->GetDevicenumber(),
-            'deviceType'         => $this->GetDevicetype(), ];
+            'deviceType'         => $this->GetDevicetype()];
 
         $postfields = [
             'type'        => 'VolumeLevelCommand',
-            'volumeLevel' => $volume, ];
+            'volumeLevel' => $volume];
 
         $result = $this->SendData('NpCommand', $getfields, $postfields);
         if ($result['http_code'] === 200) {
             $this->SetValue('EchoVolume', $volume);
-
             return true;
         }
-
         return false;
     }
 
@@ -940,7 +929,7 @@ class EchoRemote extends IPSModule
         $getfields = [
             'deviceSerialNumber' => $this->GetDevicenumber(),
             'deviceType'         => $this->GetDevicetype(),
-            'screenWidth'        => 1680, //to get url of big picture
+            'screenWidth'        => 1680 //to get url of big picture
         ];
 
         $result = $this->SendData('NpPlayer', $getfields);
@@ -948,8 +937,8 @@ class EchoRemote extends IPSModule
             //$this->SetValue("EchoVolume", $volume);
             return json_decode($result['body'], true);
         }
-
         return false;
+
     }
 
     /** Get Player Status Information
@@ -960,15 +949,15 @@ class EchoRemote extends IPSModule
     {
         $getfields = [
             'deviceSerialNumber' => $this->GetDevicenumber(),
-            'deviceType'         => $this->GetDevicetype(), ];
+            'deviceType'         => $this->GetDevicetype()];
 
         $result = $this->SendData('NpQueue', $getfields);
         if ($result['http_code'] === 200) {
             //$this->SetValue("EchoVolume", $volume);
             return json_decode($result['body'], true);
         }
-
         return false;
+
     }
 
     /** Shuffle
@@ -983,19 +972,17 @@ class EchoRemote extends IPSModule
 
         $getfields = [
             'deviceSerialNumber' => $this->GetDevicenumber(),
-            'deviceType'         => $this->GetDevicetype(), ];
+            'deviceType'         => $this->GetDevicetype()];
 
         $postfields = [
             'type'    => 'ShuffleCommand',
-            'shuffle' => $value ? 'true' : 'false', ];
+            'shuffle' => $value ? 'true' : 'false'];
 
         $result = $this->SendData('NpCommand', $getfields, $postfields);
         if ($result['http_code'] === 200) {
             $this->SetValue('EchoShuffle', $value);
-
             return true;
         }
-
         return false;
     }
 
@@ -1011,19 +998,17 @@ class EchoRemote extends IPSModule
 
         $getfields = [
             'deviceSerialNumber' => $this->GetDevicenumber(),
-            'deviceType'         => $this->GetDevicetype(), ];
+            'deviceType'         => $this->GetDevicetype()];
 
         $postfields = [
             'type'   => 'RepeatCommand',
-            'repeat' => $value ? 'true' : 'false', ];
+            'repeat' => $value ? 'true' : 'false'];
 
         $result = $this->SendData('NpCommand', $getfields, $postfields);
         if ($result['http_code'] === 200) {
             $this->SetValue('EchoRepeat', $value);
-
             return true;
         }
-
         return false;
     }
 
@@ -1035,14 +1020,14 @@ class EchoRemote extends IPSModule
      */
     private function PlayCommand(string $commandType)
     {
-        $this->SendDebug(__FUNCTION__, 'CommandType: '.$commandType, 0);
+        $this->SendDebug(__FUNCTION__, 'CommandType: ' . $commandType, 0);
 
         $getfields = [
             'deviceSerialNumber' => $this->GetDevicenumber(),
-            'deviceType'         => $this->GetDevicetype(), ];
+            'deviceType'         => $this->GetDevicetype()];
 
         $postfields = [
-            'type' => $commandType, ];
+            'type' => $commandType];
 
         return $this->SendData('NpCommand', $getfields, $postfields);
     }
@@ -1055,26 +1040,26 @@ class EchoRemote extends IPSModule
      */
     public function TuneIn(string $guideId): bool
     {
+
         $getfields = [
             'deviceSerialNumber' => $this->GetDevicenumber(),
-            'deviceType'         => $this->GetDevicetype(), ];
+            'deviceType'         => $this->GetDevicetype()];
 
         $postfields = [
             'contentType'          => 'station',
             'guideId'              => $guideId,
-            'mediaOwnerCustomerId' => $this->GetCustomerID(), ];
+            'mediaOwnerCustomerId' => $this->GetCustomerID()];
 
         $result = $this->SendData('TuneinQueueandplay', $getfields, $postfields);
 
         $presetPosition = $this->GetTuneInStationPresetPosition($guideId);
         if ($presetPosition) {
-            $this->SetValue('EchoTuneInRemote_'.$this->ReadPropertyString('Devicenumber'), $presetPosition);
+            $this->SetValue('EchoTuneInRemote_' . $this->ReadPropertyString('Devicenumber'), $presetPosition);
         }
         if ($result['http_code'] === 200) {
             sleep(4); //warten, bis das Umschalten erfolgt ist
             return $this->UpdateStatus();
         }
-
         return false;
     }
 
@@ -1086,7 +1071,7 @@ class EchoRemote extends IPSModule
     {
         $getfields = [
             'deviceSerialNumber' => $this->GetDevicenumber(),
-            'deviceType'         => $this->GetDevicetype(), ];
+            'deviceType'         => $this->GetDevicetype()];
 
         $result = $this->SendData('MediaState', $getfields);
 
@@ -1128,7 +1113,7 @@ class EchoRemote extends IPSModule
     {
         $getfields = [
             'type' => $type, //SHOPPING_ITEM or TASK,
-            'size' => 500, ];
+            'size' => 500];
 
         if ($completed !== null) {
             $getfields['completed'] = $completed ? 'true' : 'false';
@@ -1156,9 +1141,9 @@ class EchoRemote extends IPSModule
             return $this->TuneIn($station);
         }
 
-        trigger_error('unknown preset: '.$preset);
-
+        trigger_error('unknown preset: ' . $preset);
         return false;
+
     }
 
     /** TextToSpeech
@@ -1229,11 +1214,12 @@ class EchoRemote extends IPSModule
      */
     private function PlaySequenceCmd(string $SEQUENCECMD, string $tts = null): bool
     {
+
         $postfields = [
             'deviceSerialNumber' => $this->GetDevicenumber(),
             'deviceType'         => $this->GetDevicetype(),
             'customerId'         => $this->GetCustomerID(),
-            'type'               => $SEQUENCECMD, ];
+            'type'               => $SEQUENCECMD];
 
         if ($tts !== null) {
             $postfields['textToSpeak'] = $tts;
@@ -1242,6 +1228,7 @@ class EchoRemote extends IPSModule
         $result = (array) $this->SendData('BehaviorsPreview', null, $postfields);
 
         return $result['http_code'] === 200;
+
     }
 
     private function GetAutomation($utterance, $automations)
@@ -1280,10 +1267,9 @@ class EchoRemote extends IPSModule
             //play automation
             $postfields = [
                 'deviceSerialNumber' => $this->GetDevicenumber(),
-                'deviceType'         => $this->GetDevicetype(), ];
+                'deviceType'         => $this->GetDevicetype()];
 
             $result = (array) $this->SendData('BehaviorsPreviewAutomation', null, $postfields, null, null, $automation);
-
             return $result['http_code'] === 200;
         }
 
@@ -1300,7 +1286,6 @@ class EchoRemote extends IPSModule
 
         if ($result['http_code'] === 200) {
             $data = json_decode($result['body'], true);
-
             return $data['bluetoothStates'];
         }
 
@@ -1314,7 +1299,7 @@ class EchoRemote extends IPSModule
     public function ListPairedBluetoothDevices(): ?array
     {
         $devicenumber = $this->ReadPropertyString('Devicenumber');
-        $devices = $this->ListBluetooth();
+        $devices      = $this->ListBluetooth();
         if ($devices) {
             foreach ($devices as $key => $device) {
                 if ($devicenumber === $device['deviceSerialNumber']) {
@@ -1330,10 +1315,10 @@ class EchoRemote extends IPSModule
     {
         $getfields = [
             'deviceSerialNumber' => $this->GetDevicenumber(),
-            'deviceType'         => $this->GetDevicetype(), ];
+            'deviceType'         => $this->GetDevicetype()];
 
         $postfields = ['bluetoothDeviceAddress' => $bluetooth_address];
-        $result = (array) $this->SendData('BluetoothPairSink', $getfields, $postfields);
+        $result     = (array) $this->SendData('BluetoothPairSink', $getfields, $postfields);
 
         return $result['http_code'] === 200;
     }
@@ -1342,7 +1327,7 @@ class EchoRemote extends IPSModule
     {
         $getfields = [
             'deviceSerialNumber' => $this->GetDevicenumber(),
-            'deviceType'         => $this->GetDevicetype(), ];
+            'deviceType'         => $this->GetDevicetype()];
 
         $result = (array) $this->SendData('BluetoothDisconnectSink', $getfields);
 
@@ -1355,6 +1340,7 @@ class EchoRemote extends IPSModule
      */
     public function UpdateStatus(): bool
     {
+
         if (!$result = $this->GetPlayerInformation()) {
             return false;
         }
@@ -1373,7 +1359,7 @@ class EchoRemote extends IPSModule
                 break;
 
             default:
-                trigger_error('Instanz #'.$this->InstanceID.' - Unexpected state: '.$playerInfo['state']);
+                trigger_error('Instanz #' . $this->InstanceID . ' - Unexpected state: ' . $playerInfo['state']);
         }
 
         $imageurl = $playerInfo['mainArt']['url'] ?? null;
@@ -1396,7 +1382,7 @@ class EchoRemote extends IPSModule
                     break;
 
                 default:
-                    trigger_error('Instanz #'.$this->InstanceID.' - Unexpected repeat value: '.$playerInfo['transport']['repeat']);
+                    trigger_error('Instanz #' . $this->InstanceID . ' - Unexpected repeat value: ' . $playerInfo['transport']['repeat']);
             }
         }
 
@@ -1415,7 +1401,7 @@ class EchoRemote extends IPSModule
                     break;
 
                 default:
-                    trigger_error('Instanz #'.$this->InstanceID.' - Unexpected shuffle value: '.$playerInfo['transport']['shuffle']);
+                    trigger_error('Instanz #' . $this->InstanceID . ' - Unexpected shuffle value: ' . $playerInfo['transport']['shuffle']);
             }
         }
 
@@ -1492,61 +1478,57 @@ class EchoRemote extends IPSModule
 	padding: 60px 11px 11px;
 	margin-top: 0;
 }
-.echo_title {'.$this->GetTitleCSS().'}
-.echo_subtitle1 {'.$this->GetSubtitle1CSS().'}
-.echo_subtitle2 {'.$this->GetSubtitle2CSS().'}
+.echo_title {' . $this->GetTitleCSS() . '}
+.echo_subtitle1 {' . $this->GetSubtitle1CSS() . '}
+.echo_subtitle2 {' . $this->GetSubtitle2CSS() . '}
 .shopping_item {
 	font-size: large;
 }
 </style>
 </head>
 ';
-
         return $header;
     }
 
     private function GetTitleCSS()
     {
-        $TitleSize = $this->ReadPropertyInteger('TitleSize').'em';
+        $TitleSize  = $this->ReadPropertyInteger('TitleSize') . 'em';
         $TitleColor = $this->GetColor('TitleColor');
         $this->SendDebug('Title Color', $TitleColor, 0);
         if ($TitleSize == '0em') {
             $title_css = 'font-size: xx-large;';
         } else {
-            $title_css = 'font-size: '.$TitleSize.';
-			color: #'.$TitleColor.';';
+            $title_css = 'font-size: ' . $TitleSize . ';
+			color: #' . $TitleColor . ';';
         }
-
         return $title_css;
     }
 
     private function GetSubtitle1CSS()
     {
-        $Subtitle1Size = $this->ReadPropertyInteger('Subtitle1Size').'em';
+        $Subtitle1Size  = $this->ReadPropertyInteger('Subtitle1Size') . 'em';
         $Subtitle1Color = $this->GetColor('Subtitle1Color');
         $this->SendDebug('Subtitle Color', $Subtitle1Color, 0);
         if ($Subtitle1Size == '0em') {
             $subtitle1_css = 'font-size: large;';
         } else {
-            $subtitle1_css = 'font-size: '.$Subtitle1Size.';
-			color: #'.$Subtitle1Color.';';
+            $subtitle1_css = 'font-size: ' . $Subtitle1Size . ';
+			color: #' . $Subtitle1Color . ';';
         }
-
         return $subtitle1_css;
     }
 
     private function GetSubtitle2CSS()
     {
-        $Subtitle2Size = $this->ReadPropertyInteger('Subtitle2Size').'em';
+        $Subtitle2Size  = $this->ReadPropertyInteger('Subtitle2Size') . 'em';
         $Subtitle2Color = $this->GetColor('Subtitle2Color');
         $this->SendDebug('Subtitle Color', $Subtitle2Color, 0);
         if ($Subtitle2Size == '0em') {
             $subtitle2_css = 'font-size: large;';
         } else {
-            $subtitle2_css = 'font-size: '.$Subtitle2Size.';
-			color: #'.$Subtitle2Color.';';
+            $subtitle2_css = 'font-size: ' . $Subtitle2Size . ';
+			color: #' . $Subtitle2Color . ';';
         }
-
         return $subtitle2_css;
     }
 
@@ -1558,21 +1540,20 @@ class EchoRemote extends IPSModule
         } else {
             $hex_color = dechex($color);
         }
-
         return $hex_color;
     }
 
     private function SetStatePage(string $imageurl = null, string $title = null, string $subtitle_1 = null, string $subtitle_2 = null): void
     {
         $html = '<!doctype html>
-<html lang="de">'.$this->GetHeader().'
+<html lang="de">' . $this->GetHeader() . '
 <body>
 <main class="echo_mediaplayer1">
-  <section class="echo_cover"><img src="'.$imageurl.'" alt="cover" width="145" height="145" id="echocover"></section>
+  <section class="echo_cover"><img src="' . $imageurl . '" alt="cover" width="145" height="145" id="echocover"></section>
   <section class="echo_description">
-    <div class="echo_title">'.$title.'</div>
-    <div class="echo_subtitle1">'.$subtitle_1.'</div>
-    <div class="echo_subtitle2">'.$subtitle_2.'</div>
+    <div class="echo_title">' . $title . '</div>
+    <div class="echo_subtitle1">' . $subtitle_1 . '</div>
+    <div class="echo_subtitle2">' . $subtitle_2 . '</div>
   </section>
 </main>
 </body>
@@ -1590,19 +1571,19 @@ class EchoRemote extends IPSModule
         }
 
         if ($this->ReadPropertyBoolean('Cover')) {
-            $this->SetValue('Cover_HTML', '<img src="'.$imageurl.'" alt="cover" />');
+            $this->SetValue('Cover_HTML', '<img src="' . $imageurl . '" alt="cover" />');
         }
 
         if ($this->ReadPropertyBoolean('Title')) {
-            $this->SetValue('Title_HTML', '<div class="echo_title">'.$title.'</div>');
+            $this->SetValue('Title_HTML', '<div class="echo_title">' . $title . '</div>');
         }
 
         if ($this->ReadPropertyBoolean('Subtitle1')) {
-            $this->SetValue('Subtitle_1_HTML', '<div class="echo_subtitle1">'.$subtitle_1.'</div>');
+            $this->SetValue('Subtitle_1_HTML', '<div class="echo_subtitle1">' . $subtitle_1 . '</div>');
         }
 
         if ($this->ReadPropertyBoolean('Subtitle2')) {
-            $this->SetValue('Subtitle_2_HTML', '<div class="echo_subtitle2">'.$subtitle_2.'</div>');
+            $this->SetValue('Subtitle_2_HTML', '<div class="echo_subtitle2">' . $subtitle_2 . '</div>');
         }
     }
 
@@ -1628,7 +1609,8 @@ class EchoRemote extends IPSModule
             if (($notification['type'] === 'Alarm')
                 && ($notification['status'] === 'ON')
                 && ($notification['deviceSerialNumber'] === IPS_GetProperty($this->InstanceID, 'Devicenumber'))) {
-                $alarmTime = strtotime($notification['originalDate'].' '.$notification['originalTime']);
+
+                $alarmTime = strtotime($notification['originalDate'] . ' ' . $notification['originalTime']);
 
                 if ($nextAlarm === 0) {
                     $nextAlarm = $alarmTime;
@@ -1639,7 +1621,7 @@ class EchoRemote extends IPSModule
         }
 
         if ($alarmTime === 0) {
-            $nextAlarm = 0;
+            $nextAlarm        = 0;
             $timerIntervalSec = 0;
         } else {
             $timerIntervalSec = $nextAlarm - time();
@@ -1648,22 +1630,24 @@ class EchoRemote extends IPSModule
         if ($nextAlarm !== $this->GetValue('nextAlarmTime')) {
             //neuen Wert und Timer setzen.
             $this->SetValue('nextAlarmTime', $nextAlarm);
-            $this->SendDebug(__FUNCTION__, 'nextAlarmTime set to '.$nextAlarm.' ('.date(DATE_RSS, $nextAlarm).')', 0);
+            $this->SendDebug(__FUNCTION__, 'nextAlarmTime set to ' . $nextAlarm . ' (' . date(DATE_RSS, $nextAlarm) . ')', 0);
 
             $this->SetTimerInterval('EchoAlarm', $timerIntervalSec * 1000);
-            $this->SendDebug(__FUNCTION__, 'Timer EchoAlarm is set to '.$timerIntervalSec.'s', 0);
+            $this->SendDebug(__FUNCTION__, 'Timer EchoAlarm is set to ' . $timerIntervalSec . 's', 0);
         }
+
     }
 
     private function GetListPage(array $Items): string
     {
+
         $html = '<!doctype html>
-<html lang="de">'.$this->GetHeader().'
+<html lang="de">' . $this->GetHeader() . '
 <body>
 <main class="echo_mediaplayer1">
 <table class="shopping_item">';
         foreach ($Items as $Item) {
-            $html .= '<tr><td>'.$Item['text'].'</td></tr>';
+            $html .= '<tr><td>' . $Item['text'] . '</td></tr>';
         }
         $html .= '
 </table>
@@ -1674,7 +1658,7 @@ class EchoRemote extends IPSModule
         return $html;
     }
 
-    public function PlayAlbum(string $album, string $artist, /* @noinspection ParameterDefaultValueIsNotNullInspection */
+    public function PlayAlbum(string $album, string $artist, /** @noinspection ParameterDefaultValueIsNotNullInspection */
                               bool $shuffle = false): bool
     {
         return $this->PlayCloudplayer($shuffle, ['albumArtistName' => $artist, 'albumName' => $album]);
@@ -1685,7 +1669,7 @@ class EchoRemote extends IPSModule
         return $this->PlayCloudplayer(false, ['trackId' => $track_id, 'playQueuePrime' => true]);
     }
 
-    public function PlayPlaylist(string $playlist_id, /* @noinspection ParameterDefaultValueIsNotNullInspection */ bool $shuffle = false): bool
+    public function PlayPlaylist(string $playlist_id, /** @noinspection ParameterDefaultValueIsNotNullInspection */ bool $shuffle = false): bool
     {
         return $this->PlayCloudplayer($shuffle, ['playlistId' => $playlist_id, 'playQueuePrime' => true]);
     }
@@ -1696,26 +1680,29 @@ class EchoRemote extends IPSModule
             'deviceSerialNumber'   => $this->GetDevicenumber(),
             'deviceType'           => $this->GetDevicetype(),
             'mediaOwnerCustomerId' => $this->GetCustomerID(),
-            'shuffle'              => $shuffle ? 'true' : 'false', ];
+            'shuffle'              => $shuffle ? 'true' : 'false'];
 
         $return = (array) $this->SendData('CloudplayerQueueandplay', $getfields, $postfields);
 
         return $return['http_code'] === 200;
+
     }
 
     public function GetLastActivities(int $count)
     {
+
         $getfields = [
             'size'      => $count,
             'startTime' => '',
-            'offset'    => 1, ];
-        $result = (array) $this->SendData('Activities', $getfields);
+            'offset'    => 1];
+        $result    = (array) $this->SendData('Activities', $getfields);
 
         if ($result['http_code'] === 200) {
             return json_decode($result['body'], true);
         }
 
         return false;
+
     }
 
     /** AmazonMusic
@@ -1727,38 +1714,37 @@ class EchoRemote extends IPSModule
      */
     public function PlayAmazonMusic(string $seedId, string $stationName)
     {
-        $url = 'https://{AlexaURL}/api/gotham/queue-and-play?';
-        $getfields = [
+        $url        = 'https://{AlexaURL}/api/gotham/queue-and-play?';
+        $getfields  = [
             'deviceSerialNumber'   => $this->GetDevicenumber(),
             'deviceType'           => $this->GetDevicetype(),
-            'mediaOwnerCustomerId' => $this->GetCustomerID(), ];
+            'mediaOwnerCustomerId' => $this->GetCustomerID()];
         $postfields = ['seed' => json_encode(['type' => 'KEY', 'seedId' => $seedId]), 'stationName' => $stationName, 'seedType' => 'KEY'];
-
         return $this->SendData('CustomCommand', $getfields, $postfields, $url)['http_code'] === 200;
     }
 
     public function PlayAmazonPrimePlaylist(string $asin): bool
     {
-        $url = 'https://{AlexaURL}/api/prime/prime-playlist-queue-and-play?';
-        $getfields = [
+        $url        = 'https://{AlexaURL}/api/prime/prime-playlist-queue-and-play?';
+        $getfields  = [
             'deviceSerialNumber'   => $this->GetDevicenumber(),
             'deviceType'           => $this->GetDevicetype(),
-            'mediaOwnerCustomerId' => $this->GetCustomerID(), ];
+            'mediaOwnerCustomerId' => $this->GetCustomerID()];
         $postfields = ['asin' => $asin];
-
         return $this->SendData('CustomCommand', $getfields, $postfields, $url)['http_code'] === 200;
+
     }
 
     public function GetAmazonPrimeStationSectionList(string $filterSections, string $filterCategories, string $stationItems)
     {
-        $filterSections = json_decode($filterSections, true);
+        $filterSections   = json_decode($filterSections, true);
         $filterCategories = json_decode($filterCategories, true);
-        $stationItems = json_decode($stationItems, true);
-        $getfields = [
+        $stationItems     = json_decode($stationItems, true);
+        $getfields        = [
             'deviceSerialNumber'   => $this->GetDevicenumber(),
             'deviceType'           => $this->GetDevicetype(),
-            'mediaOwnerCustomerId' => $this->GetCustomerID(), ];
-        $result = (array) $this->SendData(
+            'mediaOwnerCustomerId' => $this->GetCustomerID()];
+        $result           = (array) $this->SendData(
             'PrimeSections', $getfields, null, null, null, null,
             ['filterSections' => $filterSections, 'filterCategories' => $filterCategories, 'stationItems' => $stationItems]
         );
@@ -1783,7 +1769,7 @@ class EchoRemote extends IPSModule
             '{MediaOwnerCustomerID}',
             urlencode('{DeviceSerialNumber}'),
             urlencode('{DeviceSerialNumber}'),
-            urlencode('{MediaOwnerCustomerID}'), ];
+            urlencode('{MediaOwnerCustomerID}')];
 
         $replace = [
             $this->GetDevicenumber(),
@@ -1791,12 +1777,12 @@ class EchoRemote extends IPSModule
             $this->GetCustomerID(),
             $this->GetDevicenumber(),
             $this->GetDevicetype(),
-            $this->GetCustomerID(), ];
+            $this->GetCustomerID()];
 
         $url = str_replace($search, $replace, $url);
 
         if ($postfields === null) {
-            $this->SendDebug('CustomCommand', 'URL: '.$url.' (no postdata)', 0);
+            $this->SendDebug('CustomCommand', 'URL: ' . $url . ' (no postdata)', 0);
         } else {
             $postfields = str_replace($search, $replace, $postfields);
             $postfields = json_decode($postfields, true);
@@ -1943,8 +1929,9 @@ class EchoRemote extends IPSModule
                 $this->customerID = $result['body'];
             } else {
                 $this->customerID = '';
-                trigger_error('CustomerID nicht gesetzt. Parent: '.$ParentID);
+                trigger_error('CustomerID nicht gesetzt. Parent: ' . $ParentID);
             }
+
         }
 
         return $this->customerID;
@@ -1966,7 +1953,7 @@ class EchoRemote extends IPSModule
             [
                 'elements' => $this->FormHead(),
                 'actions'  => $this->FormActions(),
-                'status'   => $this->FormStatus(), ]
+                'status'   => $this->FormStatus()]
         );
     }
 
@@ -1981,36 +1968,36 @@ class EchoRemote extends IPSModule
             [
                 'name'    => 'Devicetype',
                 'type'    => 'ValidationTextBox',
-                'caption' => 'device type', ],
+                'caption' => 'device type'],
             [
                 'name'    => 'Devicenumber',
                 'type'    => 'ValidationTextBox',
-                'caption' => 'device number', ],
+                'caption' => 'device number'],
             [
                 'name'    => 'updateinterval',
                 'type'    => 'NumberSpinner',
                 'caption' => 'update interval',
-                'suffix'  => 'seconds', ],
+                'suffix'  => 'seconds'],
             [
                 'name'    => 'ExtendedInfo',
                 'type'    => 'CheckBox',
-                'caption' => 'setup variables for extended info (title, subtitle_1, subtitle_2, cover)', ],
+                'caption' => 'setup variables for extended info (title, subtitle_1, subtitle_2, cover)'],
             [
                 'name'    => 'Mute',
                 'type'    => 'CheckBox',
-                'caption' => 'setup variable for mute', ],
+                'caption' => 'setup variable for mute'],
             [
                 'name'    => 'AlarmInfo',
                 'type'    => 'CheckBox',
-                'caption' => 'setup variables for alarm info (nextAlarmTime, lastAlarmTime)', ],
+                'caption' => 'setup variables for alarm info (nextAlarmTime, lastAlarmTime)'],
             [
                 'name'    => 'ShoppingList',
                 'type'    => 'CheckBox',
-                'caption' => 'setup variable for a shopping list', ],
+                'caption' => 'setup variable for a shopping list'],
             [
                 'name'    => 'TaskList',
                 'type'    => 'CheckBox',
-                'caption' => 'setup variable for a task list', ],
+                'caption' => 'setup variable for a task list'],
             [
                 'type'    => 'ExpansionPanel',
                 'caption' => 'Layout for extended info',
@@ -2018,46 +2005,46 @@ class EchoRemote extends IPSModule
                     [
                         'name'    => 'Cover',
                         'type'    => 'CheckBox',
-                        'caption' => 'setup separate variable for the cover as HTML image', ],
+                        'caption' => 'setup separate variable for the cover as HTML image'],
                     [
                         'name'    => 'Title',
                         'type'    => 'CheckBox',
-                        'caption' => 'setup separate variable for the title as HTML', ],
+                        'caption' => 'setup separate variable for the title as HTML'],
                     [
                         'name'    => 'TitleColor',
                         'type'    => 'SelectColor',
-                        'caption' => 'title color', ],
+                        'caption' => 'title color'],
                     [
                         'type'    => 'Select',
                         'name'    => 'TitleSize',
                         'caption' => 'size title',
-                        'options' => $this->SelectionFontSize(), ],
+                        'options' => $this->SelectionFontSize()],
                     [
                         'name'    => 'Subtitle1',
                         'type'    => 'CheckBox',
-                        'caption' => 'setup separate variable for the subtitle 1 as HTML', ],
+                        'caption' => 'setup separate variable for the subtitle 1 as HTML'],
                     [
                         'name'    => 'Subtitle1Color',
                         'type'    => 'SelectColor',
-                        'caption' => 'subtitle 1 color', ],
+                        'caption' => 'subtitle 1 color'],
                     [
                         'type'    => 'Select',
                         'name'    => 'Subtitle1Size',
                         'caption' => 'size subtitle 1',
-                        'options' => $this->SelectionFontSize(), ],
+                        'options' => $this->SelectionFontSize()],
                     [
                         'name'    => 'Subtitle2',
                         'type'    => 'CheckBox',
-                        'caption' => 'setup separate variable for the subtitle 2 as HTML', ],
+                        'caption' => 'setup separate variable for the subtitle 2 as HTML'],
                     [
                         'name'    => 'Subtitle2Color',
                         'type'    => 'SelectColor',
-                        'caption' => 'subtitle 2 color', ],
+                        'caption' => 'subtitle 2 color'],
                     [
                         'type'    => 'Select',
                         'name'    => 'Subtitle2Size',
                         'caption' => 'size subtitle 2',
-                        'options' => $this->SelectionFontSize(), ], ], ],
+                        'options' => $this->SelectionFontSize()]]],
             [
                 'type'     => 'List',
                 'name'     => 'TuneInStations',
@@ -2067,7 +2054,7 @@ class EchoRemote extends IPSModule
                 'delete'   => true,
                 'sort'     => [
                     'column'    => 'position',
-                    'direction' => 'ascending', ],
+                    'direction' => 'ascending'],
                 'columns'  => [
                     [
                         'name'    => 'position',
@@ -2077,7 +2064,7 @@ class EchoRemote extends IPSModule
                         'visible' => true,
                         'add'     => 0,
                         'edit'    => [
-                            'type' => 'NumberSpinner', ], ],
+                            'type' => 'NumberSpinner']],
                     [
                         'name'    => 'station',
                         'caption' => 'Station Name',
@@ -2085,7 +2072,7 @@ class EchoRemote extends IPSModule
                         'save'    => true,
                         'add'     => '',
                         'edit'    => [
-                            'type' => 'ValidationTextBox', ], ],
+                            'type' => 'ValidationTextBox']],
                     [
                         'name'    => 'station_id',
                         'caption' => 'Station ID',
@@ -2093,8 +2080,8 @@ class EchoRemote extends IPSModule
                         'save'    => true,
                         'add'     => '',
                         'edit'    => [
-                            'type' => 'ValidationTextBox', ],
-                        'visible' => true, ], ], ], ];
+                            'type' => 'ValidationTextBox'],
+                        'visible' => true]]]];
     }
 
     private function SelectionFontSize()
@@ -2102,128 +2089,127 @@ class EchoRemote extends IPSModule
         $selection = [
             [
                 'label' => 'Please select a font size',
-                'value' => 0, ],
+                'value' => 0],
             [
                 'label' => '1em',
-                'value' => 1, ],
+                'value' => 1],
             [
                 'label' => '2em',
-                'value' => 2, ],
+                'value' => 2],
             [
                 'label' => '3em',
-                'value' => 3, ],
+                'value' => 3],
             [
                 'label' => '4em',
-                'value' => 4, ],
+                'value' => 4],
             [
                 'label' => '5em',
-                'value' => 5, ],
+                'value' => 5],
             [
                 'label' => '6em',
-                'value' => 6, ],
+                'value' => 6],
             [
                 'label' => '7em',
-                'value' => 7, ],
+                'value' => 7],
             [
                 'label' => '8em',
-                'value' => 8, ],
+                'value' => 8],
             [
                 'label' => '9em',
-                'value' => 9, ],
+                'value' => 9],
             [
                 'label' => '10em',
-                'value' => 10, ],
+                'value' => 10],
             [
                 'label' => '11em',
-                'value' => 11, ],
+                'value' => 11],
             [
                 'label' => '12em',
-                'value' => 12, ],
+                'value' => 12],
             [
                 'label' => '13em',
-                'value' => 13, ],
+                'value' => 13],
             [
                 'label' => '14em',
-                'value' => 14, ],
+                'value' => 14],
             [
                 'label' => '15em',
-                'value' => 15, ],
+                'value' => 15],
             [
                 'label' => '16em',
-                'value' => 16, ],
+                'value' => 16],
             [
                 'label' => '17em',
-                'value' => 17, ],
+                'value' => 17],
             [
                 'label' => '18em',
-                'value' => 18, ],
+                'value' => 18],
             [
                 'label' => '19em',
-                'value' => 19, ],
+                'value' => 19],
             [
                 'label' => '20em',
-                'value' => 20, ],
+                'value' => 20],
             [
                 'label' => '21em',
-                'value' => 21, ],
+                'value' => 21],
             [
                 'label' => '22em',
-                'value' => 22, ],
+                'value' => 22],
             [
                 'label' => '23em',
-                'value' => 23, ],
+                'value' => 23],
             [
                 'label' => '24em',
-                'value' => 24, ],
+                'value' => 24],
             [
                 'label' => '25em',
-                'value' => 25, ],
+                'value' => 25],
             [
                 'label' => '26em',
-                'value' => 26, ],
+                'value' => 26],
             [
                 'label' => '27em',
-                'value' => 27, ],
+                'value' => 27],
             [
                 'label' => '28em',
-                'value' => 28, ],
+                'value' => 28],
             [
                 'label' => '29em',
-                'value' => 29, ],
+                'value' => 29],
             [
                 'label' => '30em',
-                'value' => 30, ],
+                'value' => 30],
             [
                 'label' => '31em',
-                'value' => 31, ],
+                'value' => 31],
             [
                 'label' => '32em',
-                'value' => 32, ],
+                'value' => 32],
             [
                 'label' => '33em',
-                'value' => 33, ],
+                'value' => 33],
             [
                 'label' => '34em',
-                'value' => 34, ],
+                'value' => 34],
             [
                 'label' => '35em',
-                'value' => 35, ],
+                'value' => 35],
             [
                 'label' => '36em',
-                'value' => 36, ],
+                'value' => 36],
             [
                 'label' => '37em',
-                'value' => 37, ],
+                'value' => 37],
             [
                 'label' => '38em',
-                'value' => 38, ],
+                'value' => 38],
             [
                 'label' => '39em',
-                'value' => 39, ],
+                'value' => 39],
             [
                 'label' => '40em',
-                'value' => 40, ], ];
-
+                'value' => 40]];
         return $selection;
     }
 
@@ -2237,40 +2223,40 @@ class EchoRemote extends IPSModule
         $form = [
             [
                 'type'    => 'Label',
-                'caption' => 'Play Radio:', ],
+                'caption' => 'Play Radio:'],
             [
                 'type'    => 'Button',
                 'caption' => 'FFH Lounge',
-                'onClick' => "if (EchoRemote_TuneIn(\$id, 's84483')){echo 'Ok';} else {echo 'Error';}", ],
+                'onClick' => "if (EchoRemote_TuneIn(\$id, 's84483')){echo 'Ok';} else {echo 'Error';}"],
             [
                 'type'    => 'Label',
-                'caption' => 'Remote Control:', ],
+                'caption' => 'Remote Control:'],
             [
                 'type'    => 'Button',
                 'caption' => 'Play',
-                'onClick' => "if (EchoRemote_Play(\$id)){echo 'Ok';} else {echo 'Error';}", ],
+                'onClick' => "if (EchoRemote_Play(\$id)){echo 'Ok';} else {echo 'Error';}"],
             [
                 'type'    => 'Button',
                 'caption' => 'Pause',
-                'onClick' => "if (EchoRemote_Pause(\$id)){echo 'Ok';} else {echo 'Error';}", ],
+                'onClick' => "if (EchoRemote_Pause(\$id)){echo 'Ok';} else {echo 'Error';}"],
             [
                 'type'    => 'Label',
-                'caption' => 'Modify Volume:', ],
+                'caption' => 'Modify Volume:'],
             [
                 'type'    => 'Button',
                 'caption' => 'Decrease Volume',
-                'onClick' => "if (EchoRemote_DecreaseVolume(\$id, 3)){echo 'Ok';} else {echo 'Error';}", ],
+                'onClick' => "if (EchoRemote_DecreaseVolume(\$id, 3)){echo 'Ok';} else {echo 'Error';}"],
             [
                 'type'    => 'Button',
                 'caption' => 'Increase Volume',
-                'onClick' => "if (EchoRemote_IncreaseVolume(\$id, 3)){echo 'Ok';} else {echo 'Error';}", ],
+                'onClick' => "if (EchoRemote_IncreaseVolume(\$id, 3)){echo 'Ok';} else {echo 'Error';}"],
             [
                 'type'    => 'Label',
-                'caption' => 'Voice Output:', ],
+                'caption' => 'Voice Output:'],
             [
                 'type'    => 'Button',
                 'caption' => 'Speak Text',
-                'onClick' => "if (EchoRemote_TextToSpeech(\$id, 'Wer hätte das gedacht. Das ist ein toller Erfolg!')){echo 'Ok';} else {echo 'Error';}", ], ];
+                'onClick' => "if (EchoRemote_TextToSpeech(\$id, 'Wer hätte das gedacht. Das ist ein toller Erfolg!')){echo 'Ok';} else {echo 'Error';}"]];
 
         return $form;
     }
@@ -2286,11 +2272,11 @@ class EchoRemote extends IPSModule
             [
                 'code'    => 210,
                 'icon'    => 'error',
-                'caption' => 'devicetype field must not be empty.', ],
+                'caption' => 'devicetype field must not be empty.'],
             [
                 'code'    => 211,
                 'icon'    => 'error',
-                'caption' => 'devicenumber field must not be empty.', ], ];
+                'caption' => 'devicenumber field must not be empty.']];
 
         return $form;
     }
