@@ -11,7 +11,6 @@ require_once __DIR__ . '/../libs/EchoDebugHelper.php';
 
 class EchoRemote extends IPSModule
 {
-
     use EchoBufferHelper, EchoDebugHelper;
 
     private const STATUS_INST_DEVICETYPE_IS_EMPTY   = 210; // devicetype must not be empty.
@@ -124,7 +123,6 @@ class EchoRemote extends IPSModule
      * Ermittelt den Parent und verwaltet die Einträge des Parent im MessageSink
      * Ermöglicht es das Statusänderungen des Parent empfangen werden können.
      *
-     * @access protected
      * @return int ID des Parent.
      */
     protected function RegisterParent(): int
@@ -233,7 +231,6 @@ class EchoRemote extends IPSModule
             $this->EnableAction('EchoVolume');
         }
 
-
         //Info Variable
         $this->RegisterVariableString('EchoInfo', 'Info', '~HTMLBox', 5);
 
@@ -254,7 +251,6 @@ class EchoRemote extends IPSModule
             $this->RegisterVariableString('EchoTTS', 'Text to Speech', '', 7);
             $this->EnableAction('EchoTTS');
         }
-
 
         //TuneIn Variable
         if (in_array('TUNE_IN', $caps, true)) {
@@ -339,7 +335,6 @@ class EchoRemote extends IPSModule
             return false;
         }
 
-
         $devices_arr = json_decode($result['body'], true)['devices'];
 
         //search device with my type and serial number
@@ -361,10 +356,8 @@ class EchoRemote extends IPSModule
      * @param array|null  $getfields
      * @param array|null  $postfields
      * @param null|string $url
-     *
      * @param null        $optpost
      * @param null        $automation
-     *
      * @param null        $additionalData
      *
      * @return mixed
@@ -498,7 +491,6 @@ class EchoRemote extends IPSModule
             } else {
                 $this->Mute(true);
             }
-
 
         }
     }
@@ -683,14 +675,10 @@ class EchoRemote extends IPSModule
         return $presetPosition;
     }
 
-
     /**
      * Die folgenden Funktionen stehen automatisch zur Verfügung, wenn das Modul über die "Module Control" eingefügt wurden.
-     * Die Funktionen werden, mit dem selbst eingerichteten Prefix, in PHP und JSON-RPC wiefolgt zur Verfügung gestellt:
-     *
-     *
+     * Die Funktionen werden, mit dem selbst eingerichteten Prefix, in PHP und JSON-RPC wiefolgt zur Verfügung gestellt:.
      */
-
     public function RaiseAlarm(): void
     {
         //Alarmzeit setzen
@@ -792,7 +780,7 @@ class EchoRemote extends IPSModule
 
         $result = $this->SendData('NpCommand', $getfields, $postfields);
 
-        return ($result['http_code'] === 200);
+        return $result['http_code'] === 200;
     }
 
     /** Forward 30s
@@ -1062,7 +1050,6 @@ class EchoRemote extends IPSModule
             'guideId'              => $guideId,
             'mediaOwnerCustomerId' => $this->GetCustomerID()];
 
-
         $result = $this->SendData('TuneinQueueandplay', $getfields, $postfields);
 
         $presetPosition = $this->GetTuneInStationPresetPosition($guideId);
@@ -1088,10 +1075,8 @@ class EchoRemote extends IPSModule
 
         $result = $this->SendData('MediaState', $getfields);
 
-
         //$url = 'https://{AlexaURL}/api/media/state?deviceSerialNumber=' . $this->GetDevicenumber() . '&deviceType=' . $this->GetDevicetype()
         //       . '&queueId=0e7d86f5-d5a4-4a3a-933e-5910c15d9d4f&shuffling=false&firstIndex=1&lastIndex=1&screenWidth=1920&_=1495289082979';
-
 
         if (isset($result['http_code']) && ($result['http_code'] === 200)) {
             return json_decode($result['body'], true);
@@ -1173,8 +1158,7 @@ class EchoRemote extends IPSModule
     }
 
     /**
-     *
-     * Weather Forcast
+     * Weather Forcast.
      */
     public function Weather(): bool
     {
@@ -1182,8 +1166,7 @@ class EchoRemote extends IPSModule
     }
 
     /**
-     *
-     * Traffic
+     * Traffic.
      */
     public function Traffic(): bool
     {
@@ -1191,8 +1174,7 @@ class EchoRemote extends IPSModule
     }
 
     /**
-     *
-     * Flash briefing
+     * Flash briefing.
      */
     public function FlashBriefing(): bool
     {
@@ -1200,8 +1182,7 @@ class EchoRemote extends IPSModule
     }
 
     /**
-     *
-     * Goodmorning
+     * Goodmorning.
      */
     public function GoodMorning(): bool
     {
@@ -1209,8 +1190,7 @@ class EchoRemote extends IPSModule
     }
 
     /**
-     *
-     * Sing a song
+     * Sing a song.
      */
     public function SingASong(): bool
     {
@@ -1218,8 +1198,7 @@ class EchoRemote extends IPSModule
     }
 
     /**
-     *
-     * Tell a story
+     * Tell a story.
      */
     public function TellStory(): bool
     {
@@ -1248,8 +1227,7 @@ class EchoRemote extends IPSModule
 
         $result = (array) $this->SendData('BehaviorsPreview', null, $postfields);
 
-        return ($result['http_code'] === 200);
-
+        return $result['http_code'] === 200;
 
     }
 
@@ -1267,7 +1245,6 @@ class EchoRemote extends IPSModule
     }
 
     /**
-     *
      * @param string $utterance
      *
      * @return bool
@@ -1293,7 +1270,7 @@ class EchoRemote extends IPSModule
                 'deviceType'         => $this->GetDevicetype()];
 
             $result = (array) $this->SendData('BehaviorsPreviewAutomation', null, $postfields, null, null, $automation);
-            return ($result['http_code'] === 200);
+            return $result['http_code'] === 200;
         }
 
         return false;
@@ -1343,7 +1320,7 @@ class EchoRemote extends IPSModule
         $postfields = ['bluetoothDeviceAddress' => $bluetooth_address];
         $result     = (array) $this->SendData('BluetoothPairSink', $getfields, $postfields);
 
-        return ($result['http_code'] === 200);
+        return $result['http_code'] === 200;
     }
 
     public function DisconnectBluetooth(): bool
@@ -1354,7 +1331,7 @@ class EchoRemote extends IPSModule
 
         $result = (array) $this->SendData('BluetoothDisconnectSink', $getfields);
 
-        return ($result['http_code'] === 200);
+        return $result['http_code'] === 200;
     }
 
     /** Get State Tune In
@@ -1515,10 +1492,10 @@ class EchoRemote extends IPSModule
 
     private function GetTitleCSS()
     {
-        $TitleSize  = $this->ReadPropertyInteger('TitleSize') . "em";
+        $TitleSize  = $this->ReadPropertyInteger('TitleSize') . 'em';
         $TitleColor = $this->GetColor('TitleColor');
-        $this->SendDebug("Title Color", $TitleColor, 0);
-        if ($TitleSize == "0em") {
+        $this->SendDebug('Title Color', $TitleColor, 0);
+        if ($TitleSize == '0em') {
             $title_css = 'font-size: xx-large;';
         } else {
             $title_css = 'font-size: ' . $TitleSize . ';
@@ -1529,10 +1506,10 @@ class EchoRemote extends IPSModule
 
     private function GetSubtitle1CSS()
     {
-        $Subtitle1Size  = $this->ReadPropertyInteger('Subtitle1Size') . "em";
+        $Subtitle1Size  = $this->ReadPropertyInteger('Subtitle1Size') . 'em';
         $Subtitle1Color = $this->GetColor('Subtitle1Color');
-        $this->SendDebug("Subtitle Color", $Subtitle1Color, 0);
-        if ($Subtitle1Size == "0em") {
+        $this->SendDebug('Subtitle Color', $Subtitle1Color, 0);
+        if ($Subtitle1Size == '0em') {
             $subtitle1_css = 'font-size: large;';
         } else {
             $subtitle1_css = 'font-size: ' . $Subtitle1Size . ';
@@ -1543,10 +1520,10 @@ class EchoRemote extends IPSModule
 
     private function GetSubtitle2CSS()
     {
-        $Subtitle2Size  = $this->ReadPropertyInteger('Subtitle2Size') . "em";
+        $Subtitle2Size  = $this->ReadPropertyInteger('Subtitle2Size') . 'em';
         $Subtitle2Color = $this->GetColor('Subtitle2Color');
-        $this->SendDebug("Subtitle Color", $Subtitle2Color, 0);
-        if ($Subtitle2Size == "0em") {
+        $this->SendDebug('Subtitle Color', $Subtitle2Color, 0);
+        if ($Subtitle2Size == '0em') {
             $subtitle2_css = 'font-size: large;';
         } else {
             $subtitle2_css = 'font-size: ' . $Subtitle2Size . ';
@@ -1559,7 +1536,7 @@ class EchoRemote extends IPSModule
     {
         $color = $this->ReadPropertyInteger($property);
         if ($color == 0) {
-            $hex_color = "ffffff"; // white
+            $hex_color = 'ffffff'; // white
         } else {
             $hex_color = dechex($color);
         }
@@ -1707,7 +1684,7 @@ class EchoRemote extends IPSModule
 
         $return = (array) $this->SendData('CloudplayerQueueandplay', $getfields, $postfields);
 
-        return ($return['http_code'] === 200);
+        return $return['http_code'] === 200;
 
     }
 
@@ -1743,7 +1720,7 @@ class EchoRemote extends IPSModule
             'deviceType'           => $this->GetDevicetype(),
             'mediaOwnerCustomerId' => $this->GetCustomerID()];
         $postfields = ['seed' => json_encode(['type' => 'KEY', 'seedId' => $seedId]), 'stationName' => $stationName, 'seedType' => 'KEY'];
-        return ($this->SendData('CustomCommand', $getfields, $postfields, $url)['http_code'] === 200);
+        return $this->SendData('CustomCommand', $getfields, $postfields, $url)['http_code'] === 200;
     }
 
     public function PlayAmazonPrimePlaylist(string $asin): bool
@@ -1754,10 +1731,9 @@ class EchoRemote extends IPSModule
             'deviceType'           => $this->GetDevicetype(),
             'mediaOwnerCustomerId' => $this->GetCustomerID()];
         $postfields = ['asin' => $asin];
-        return ($this->SendData('CustomCommand', $getfields, $postfields, $url)['http_code'] === 200);
+        return $this->SendData('CustomCommand', $getfields, $postfields, $url)['http_code'] === 200;
 
     }
-
 
     public function GetAmazonPrimeStationSectionList(string $filterSections, string $filterCategories, string $stationItems)
     {
@@ -1921,7 +1897,6 @@ class EchoRemote extends IPSModule
     */
     //</editor-fold>
 
-
     /** GetDevicetype
      *
      * @return string
@@ -1966,6 +1941,7 @@ class EchoRemote extends IPSModule
     /***********************************************************
      * Configuration Form
      ***********************************************************/
+
     /** @noinspection PhpMissingParentCallCommonInspection
      * build configuration form
      *
@@ -1982,7 +1958,7 @@ class EchoRemote extends IPSModule
     }
 
     /**
-     * return form configurations on configuration step
+     * return form configurations on configuration step.
      *
      * @return array
      */
@@ -2237,9 +2213,8 @@ class EchoRemote extends IPSModule
         return $selection;
     }
 
-
     /**
-     * return form actions by token
+     * return form actions by token.
      *
      * @return array
      */
@@ -2287,7 +2262,7 @@ class EchoRemote extends IPSModule
     }
 
     /**
-     * return from status
+     * return from status.
      *
      * @return array
      */

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 require_once __DIR__ . '/../libs/EchoBufferHelper.php';
@@ -74,7 +75,6 @@ class AmazonEchoIO extends IPSModule
             return;
         }
 
-
         if ($active) {
             $this->ValidateConfiguration($username, $password, $cookie, $useCookie);
         } else {
@@ -85,17 +85,15 @@ class AmazonEchoIO extends IPSModule
     /**
      * Die folgenden Funktionen stehen automatisch zur Verfügung, wenn das Modul über die "Module Control" eingefügt
      * wurden. Die Funktionen werden, mit dem selbst eingerichteten Prefix, in PHP und JSON-RPC wiefolgt zur Verfügung
-     * gestellt:
+     * gestellt:.
      *
      * @param $username
      * @param $password
      * @param $cookie
      * @param $useCookie
      */
-
     private function ValidateConfiguration($username, $password, $cookie, $useCookie): void
     {
-
 
         if ($useCookie) {
             if ($cookie === '') {
@@ -242,9 +240,9 @@ class AmazonEchoIO extends IPSModule
         return false;
     }
 
-    #################################################################
-    # Amazon Login
-    #
+    //################################################################
+    // Amazon Login
+    //
     public function LogIn(): bool
     {
 
@@ -285,7 +283,6 @@ class AmazonEchoIO extends IPSModule
             return false;
         }
 
-
         // get CSRF
         $return_data = $this->GetCSRF();
 
@@ -314,7 +311,7 @@ class AmazonEchoIO extends IPSModule
     private function GetAmazon2FACode($Seed, $OtpLength, $OtpKeyRegen)
     {
         /**
-         * Based on the 2FA Example found on: https://www.idontplaydarts.com/2011/07/google-totp-two-factor-authentication-for-php/
+         * Based on the 2FA Example found on: https://www.idontplaydarts.com/2011/07/google-totp-two-factor-authentication-for-php/.
          **/
         // Current Timestamp
         $timestamp = floor(microtime(true) / $OtpKeyRegen);
@@ -390,7 +387,7 @@ class AmazonEchoIO extends IPSModule
     }
 
     /**
-     * Headers for Login procedure
+     * Headers for Login procedure.
      *
      * @return array
      */
@@ -404,17 +401,17 @@ class AmazonEchoIO extends IPSModule
     }
 
     /**
-     * Step 1: get first cookie and write redirection target into referer
+     * Step 1: get first cookie and write redirection target into referer.
      *
      * @return array
      */
     private function GetFirstCookie(): array
     {
-        ############################################################
-        # get first cookie and write redirection target into referer
-        #
-        # $CURL $OPTS -s -D "${TMP}/.alexa.header" -c ${COOKIE} -b ${COOKIE} -A "${BROWSER}" -H "Accept-Language: ${LANGUAGE}" -H "DNT: 1" -H "Connection: keep-alive" -H "Upgrade-Insecure-Requests: 1" -L\
-        #  https://alexa.${AMAZON} | grep "hidden" | sed 's/hidden/\n/g' | grep "value=\"" | sed -r 's/^.*name="([^"]+)".*value="([^"]+)".*/\1=\2\&/g' > "${TMP}/.alexa.postdata"
+        //###########################################################
+        // get first cookie and write redirection target into referer
+        //
+        // $CURL $OPTS -s -D "${TMP}/.alexa.header" -c ${COOKIE} -b ${COOKIE} -A "${BROWSER}" -H "Accept-Language: ${LANGUAGE}" -H "DNT: 1" -H "Connection: keep-alive" -H "Upgrade-Insecure-Requests: 1" -L\
+        //  https://alexa.${AMAZON} | grep "hidden" | sed 's/hidden/\n/g' | grep "value=\"" | sed -r 's/^.*name="([^"]+)".*value="([^"]+)".*/\1=\2\&/g' > "${TMP}/.alexa.postdata"
 
         /*
          Aufruf von alexa.amazon.de (Accept-Language Header erforderlich für die Umleitung auf deutsch/englische Login Seite):
@@ -442,7 +439,7 @@ class AmazonEchoIO extends IPSModule
     }
 
     /**
-     * Step 2: login empty to generate session
+     * Step 2: login empty to generate session.
      *
      * @param $referer
      * @param $hiddenfields
@@ -451,11 +448,11 @@ class AmazonEchoIO extends IPSModule
      */
     private function StartSession(string $referer, array $hiddenfields): array
     {
-        ##########################################
-        # login empty to generate session
-        #
-        # ${CURL} ${OPTS} -s -c ${COOKIE} -b ${COOKIE} -A "${BROWSER}" -H "Accept-Language: ${LANGUAGE}" -H "DNT: 1" -H "Connection: keep-alive" -H "Upgrade-Insecure-Requests: 1" -L\
-        # -H "$(grep 'Location: ' ${TMP}/.alexa.header | sed 's/Location: /Referer: /')" -d "@${TMP}/.alexa.postdata" https://www.${AMAZON}/ap/signin | grep "hidden" | sed 's/hidden/\n/g' | grep "value=\"" | sed -r 's/^.*name="([^"]+)".*value="([^"]+)".*/\1=\2\&/g' > "${TMP}/.alexa.postdata2"
+        //#########################################
+        // login empty to generate session
+        //
+        // ${CURL} ${OPTS} -s -c ${COOKIE} -b ${COOKIE} -A "${BROWSER}" -H "Accept-Language: ${LANGUAGE}" -H "DNT: 1" -H "Connection: keep-alive" -H "Upgrade-Insecure-Requests: 1" -L\
+        // -H "$(grep 'Location: ' ${TMP}/.alexa.header | sed 's/Location: /Referer: /')" -d "@${TMP}/.alexa.postdata" https://www.${AMAZON}/ap/signin | grep "hidden" | sed 's/hidden/\n/g' | grep "value=\"" | sed -r 's/^.*name="([^"]+)".*value="([^"]+)".*/\1=\2\&/g' > "${TMP}/.alexa.postdata2"
 
         /*
         Aufruf von www.amazon.de/ap/signin (mit Referrer aus dem Location Header der vorigen Anfrage und den Hidden Feldern als POST-Data)
@@ -475,7 +472,7 @@ class AmazonEchoIO extends IPSModule
     }
 
     /**
-     * Step 3: get hidden fields from body and return as array
+     * Step 3: get hidden fields from body and return as array.
      *
      * @param $body
      *
@@ -509,7 +506,7 @@ class AmazonEchoIO extends IPSModule
     }
 
     /**
-     * Step 4: login with filled out form
+     * Step 4: login with filled out form.
      *
      * @param $hiddenFields
      *
@@ -517,12 +514,12 @@ class AmazonEchoIO extends IPSModule
      */
     private function GetSession(array $hiddenFields): array
     {
-        ############################################
-        # login with filled out form
-        #  !!! referer now contains session in URL
-        #
-        #${CURL} ${OPTS} -s -D "${TMP}/.alexa.header2" -c ${COOKIE} -b ${COOKIE} -A "${BROWSER}" -H "Accept-Language: ${LANGUAGE}" -H "DNT: 1" -H "Connection: keep-alive" -H "Upgrade-Insecure-Requests: 1" -L\
-        #-H "Referer: https://www.${AMAZON}/ap/signin/$(awk "\$0 ~/.${AMAZON}.*session-id[ \\s\\t]+/ {print \$7}" ${COOKIE})" --data-urlencode "email=${EMAIL}" --data-urlencode "password=${PASSWORD}" -d "@${TMP}/.alexa.postdata2" https://www.${AMAZON}/ap/signin > "${TMP}/.alexa.login"
+        //###########################################
+        // login with filled out form
+        //  !!! referer now contains session in URL
+        //
+        //${CURL} ${OPTS} -s -D "${TMP}/.alexa.header2" -c ${COOKIE} -b ${COOKIE} -A "${BROWSER}" -H "Accept-Language: ${LANGUAGE}" -H "DNT: 1" -H "Connection: keep-alive" -H "Upgrade-Insecure-Requests: 1" -L\
+        //-H "Referer: https://www.${AMAZON}/ap/signin/$(awk "\$0 ~/.${AMAZON}.*session-id[ \\s\\t]+/ {print \$7}" ${COOKIE})" --data-urlencode "email=${EMAIL}" --data-urlencode "password=${PASSWORD}" -d "@${TMP}/.alexa.postdata2" https://www.${AMAZON}/ap/signin > "${TMP}/.alexa.login"
 
         /*
          Aufruf von www.amazon.de/ap/signin (Referrer ist jetzt /ap/signin/<session-id>; Post Data enthält jetzt Login Informationen und Hidden Felder der vorigen Anfrage):
@@ -554,7 +551,7 @@ class AmazonEchoIO extends IPSModule
     }
 
     /**
-     * Step 5: Check if return of Step 4 is correct
+     * Step 5: Check if return of Step 4 is correct.
      *
      * @param $session_data
      *
@@ -588,17 +585,17 @@ class AmazonEchoIO extends IPSModule
         return $check;
     }
 
-    #
-    # get CSRF
-    #
+    //
+    // get CSRF
+    //
     private function GetCSRF(): array
     {
-        #######################################################
-        # get CSRF
-        #
-        # ${CURL} ${OPTS} -s -c ${COOKIE} -b ${COOKIE} -A "${BROWSER}" -H "DNT: 1" -H "Connection: keep-alive" -L\
-        # -H "Referer: https://alexa.${AMAZON}/spa/index.html" -H "Origin: https://alexa.${AMAZON}"\
-        # https://${ALEXA}/api/language > /dev/null
+        //######################################################
+        // get CSRF
+        //
+        // ${CURL} ${OPTS} -s -c ${COOKIE} -b ${COOKIE} -A "${BROWSER}" -H "DNT: 1" -H "Connection: keep-alive" -L\
+        // -H "Referer: https://alexa.${AMAZON}/spa/index.html" -H "Origin: https://alexa.${AMAZON}"\
+        // https://${ALEXA}/api/language > /dev/null
 
         /*
         Damit die XHR-Aufrufe gegen cross-site Attacken gesichert werden, muss für das Cookie noch ein CSRF Token erstellt werden.
@@ -621,20 +618,20 @@ class AmazonEchoIO extends IPSModule
     }
 
     /**
-     * checks if the user is authenticated and saves the custonmerId in a buffer
+     * checks if the user is authenticated and saves the custonmerId in a buffer.
      *
      * @return bool
      */
     public function CheckLoginStatus(): bool
     {
         $this->SendDebug(__FUNCTION__, '== started ==', 0);
-        #######################################################
-        #
-        # bootstrap with GUI-Version writes GUI version to cookie
-        #  returns among other the current authentication state
-        #
-        # AUTHSTATUS=$(${CURL} ${OPTS} -s -b ${COOKIE} -A "${BROWSER}" -H "DNT: 1" -H "Connection: keep-alive" -L https://${ALEXA}/api/bootstrap?version=${GUIVERSION}
-        #   | sed -r 's/^.*"authenticated":([^,]+),.*$/\1/g')
+        //######################################################
+        //
+        // bootstrap with GUI-Version writes GUI version to cookie
+        //  returns among other the current authentication state
+        //
+        // AUTHSTATUS=$(${CURL} ${OPTS} -s -b ${COOKIE} -A "${BROWSER}" -H "DNT: 1" -H "Connection: keep-alive" -L https://${ALEXA}/api/bootstrap?version=${GUIVERSION}
+        //   | sed -r 's/^.*"authenticated":([^,]+),.*$/\1/g')
 
         $guiversion = 0;
 
@@ -693,7 +690,6 @@ class AmazonEchoIO extends IPSModule
         $body = substr($result, $HeaderSize);
         $this->SendDebug(__FUNCTION__, 'Response (body): ' . $body, 0);
 
-
         return ['http_code' => $http_code, 'header' => $header, 'body' => $body];
     }
 
@@ -747,7 +743,6 @@ class AmazonEchoIO extends IPSModule
         $sequence = [
             '@type'     => 'com.amazon.alexa.behaviors.model.Sequence',
             'startNode' => $startNode];
-
 
         $postfields = [
             'behaviorId'   => 'PREVIEW',
@@ -1049,14 +1044,11 @@ class AmazonEchoIO extends IPSModule
         return $header;
     }
 
-
     /**  Send to Echo API
      *
      * @param string    $url
-     *
      * @param array     $header
      * @param string    $postfields as json string
-     *
      * @param bool|null $optpost
      *
      * @return mixed
@@ -1080,16 +1072,16 @@ class AmazonEchoIO extends IPSModule
         if ($this->ReadPropertyBoolean('UseCustomCSRFandCookie')) {
             $options[CURLOPT_COOKIE] = $this->ReadPropertyString('alexa_cookie'); //this content is read
         } else {
-            $options [CURLOPT_COOKIEFILE] = $this->ReadPropertyString('CookiesFileName'); //this file is read
+            $options[CURLOPT_COOKIEFILE] = $this->ReadPropertyString('CookiesFileName'); //this file is read
         }
 
         if ($postfields !== null) {
             if ($postfields === 'DELETE') {
                 $this->SendDebug(__FUNCTION__, 'Type: DELETE', 0);
-                $options [CURLOPT_CUSTOMREQUEST] = 'DELETE';
+                $options[CURLOPT_CUSTOMREQUEST] = 'DELETE';
             } else {
                 $this->SendDebug(__FUNCTION__, 'Postfields: ' . $postfields, 0);
-                $options [CURLOPT_POSTFIELDS] = $postfields;
+                $options[CURLOPT_POSTFIELDS] = $postfields;
             }
         }
 
@@ -1117,7 +1109,9 @@ class AmazonEchoIO extends IPSModule
         //eine Fehlerbehandlung macht hier leider keinen Sinn, da 400 auch kommt, wenn z.b. der Bildschirm (Show) ausgeschaltet ist
 
         return $this->getReturnValues($info, $result);
-    }/** @noinspection PhpMissingParentCallCommonInspection */
+    }
+
+    /** @noinspection PhpMissingParentCallCommonInspection */
 
     /**
      * @param $JSONString
@@ -1280,14 +1274,13 @@ class AmazonEchoIO extends IPSModule
 
     }
 
-
     /***********************************************************
      * Configuration Form
      ***********************************************************/
     /** @noinspection PhpMissingParentCallCommonInspection */
 
     /**
-     * build configuration form
+     * build configuration form.
      *
      * @return string
      * @noinspection PhpMissingParentCallCommonInspection
@@ -1304,7 +1297,7 @@ class AmazonEchoIO extends IPSModule
     }
 
     /**
-     * return form configurations on configuration step
+     * return form configurations on configuration step.
      *
      * @return array
      */
@@ -1345,7 +1338,7 @@ class AmazonEchoIO extends IPSModule
     }
 
     /**
-     * return form actions by token
+     * return form actions by token.
      *
      * @return array
      */
@@ -1372,13 +1365,11 @@ class AmazonEchoIO extends IPSModule
                 'caption' => 'Get OTP',
                 'onClick' => "echo 'Amazon OTP: ' . EchoIO_GetOTP(\$id);"]];
 
-
         return $form;
     }
 
-
     /**
-     * return from status
+     * return from status.
      *
      * @return array
      */
@@ -1423,5 +1414,4 @@ class AmazonEchoIO extends IPSModule
                 'value'   => 1]];
         return $options;
     }
-
 }
