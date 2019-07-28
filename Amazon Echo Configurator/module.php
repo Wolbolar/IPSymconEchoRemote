@@ -21,6 +21,7 @@ class AmazonEchoConfigurator extends IPSModule
         'AILBSA2LNTOYL'  => ['name' => 'Reverb App'],
         'A15ERDAKK5HQQG' => ['name' => 'Sonos'],
         'A1NL4BVLQ4L3N3' => ['name' => 'Echo Show'],
+        'A4ZP7ZC4PI6TO'  => ['name' => 'Echo Show 5'],        
         'A1DL2DVDQVK3Q'  => ['name' => 'App'],
         'A10A33FOX2NUBK' => ['name' => 'Echo Spot'],
         'A7WXQPH584YP'   => ['name' => 'Echo (2.Gen)'],
