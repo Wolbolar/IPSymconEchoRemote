@@ -7,13 +7,19 @@ require_once __DIR__ . '/../libs/EchoDebugHelper.php';
 
 class AmazonEchoConfigurator extends IPSModule
 {
-    use EchoBufferHelper,
-        EchoDebugHelper;
+    use EchoBufferHelper, EchoDebugHelper;
 
     private const DEVICETYPES = [
         'A2E0SNTXJVT7WK' => ['name' => 'Fire TV'],
         'ADVBD696BHNV5'  => ['name' => 'Fire TV Stick (1.Gen)'],
+        'A2GFL5ZMWNE0PX' => ['name' => 'Fire TV Stick 4K (1.Gen)'],
+        'AKPGW064GI9HE'  => ['name' => 'Fire TV Stick 4K'],
         'A2LWARUGJLBYEW' => ['name' => 'Fire TV Stick (2.Gen)'],
+        'A21Z3CGI8UIP0F' => ['name' => 'Denon&Marantz (HEOS)'],
+        'AVE5HX13UR5NO'  => ['name' => 'Zero Touch (Logitech)'],
+        'AKOAGQTKAS9YB'  => ['name' => 'Amazon Echo Connect'],
+        'A3GZUE7F9MEB4U' => ['name' => 'Sony WH-100XM3'],
+        'A2J0R2SD7G9LPA' => ['name' => 'Lenovo P10'],
         'A2825NDLA7WDZV' => ['name' => 'App'],
         'AB72C64C86AW2'  => ['name' => 'Echo'],
         'A3S5BH2HU6VAYF' => ['name' => 'Echo Dot (2.Gen)'],
