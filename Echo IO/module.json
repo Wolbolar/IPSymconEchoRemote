@@ -1,11 +1,12 @@
 {
-    "id": "{C7F853A4-60D2-99CD-A198-2C9025E2E312}",
-    "name": "AmazonEchoIO",
-    "type": 1,
-    "vendor": "Amazon",
-    "aliases": ["Amazon Echo Remote IO"],
+    "id":                 "{C7F853A4-60D2-99CD-A198-2C9025E2E312}",
+    "name":               "AmazonEchoIO",
+    "type":               1,
+    "vendor":             "Amazon",
+    "aliases":            ["Amazon Echo Remote IO"],
     "parentRequirements": [],
-    "childRequirements": ["{E41E38AC-30D7-CA82-DEF5-9561A5B06CD7}"],
-    "implemented": ["{2BD76048-32BD-7D8B-AB6C-626D5C6D7253}","{8E187D67-F330-2B1D-8C6E-B37896D7AE3E}"],
-    "prefix": "ECHOIO"
+    "childRequirements":  ["{E41E38AC-30D7-CA82-DEF5-9561A5B06CD7}"],
+    "implemented":        ["{2BD76048-32BD-7D8B-AB6C-626D5C6D7253}", "{8E187D67-F330-2B1D-8C6E-B37896D7AE3E}"],
+    "prefix":             "ECHOIO",
+    "url":                "https://github.com/Wolbolar/IPSymconEchoRemote/blob/master/README.md"
 }

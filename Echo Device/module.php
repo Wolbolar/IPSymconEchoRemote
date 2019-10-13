@@ -1977,7 +1977,8 @@ class EchoRemote extends IPSModule
                 'name'    => 'updateinterval',
                 'type'    => 'NumberSpinner',
                 'caption' => 'update interval',
-                'suffix'  => 'seconds'],
+                'suffix'  => 'seconds',
+                'minimum' => 0],
             [
                 'name'    => 'ExtendedInfo',
                 'type'    => 'CheckBox',
