@@ -1,11 +1,12 @@
 {
-    "id": "{496AB8B5-396A-40E4-AF41-32F4C48AC90D}",
-    "name": "EchoRemote",
-    "type": 3,
-    "vendor": "Amazon",
-    "aliases": ["Amazon Echo Remote"],
+    "id":                 "{496AB8B5-396A-40E4-AF41-32F4C48AC90D}",
+    "name":               "EchoRemote",
+    "type":               3,
+    "vendor":             "Amazon",
+    "aliases":            ["Amazon Echo Remote"],
     "parentRequirements": ["{8E187D67-F330-2B1D-8C6E-B37896D7AE3E}"],
-    "childRequirements": [],
-    "implemented": ["{E41E38AC-30D7-CA82-DEF5-9561A5B06CD7}"],
-    "prefix": "ECHOREMOTE"
+    "childRequirements":  [],
+    "implemented":        ["{E41E38AC-30D7-CA82-DEF5-9561A5B06CD7}"],
+    "prefix":             "ECHOREMOTE",
+    "url":                "https://github.com/Wolbolar/IPSymconEchoRemote/blob/master/README.md"
 }

@@ -142,6 +142,8 @@ Vielen Dank an dieser Stelle an ok1982, der die Unterstützung der Zwei-Schritt-
 
 <a href="https://www.symcon.de/forum/attachment.php?attachmentid=48519&d=1554833431">Anleitung 2FA.pdf</a>
 
+**Wichtig: Der erste Punkt in der Anleitung ("Die beiden Dateien ...") ist nicht mehr gültig, bitte ignorieren!**
+
 Alternativ zu Benutzername und Passwort kann auch ein gültiger Cookie verwendet werden.
  
 
