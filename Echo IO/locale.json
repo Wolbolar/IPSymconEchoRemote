@@ -23,7 +23,8 @@
       "cookie without csrf.": "Cookie ohne CSRF.",
       "not authenticated.": "Die Anmeldung ist fehlgeschlagen.",
       "Get OTP": "Generiere OTP",
-      "Amazon 2FA": "Amazon 2FA (QR-Code Daten / leer = deaktiviert)"
+      "Amazon 2FA": "Amazon 2FA (QR-Code Daten / leer = deaktiviert)",
+      "last device": "letztes Gerät"
     }
   }
 }

@@ -144,7 +144,6 @@ Vielen Dank an dieser Stelle an ok1982, der die Unterstützung der Zwei-Schritt-
 
 **Wichtig: Der erste Punkt in der Anleitung ("Die beiden Dateien ...") ist nicht mehr gültig, bitte ignorieren!**
 
-<br><br>
 Alternativ zu Benutzername und Passwort kann auch ein gültiger Cookie verwendet werden.
  
 
