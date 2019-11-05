@@ -100,7 +100,7 @@ class AmazonEchoIO extends IPSModule
             $this->RegisterProfileAssociation(
                 'EchoRemote.LastDevice', '', '', '', 1, $max, 0, 0, VARIABLETYPE_INTEGER, $device_association);
             $this->RegisterVariableInteger('last_device', $this->Translate('last device'), 'EchoRemote.LastDevice', 1);
-            $this->SetTimerInterval("TimerLastDevice", 2000);
+            $this->SetTimerInterval('TimerLastDevice', 2000);
         }
     }
 
@@ -935,7 +935,7 @@ class AmazonEchoIO extends IPSModule
 
     public function GetLastDevice()
     {
-        $response_activities = $this->CustomCommand( 'https://{AlexaURL}/api/activities?startTime=&size=10&offset=1');
+        $response_activities = $this->CustomCommand('https://{AlexaURL}/api/activities?startTime=&size=10&offset=1');
         $http_code = $response_activities['http_code'];
         $last_device = ['name' => '', 'serialnumber' => '', 'creationTimestamp' => '', 'summary' => ''];
         $serialNumber = '';
@@ -975,7 +975,7 @@ class AmazonEchoIO extends IPSModule
                     $this->SendDebug('Echo Device', 'serial number: ' . $device_serialNumber, 0);
                     $this->SendDebug('Echo Command', 'summary: ' . $summary, 0);
                     $last_device = ['name' => $accountName, 'serialnumber' => $device_serialNumber, 'creationTimestamp' => $creationTimestamp, 'summary' => $summary];
-                    $payload = json_encode(Array("DataID" => "{E41E38AC-30D7-CA82-DEF5-9561A5B06CD7}", "Buffer" => $last_device));
+                    $payload = json_encode(['DataID' => '{E41E38AC-30D7-CA82-DEF5-9561A5B06CD7}', 'Buffer' => $last_device]);
                     $this->SendDataToChildren($payload);
                     $this->SendDebug('Forward Data Last Device', $payload, 0);
                     $current_serial = GetValue($this->GetIDForIdent('last_device'));
@@ -1451,7 +1451,7 @@ class AmazonEchoIO extends IPSModule
      *
      * @param string $notification
      * @param string $message
-     * @param int    $format 0 = Text, 1 = Hex
+     * @param int    $format       0 = Text, 1 = Hex
      */
     private function _debug(string $notification = null, string $message = null, $format = 0)
     {
