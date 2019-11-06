@@ -114,7 +114,7 @@ class EchoRemote extends IPSModule
         $this->RegisterVariables();
         //Apply filter
         $devicenumber = $this->ReadPropertyString('Devicenumber');
-        $this->SetReceiveDataFilter(".*" . $devicenumber . ".*");
+        $this->SetReceiveDataFilter('.*' . $devicenumber . '.*');
     }
 
     protected function HasActiveParent(): bool
@@ -432,8 +432,8 @@ class EchoRemote extends IPSModule
             $this->WriteAttributeInteger('creationTimestamp', $creationTimestamp);
             $summary = $payload->summary;
             $timestamp = time();
-            $this->SetValue("last_action", $timestamp);
-            $this->SetValue("summary", $summary);
+            $this->SetValue('last_action', $timestamp);
+            $this->SetValue('summary', $summary);
         }
     }
 
