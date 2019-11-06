@@ -33,6 +33,8 @@ class AmazonEchoIO extends IPSModule
         $this->RegisterPropertyInteger('language', 0);
         $this->RegisterPropertyBoolean('UseCustomCSRFandCookie', false);
         $this->RegisterPropertyString('alexa_cookie', '');
+        $this->RegisterAttributeString('devices', '[]');
+        $this->RegisterTimer('TimerLastDevice', 0, 'ECHOIO_GetLastDevice(' . $this->InstanceID . ');');
 
         //the following Properties are only used internally
         $this->RegisterPropertyString(
@@ -79,6 +81,26 @@ class AmazonEchoIO extends IPSModule
             $this->ValidateConfiguration($username, $password, $cookie, $useCookie);
         } else {
             $this->SetStatus(IS_INACTIVE);
+        }
+        $devices = $this->GetDeviceList();
+        if (empty($devices)) {
+            $this->SendDebug(__FUNCTION__, 'no devices found', 0);
+        }
+        else
+        {
+            $device_association = [];
+            $max = 1;
+            foreach ($devices as $key => $device) {
+                $accountName = $device['accountName'];
+                $device_serialNumber = $device['serialNumber'];
+                $device_association[] = [$key+1, $accountName, '', -1];
+                $max = $max+1;
+            }
+            $this->SendDebug('Devices Profile', json_encode($device_association), 0);
+            $this->RegisterProfileAssociation(
+                'EchoRemote.LastDevice', '', '', '', 1, $max, 0, 0, VARIABLETYPE_INTEGER, $device_association);
+            $this->RegisterVariableInteger('last_device', $this->Translate('last device'), 'EchoRemote.LastDevice', 1);
+            $this->SetTimerInterval('TimerLastDevice', 2000);
         }
     }
 
@@ -911,6 +933,82 @@ class AmazonEchoIO extends IPSModule
         return $this->SendEcho($url, $header, json_encode($postfields), $optpost);
     }
 
+    public function GetLastDevice()
+    {
+        $response_activities = $this->CustomCommand('https://{AlexaURL}/api/activities?startTime=&size=10&offset=1');
+        $http_code = $response_activities['http_code'];
+        $last_device = ['name' => '', 'serialnumber' => '', 'creationTimestamp' => '', 'summary' => ''];
+        $serialNumber = '';
+        if($http_code == 200)
+        {
+            $payload_activities = $response_activities['body'];
+            $activities_array = json_decode($payload_activities, true);
+            $activities = $activities_array['activities'];
+            foreach($activities as $key => $activity)
+            {
+                $state = $activity['activityStatus'];
+                if($state == 'SUCCESS')
+                {
+                    $sourceDeviceIds = $activity['sourceDeviceIds'][0];
+                    $serialNumber = $sourceDeviceIds['serialNumber'];
+                    $creationTimestamp = $activity['creationTimestamp'];
+                    $description = $activity['description'];
+                    $summary = json_decode($description)->summary;
+                    break;
+                }
+            }
+        }
+        $devices = $this->GetDeviceList();
+
+        if (empty($devices)) {
+            return [];
+        }
+
+        if($serialNumber != '')
+        {
+            foreach ($devices as $key => $device) {
+                $accountName = $device['accountName'];
+                $device_serialNumber = $device['serialNumber'];
+                if($serialNumber == $device_serialNumber)
+                {
+                    $this->SendDebug('Echo Device', 'account name: ' . $accountName, 0);
+                    $this->SendDebug('Echo Device', 'serial number: ' . $device_serialNumber, 0);
+                    $this->SendDebug('Echo Command', 'summary: ' . $summary, 0);
+                    $last_device = ['name' => $accountName, 'serialnumber' => $device_serialNumber, 'creationTimestamp' => $creationTimestamp, 'summary' => $summary];
+                    $payload = json_encode(['DataID' => '{E41E38AC-30D7-CA82-DEF5-9561A5B06CD7}', 'Buffer' => $last_device]);
+                    $this->SendDataToChildren($payload);
+                    $this->SendDebug('Forward Data Last Device', $payload, 0);
+                    $current_serial = GetValue($this->GetIDForIdent('last_device'));
+                    if($current_serial != $key+1)
+                    {
+                        $this->SetValue('last_device', $key+1);
+                    }
+                }
+            }
+        }
+        return $last_device;
+    }
+
+    public function GetDeviceList()
+    {
+        $devices = $this->ReadAttributeString('devices');
+        if($devices == '[]')
+        {
+            $devices_info = $this->GetDevices();
+            if ($devices_info['http_code'] === 200) {
+                $devices_JSON = $devices_info['body'];
+                $this->SendDebug('Response IO:', $devices_JSON, 0);
+                if ($devices_JSON) {
+                    $devices = json_decode($devices_JSON, true)['devices'];
+                    $this->SendDebug('Echo Devices:', json_encode($devices), 0);
+                }
+            } else {
+                $devices = null;
+            }
+        }
+        return $devices;
+    }
+
     private function SendDelete(string $url)
     {
         $header = $this->GetHeader();
@@ -959,6 +1057,7 @@ class AmazonEchoIO extends IPSModule
                 }
             }
             $devices_arr['devices'] = [$myDevice];
+            $this->WriteAttributeString('devices', json_encode($devices_arr));
             $result['body']         = json_encode($devices_arr);
         }
 
@@ -1272,6 +1371,102 @@ class AmazonEchoIO extends IPSModule
         $this->SendDebug(__FUNCTION__, 'Return: ' . strlen($ret) . ' Zeichen', 0);
         return $ret;
 
+    }
+
+    //Profile
+
+    /**
+     * register profiles.
+     *
+     * @param $Name
+     * @param $Icon
+     * @param $Prefix
+     * @param $Suffix
+     * @param $MinValue
+     * @param $MaxValue
+     * @param $StepSize
+     * @param $Digits
+     * @param $Vartype
+     */
+    protected function RegisterProfile($Name, $Icon, $Prefix, $Suffix, $MinValue, $MaxValue, $StepSize, $Digits, $Vartype)
+    {
+
+        if (!IPS_VariableProfileExists($Name)) {
+            IPS_CreateVariableProfile($Name, $Vartype); // 0 boolean, 1 int, 2 float, 3 string,
+        } else {
+            $profile = IPS_GetVariableProfile($Name);
+            if ($profile['ProfileType'] != $Vartype) {
+                $this->_debug('profile', 'Variable profile type does not match for profile ' . $Name);
+            }
+        }
+        $profile = IPS_GetVariableProfile($Name);
+        $profile_type =  $profile['ProfileType'];
+        IPS_SetVariableProfileIcon($Name, $Icon);
+        IPS_SetVariableProfileText($Name, $Prefix, $Suffix);
+        if ($profile_type != VARIABLETYPE_STRING) {
+            IPS_SetVariableProfileDigits($Name, $Digits); //  Nachkommastellen
+            IPS_SetVariableProfileValues(
+                $Name, $MinValue, $MaxValue, $StepSize
+            ); // string $ProfilName, float $Minimalwert, float $Maximalwert, float $Schrittweite
+        }
+    }
+
+    /**
+     * register profile association.
+     *
+     * @param $Name
+     * @param $Icon
+     * @param $Prefix
+     * @param $Suffix
+     * @param $MinValue
+     * @param $MaxValue
+     * @param $Stepsize
+     * @param $Digits
+     * @param $Vartype
+     * @param $Associations
+     */
+    protected function RegisterProfileAssociation($Name, $Icon, $Prefix, $Suffix, $MinValue, $MaxValue, $Stepsize, $Digits, $Vartype, $Associations)
+    {
+        if (is_array($Associations) && count($Associations) === 0) {
+            $MinValue = 0;
+            $MaxValue = 0;
+        }
+        $this->RegisterProfile($Name, $Icon, $Prefix, $Suffix, $MinValue, $MaxValue, $Stepsize, $Digits, $Vartype);
+
+        if (is_array($Associations)) {
+            foreach ($Associations as $Association) {
+                IPS_SetVariableProfileAssociation($Name, $Association[0], $Association[1], $Association[2], $Association[3]);
+            }
+        } else {
+            $Associations = $this->$Associations;
+            foreach ($Associations as $code => $association) {
+                IPS_SetVariableProfileAssociation($Name, $code, $this->Translate($association), $Icon, -1);
+            }
+        }
+
+    }
+
+    /**
+     * send debug log.
+     *
+     * @param string $notification
+     * @param string $message
+     * @param int    $format       0 = Text, 1 = Hex
+     */
+    private function _debug(string $notification = null, string $message = null, $format = 0)
+    {
+        $this->SendDebug($notification, $message, $format);
+    }
+
+    /**
+     * return incremented position.
+     *
+     * @return int
+     */
+    private function _getPosition()
+    {
+        $this->position++;
+        return $this->position;
     }
 
     /***********************************************************

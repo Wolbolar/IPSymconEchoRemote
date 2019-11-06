@@ -87,6 +87,7 @@ class EchoRemote extends IPSModule
         $this->SetBuffer('Volume', '');
         $this->RegisterTimer('EchoUpdate', 0, 'EchoRemote_UpdateStatus(' . $this->InstanceID . ');');
         $this->RegisterTimer('EchoAlarm', 0, 'EchoRemote_RaiseAlarm(' . $this->InstanceID . ');');
+        $this->RegisterAttributeInteger('creationTimestamp', 0);
 
         $this->ConnectParent('{C7F853A4-60D2-99CD-A198-2C9025E2E312}');
 
@@ -111,7 +112,9 @@ class EchoRemote extends IPSModule
         $this->RegisterParent();
 
         $this->RegisterVariables();
-
+        //Apply filter
+        $devicenumber = $this->ReadPropertyString('Devicenumber');
+        $this->SetReceiveDataFilter('.*' . $devicenumber . '.*');
     }
 
     protected function HasActiveParent(): bool
@@ -322,6 +325,9 @@ class EchoRemote extends IPSModule
         if ($this->ReadPropertyBoolean('Subtitle2')) {
             $this->RegisterVariableString('Subtitle_2_HTML', $this->Translate('Subtitle 2'), '~HTMLBox', 16);
         }
+
+        $this->RegisterVariableInteger('last_action', $this->Translate('Last Action'), '~UnixTimestamp', 17);
+        $this->RegisterVariableString('summary', $this->Translate('Last Command'), '', 18);
     }
 
     private function GetDeviceInfo()
@@ -412,6 +418,23 @@ class EchoRemote extends IPSModule
         );
 
         return null;
+    }
+
+    public function ReceiveData($JSONString) {
+        $data = json_decode($JSONString);
+        $this->SendDebug('Receive Data', $JSONString, 0);
+        $payload = $data->Buffer;
+        $creationTimestamp = $payload->creationTimestamp;
+        $this->SendDebug('Creation Timestamp', $creationTimestamp, 0);
+        $last_timestamp = $this->ReadAttributeInteger('creationTimestamp');
+        if($last_timestamp != $creationTimestamp)
+        {
+            $this->WriteAttributeInteger('creationTimestamp', $creationTimestamp);
+            $summary = $payload->summary;
+            $timestamp = time();
+            $this->SetValue('last_action', $timestamp);
+            $this->SetValue('summary', $summary);
+        }
     }
 
     /** @noinspection PhpMissingParentCallCommonInspection */
