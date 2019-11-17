@@ -35,6 +35,7 @@ class AmazonEchoConfigurator extends IPSModule
         'A3L0T0VL9A921N' => ['name' => 'Tablet'],
         'A3R9S4ZZECZ6YL' => ['name' => 'Tablet'],
         'A1DL2DVDQVK3Q'  => ['name' => 'App'],
+        'A1RTAM01W29CUP' => ['name' => 'PC App'],
         'A10A33FOX2NUBK' => ['name' => 'Echo Spot'],
         'A7WXQPH584YP'   => ['name' => 'Echo (2.Gen)'],
         'A2M35JJZWCQOMZ' => ['name' => 'Echo Plus'],
