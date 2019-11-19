@@ -42,7 +42,10 @@ class AmazonEchoIO extends IPSModule
         );
         $this->RegisterPropertyString('CookiesFileName', IPS_GetKernelDir() . 'alexa_cookie.txt');
         $this->RegisterPropertyString('LoginFileName', IPS_GetKernelDir() . 'alexa_login.html');
+        $this->RegisterPropertyBoolean('TimerLastAction', true);
 
+        //we will wait until the kernel is ready
+        $this->RegisterMessage(0, IPS_KERNELMESSAGE);
     }
 
     public function ApplyChanges()
@@ -50,12 +53,16 @@ class AmazonEchoIO extends IPSModule
         //Never delete this line!
         parent::ApplyChanges();
 
+        if (IPS_GetKernelRunlevel() !== KR_READY) {
+            return;
+        }
+
         $username  = $this->ReadPropertyString('username');
         $password  = $this->ReadPropertyString('password');
         $cookie    = $this->ReadPropertyString('alexa_cookie');
         $useCookie = $this->ReadPropertyBoolean('UseCustomCSRFandCookie');
         $active    = $this->ReadPropertyBoolean('active');
-
+        $TimerLastAction = $this->ReadPropertyBoolean('TimerLastAction');
         $currentProperties = json_encode(
             [
                 'username'     => $username,
@@ -100,7 +107,14 @@ class AmazonEchoIO extends IPSModule
             $this->RegisterProfileAssociation(
                 'EchoRemote.LastDevice', '', '', '', 1, $max, 0, 0, VARIABLETYPE_INTEGER, $device_association);
             $this->RegisterVariableInteger('last_device', $this->Translate('last device'), 'EchoRemote.LastDevice', 1);
-            $this->SetTimerInterval('TimerLastDevice', 2000);
+            if($TimerLastAction)
+            {
+                $this->SetTimerInterval('TimerLastDevice', 2000);
+            }
+            else
+            {
+                $this->SetTimerInterval('TimerLastDevice', 0);
+            }
         }
     }
 
@@ -142,6 +156,28 @@ class AmazonEchoIO extends IPSModule
             $errorTxt = sprintf('Number of failed LogIns: %d', json_decode($this->GetBuffer($this->InstanceID . '-failedLogins'), false));
             $this->SendDebug(__FUNCTION__, $errorTxt, 0);
             IPS_LogMessage(__CLASS__, $errorTxt);
+        }
+    }
+
+    /** @noinspection PhpMissingParentCallCommonInspection */
+    public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
+    {
+
+        switch ($Message) {
+            case IM_CHANGESTATUS:
+                if ($Data[0] === IS_ACTIVE) {
+                    $this->ApplyChanges();
+                }
+                break;
+
+            case IPS_KERNELMESSAGE:
+                if ($Data[0] === KR_READY) {
+                    $this->ApplyChanges();
+                }
+                break;
+
+            default:
+                break;
         }
     }
 
@@ -1527,7 +1563,11 @@ class AmazonEchoIO extends IPSModule
             [
                 'name'    => 'alexa_cookie',
                 'type'    => 'ValidationTextBox',
-                'caption' => 'Cookie']
+                'caption' => 'Cookie'],
+            [
+                'name'    => 'TimerLastAction',
+                'type'    => 'CheckBox',
+                'caption' => 'Get last action']
 
         ];
     }
