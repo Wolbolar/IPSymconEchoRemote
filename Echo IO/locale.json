@@ -24,7 +24,8 @@
       "not authenticated.": "Die Anmeldung ist fehlgeschlagen.",
       "Get OTP": "Generiere OTP",
       "Amazon 2FA": "Amazon 2FA (QR-Code Daten / leer = deaktiviert)",
-      "last device": "letztes Gerät"
+      "last device": "letztes Gerät",
+      "Get last action": "Letzte Aktion auswerten"
     }
   }
 }
