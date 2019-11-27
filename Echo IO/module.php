@@ -1197,7 +1197,7 @@ class AmazonEchoIO extends IPSModule
         $options = [
             CURLOPT_URL            => $url,
             CURLOPT_HTTPHEADER     => $header,
-            CURLOPT_TIMEOUT        => 2, //timeout after 2 seconds
+            CURLOPT_TIMEOUT        => 6, //timeout after 6 seconds
             CURLOPT_HEADER         => true,
             CURLINFO_HEADER_OUT    => true,
             CURLOPT_ENCODING       => '',
