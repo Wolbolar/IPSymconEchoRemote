@@ -17,6 +17,7 @@ class EchoRemote extends IPSModule
     private const STATUS_INST_DEVICENUMBER_IS_EMPTY = 211; // devicenumber must not be empty
 
     private $customerID = '';
+    private $update_counter = 0;
 
     private $ParentID   = 0;
 
@@ -1363,7 +1364,7 @@ class EchoRemote extends IPSModule
      */
     public function UpdateStatus(): bool
     {
-
+        $this->update_counter = $this->update_counter + 1;
         if (!$result = $this->GetPlayerInformation()) {
             return false;
         }
@@ -1433,13 +1434,17 @@ class EchoRemote extends IPSModule
         }
 
         //update Alarm
-        if ($this->ReadPropertyBoolean('AlarmInfo')) {
-            $notifications = $this->GetNotifications();
-            if ($notifications === null) {
-                return false;
-            }
+        if($this->update_counter > 20)
+        {
+            $this->update_counter = 0;
+            if ($this->ReadPropertyBoolean('AlarmInfo')) {
+                $notifications = $this->GetNotifications();
+                if ($notifications === null) {
+                    return false;
+                }
 
-            $this->SetAlarm($notifications);
+                $this->SetAlarm($notifications);
+            }
         }
 
         //update ShoppingList
