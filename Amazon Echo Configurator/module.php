@@ -38,6 +38,7 @@ class AmazonEchoConfigurator extends IPSModule
         'A1RTAM01W29CUP' => ['name' => 'PC App'],
         'A1H0CMF1XM0ZP4' => ['name' => 'Bose Soundtouch'],
         'A1WAR447VT003J' => ['name' => 'Yamaha AVR MusicCast'],
+        'A3VRME03NAXFUB' => ['name' => 'Echo Flex'],
         'A10A33FOX2NUBK' => ['name' => 'Echo Spot'],
         'A7WXQPH584YP'   => ['name' => 'Echo (2.Gen)'],
         'A2M35JJZWCQOMZ' => ['name' => 'Echo Plus'],
