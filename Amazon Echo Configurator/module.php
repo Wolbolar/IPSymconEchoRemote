@@ -29,7 +29,7 @@ class AmazonEchoConfigurator extends IPSModule
         'A15ERDAKK5HQQG' => ['name' => 'Sonos'],
         'A1NL4BVLQ4L3N3' => ['name' => 'Echo Show'],
         'A4ZP7ZC4PI6TO'  => ['name' => 'Echo Show 5'],
-        'AlZ88NGR28K6A2' => ['name' => 'Echo Show 8'],
+        'AlZ88NGR2BK6A2' => ['name' => 'Echo Show 8'],
         'A30YDR2MK8HMRV' => ['name' => 'Echo Dot (3.Gen with Clock)'],
         'A1J16TEDOYCZTN' => ['name' => 'Amazon Tablet'],
         'A112LJ20W14H95' => ['name' => 'Media Display'],
