@@ -11,6 +11,7 @@ class AmazonEchoConfigurator extends IPSModule
 
     private const DEVICETYPES = [
         'A2E0SNTXJVT7WK' => ['name' => 'Fire TV'],
+        'A12GXV8XMS007S' => ['name' => 'Fire TV (2.Gen)'],
         'ADVBD696BHNV5'  => ['name' => 'Fire TV Stick (1.Gen)'],
         'A2GFL5ZMWNE0PX' => ['name' => 'Fire TV Stick 4K (1.Gen)'],
         'AKPGW064GI9HE'  => ['name' => 'Fire TV Stick 4K'],
@@ -34,6 +35,7 @@ class AmazonEchoConfigurator extends IPSModule
         'AlZ88NGR2BK6A2' => ['name' => 'Echo Show 8'],
         'A30YDR2MK8HMRV' => ['name' => 'Echo Dot (3.Gen with Clock)'],
         'A1J16TEDOYCZTN' => ['name' => 'Amazon Tablet'],
+        'A38EHHIB10L47V' => ['name' => 'Fire HD 8 Tablet'],
         'A112LJ20W14H95' => ['name' => 'Media Display'],
         'A3L0T0VL9A921N' => ['name' => 'Tablet'],
         'A3R9S4ZZECZ6YL' => ['name' => 'Tablet'],
@@ -46,6 +48,7 @@ class AmazonEchoConfigurator extends IPSModule
         'A10A33FOX2NUBK' => ['name' => 'Echo Spot'],
         'A7WXQPH584YP'   => ['name' => 'Echo (2.Gen)'],
         'A2M35JJZWCQOMZ' => ['name' => 'Echo Plus'],
+        'A18O6U1UQFJ0XK' => ['name' => 'Echo Plus'],
         'A2IVLV5VM2W81'  => ['name' => 'Mobile Voice iOS'],
         'A2TF17PFR55MTB' => ['name' => 'Mobile Voice Android'],
         'A1JJ0KFC4ZPNJ3' => ['name' => 'Echo Input'],
