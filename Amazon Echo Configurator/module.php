@@ -32,7 +32,7 @@ class AmazonEchoConfigurator extends IPSModule
         'A1NL4BVLQ4L3N3' => ['name' => 'Echo Show'],
         'AWZZ5CVHX2CD'   => ['name' => 'Echo Show (2.Gen)'],
         'A4ZP7ZC4PI6TO'  => ['name' => 'Echo Show 5'],
-        'AlZ88NGR2BK6A2' => ['name' => 'Echo Show 8'],
+        'A1Z88NGR2BK6A2' => ['name' => 'Echo Show 8'],
         'A30YDR2MK8HMRV' => ['name' => 'Echo Dot (3.Gen with Clock)'],
         'A1J16TEDOYCZTN' => ['name' => 'Amazon Tablet'],
         'A38EHHIB10L47V' => ['name' => 'Fire HD 8 Tablet'],
@@ -53,6 +53,9 @@ class AmazonEchoConfigurator extends IPSModule
         'A2TF17PFR55MTB' => ['name' => 'Mobile Voice Android'],
         'A1JJ0KFC4ZPNJ3' => ['name' => 'Echo Input'],
         'A3V3VA38K169FO' => ['name' => 'Fire Tablet'],
+        'A3SSG6GR8UU7SN' => ['name' => 'Echo Sub'],
+        'AP1F6KUH00XPV'  => ['name' => '2.1 Soundsystem 2x Echo Stereo und Subwoofer'],
+        'AVD3HM0HOJAAL'  => ['name' => 'Sonos One'],
         'A3C9PE6TNYLTCH' => ['name' => 'Multiroom Musik-Gruppe']];
 
     public function Create()
