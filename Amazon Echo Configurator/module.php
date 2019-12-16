@@ -44,7 +44,7 @@ class AmazonEchoConfigurator extends IPSModule
         'A1H0CMF1XM0ZP4' => ['name' => 'Bose Soundtouch'],
         'A1WAR447VT003J' => ['name' => 'Yamaha AVR MusicCast'],
         'A3VRME03NAXFUB' => ['name' => 'Echo Flex'],
-        'AAMFMBBEW2960'  => ['name' => 'Garmin DriveSmart 65 With Amazon Alexa'],
+        'AAMFMBBEW2960'  => ['name' => 'Garmin DriveSmart 65 with Amazon Alexa'],
         'A10A33FOX2NUBK' => ['name' => 'Echo Spot'],
         'A7WXQPH584YP'   => ['name' => 'Echo (2.Gen)'],
         'A2M35JJZWCQOMZ' => ['name' => 'Echo Plus'],
@@ -54,13 +54,13 @@ class AmazonEchoConfigurator extends IPSModule
         'A1JJ0KFC4ZPNJ3' => ['name' => 'Echo Input'],
         'A3V3VA38K169FO' => ['name' => 'Fire Tablet'],
         'A3SSG6GR8UU7SN' => ['name' => 'Echo Sub'],
-        'AP1F6KUH00XPV'  => ['name' => '2.1 Soundsystem 2x Echo Stereo und Subwoofer'],
+        'AP1F6KUH00XPV'  => ['name' => '2.1 Soundsystem 2x Echo Stereo and Subwoofer'],
         'AVD3HM0HOJAAL'  => ['name' => 'Sonos One'],
         'A2JKHJ0PX4J3L3' => ['name' => 'Fire TV Cube'],
         'A2M4YX06LWP8WI' => ['name' => 'Fire 7 Tablet'],
         'A1C66CX2XD756O' => ['name' => 'Fire HD 8 Tablet'],
-        'A17LGWINFBUTZZ' => ['name' => 'Roav Car Charger'],
-        'A3C9PE6TNYLTCH' => ['name' => 'Multiroom Musik-Gruppe']];
+        'A17LGWINFBUTZZ' => ['name' => 'Anker Roav Car Charger'],
+        'A3C9PE6TNYLTCH' => ['name' => 'Multiroom Music-Group']];
 
     public function Create()
     {
@@ -143,7 +143,7 @@ class AmazonEchoConfigurator extends IPSModule
 
             $deviceType = $device['deviceType'];
             if (array_key_exists($deviceType, self::DEVICETYPES)) {
-                $device_type_name = self::DEVICETYPES[$deviceType]['name'];
+                $device_type_name = $this->Translate(self::DEVICETYPES[$deviceType]['name']);
             } else {
                 $device_type_name = 'unknown: ' . $deviceType;
                 $this->LogMessage('Unknown DeviceType: ' . $deviceType, KL_WARNING);
