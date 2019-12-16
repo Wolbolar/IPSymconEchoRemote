@@ -56,6 +56,10 @@ class AmazonEchoConfigurator extends IPSModule
         'A3SSG6GR8UU7SN' => ['name' => 'Echo Sub'],
         'AP1F6KUH00XPV'  => ['name' => '2.1 Soundsystem 2x Echo Stereo und Subwoofer'],
         'AVD3HM0HOJAAL'  => ['name' => 'Sonos One'],
+        'A2JKHJ0PX4J3L3' => ['name' => 'Fire TV Cube'],
+        'A2M4YX06LWP8WI' => ['name' => 'Fire 7 Tablet'],
+        'A1C66CX2XD756O' => ['name' => 'Fire HD 8 Tablet'],
+        'A17LGWINFBUTZZ' => ['name' => 'Roav Car Charger'],
         'A3C9PE6TNYLTCH' => ['name' => 'Multiroom Musik-Gruppe']];
 
     public function Create()
