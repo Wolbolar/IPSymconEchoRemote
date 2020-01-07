@@ -63,7 +63,8 @@ class EchoRemote extends IPSModule
             {"position":29,"station":"sunshine live","station_id":"s10637"},
             {"position":30,"station":"MDR JUMP","station_id":"s6634"},
             {"position":31,"station":"Costa Del Mar","station_id":"s187256"},
-            {"position":32,"station":"Antenne Bayern","station_id":"s139505"}]'
+            {"position":32,"station":"Antenne Bayern","station_id":"s139505"},
+            {"position":33,"station":"1 Live","station_id":"s25260"}]'
         );
 
         //        $this->RegisterPropertyString('TuneInStations', '');
