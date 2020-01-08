@@ -206,12 +206,12 @@ class EchoRemote extends IPSModule
         //Remote Variable
         $this->RegisterProfileAssociation(
             'Echo.Remote', 'Move', '', '', 0, 5, 0, 0, VARIABLETYPE_INTEGER, [
-                             [0, $this->Translate('Rewind 30s'), 'HollowDoubleArrowLeft', -1],
-                             [1, $this->Translate('Previous'), 'HollowLargeArrowLeft', -1],
-                             [2, $this->Translate('Pause/Stop'), 'Sleep', -1],
-                             [3, $this->Translate('Play'), 'Script', -1],
-                             [4, $this->Translate('Next'), 'HollowLargeArrowRight', -1],
-                             [5, $this->Translate('Forward 30s'), 'HollowDoubleArrowRight', -1]]
+                [0, $this->Translate('Rewind 30s'), 'HollowDoubleArrowLeft', -1],
+                [1, $this->Translate('Previous'), 'HollowLargeArrowLeft', -1],
+                [2, $this->Translate('Pause/Stop'), 'Sleep', -1],
+                [3, $this->Translate('Play'), 'Script', -1],
+                [4, $this->Translate('Next'), 'HollowLargeArrowRight', -1],
+                [5, $this->Translate('Forward 30s'), 'HollowDoubleArrowRight', -1]]
         );
         $this->RegisterVariableInteger('EchoRemote', 'Remote', 'Echo.Remote', 1);
         $this->EnableAction('EchoRemote');
@@ -243,12 +243,12 @@ class EchoRemote extends IPSModule
         if (in_array('FLASH_BRIEFING', $caps, true)) {
             $this->RegisterProfileAssociation(
                 'Echo.Actions', 'Move', '', '', 0, 5, 0, 0, VARIABLETYPE_INTEGER, [
-                                  [0, $this->Translate('Weather'), '', -1],
-                                  [1, $this->Translate('Traffic'), '', -1],
-                                  [2, $this->Translate('Flash Briefing'), '', -1],
-                                  [3, $this->Translate('Good morning'), '', -1],
-                                  [4, $this->Translate('Sing a song'), '', -1],
-                                  [5, $this->Translate('Tell a story'), '', -1]]
+                    [0, $this->Translate('Weather'), '', -1],
+                    [1, $this->Translate('Traffic'), '', -1],
+                    [2, $this->Translate('Flash Briefing'), '', -1],
+                    [3, $this->Translate('Good morning'), '', -1],
+                    [4, $this->Translate('Sing a song'), '', -1],
+                    [5, $this->Translate('Tell a story'), '', -1]]
             );
             $this->RegisterVariableInteger('EchoActions', 'Actions', 'Echo.Actions', 6);
             $this->EnableAction('EchoActions');
@@ -285,8 +285,8 @@ class EchoRemote extends IPSModule
             //Mute Variable
             $this->RegisterProfileAssociation(
                 'Echo.Remote.Mute', 'Speaker', '', '', 0, 1, 0, 0, VARIABLETYPE_BOOLEAN, [
-                                      [false, $this->Translate('Mute'), 'Speaker', 0xff3300],
-                                      [true, $this->Translate('Unmute'), 'Speaker', 0x00ff55]]
+                    [false, $this->Translate('Mute'), 'Speaker', 0xff3300],
+                    [true, $this->Translate('Unmute'), 'Speaker', 0x00ff55]]
             );
             $this->RegisterVariableBoolean('Mute', $this->Translate('Mute'), 'Echo.Remote.Mute', 13);
             $this->EnableAction('Mute');
