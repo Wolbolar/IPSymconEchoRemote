@@ -600,8 +600,8 @@ class AmazonEchoIO extends IPSModule
 
         $postfields = array_merge(
             $hiddenFields, [
-                             'email'    => $this->ReadPropertyString('username'),
-                             'password' => $this->ReadPropertyString('password') . $this->GetOTP()]
+                'email'    => $this->ReadPropertyString('username'),
+                'password' => $this->ReadPropertyString('password') . $this->GetOTP()]
         );
 
         return $this->SendEchoData('https://www.' . $this->GetAmazonURL() . '/ap/signin', $headers, $postfields);
