@@ -11,8 +11,7 @@ require_once __DIR__ . '/../libs/EchoDebugHelper.php';
 
 class EchoRemote extends IPSModule
 {
-    use EchoBufferHelper, EchoDebugHelper;
-
+    use EchoBufferHelper; use EchoDebugHelper;
     private const STATUS_INST_DEVICETYPE_IS_EMPTY   = 210; // devicetype must not be empty.
     private const STATUS_INST_DEVICENUMBER_IS_EMPTY = 211; // devicenumber must not be empty
 
