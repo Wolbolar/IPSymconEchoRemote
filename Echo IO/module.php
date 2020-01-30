@@ -9,8 +9,7 @@ require_once __DIR__ . '/../libs/EchoDebugHelper.php';
 
 class AmazonEchoIO extends IPSModule
 {
-    use EchoBufferHelper, EchoDebugHelper;
-
+    use EchoBufferHelper; use EchoDebugHelper;
     private const STATUS_INST_USER_NAME_IS_EMPTY  = 210; // user name must not be empty.
     private const STATUS_INST_PASSWORD_IS_EMPTY   = 211; // password must not be empty.
     private const STATUS_INST_COOKIE_IS_EMPTY     = 212; // cookie must not be empty.
