@@ -60,6 +60,8 @@ class AmazonEchoConfigurator extends IPSModule
         'A1C66CX2XD756O' => ['name' => 'Fire HD 8 Tablet'],
         'A17LGWINFBUTZZ' => ['name' => 'Anker Roav Car Charger'],
         'A2XPGY5LRKB9BE' => ['name' => 'FitBit watch'],
+        'A3NPD82ABCPIDP' => ['name' => 'Sonos Beam'],
+        'A2Y04QPFCANLPQ' => ['name' => 'Bose QC35 II'],
         'A3C9PE6TNYLTCH' => ['name' => 'Multiroom Music-Group']];
 
     public function Create()
