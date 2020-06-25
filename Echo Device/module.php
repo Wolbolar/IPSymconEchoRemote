@@ -1370,7 +1370,7 @@ class EchoRemote extends IPSModule
         }
 
         $playerInfo = $result['playerInfo'];
-
+        $this->SendDebug('Playerinfo', json_encode($playerInfo), 0);
         switch ($playerInfo['state']) {
             case 'PLAYING':
                 $this->SetValue('EchoRemote', 3);
@@ -1387,9 +1387,16 @@ class EchoRemote extends IPSModule
         }
 
         $imageurl = $playerInfo['mainArt']['url'] ?? null;
-        $this->SetStatePage(
-            $imageurl, $playerInfo['infoText']['title'], $playerInfo['infoText']['subText1'], $playerInfo['infoText']['subText2']
-        );
+        $infotext = $playerInfo['infoText'];
+        if(is_null($infotext))
+        {
+            $this->SendDebug('Playerinfo Infotext', 'no information found', 0);
+        }
+        else{
+            $this->SetStatePage(
+                $imageurl, $playerInfo['infoText']['title'], $playerInfo['infoText']['subText1'], $playerInfo['infoText']['subText2']
+            );
+        }
 
         if (isset($playerInfo['transport']['repeat'])) {
             switch ($playerInfo['transport']['repeat']) {
@@ -1428,9 +1435,15 @@ class EchoRemote extends IPSModule
                     trigger_error('Instanz #' . $this->InstanceID . ' - Unexpected shuffle value: ' . $playerInfo['transport']['shuffle']);
             }
         }
-
-        if ($playerInfo['volume']['volume'] !== null) {
-            $this->SetValue('EchoVolume', $playerInfo['volume']['volume']);
+        $volume = $playerInfo['volume'];
+        if(is_null($volume))
+        {
+            $this->SendDebug('Playerinfo Volume', 'no volume information found', 0);
+        }
+        else{
+            if ($playerInfo['volume']['volume'] !== null) {
+                $this->SetValue('EchoVolume', $playerInfo['volume']['volume']);
+            }
         }
 
         //update Alarm
