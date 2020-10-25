@@ -64,7 +64,8 @@ class AmazonEchoConfigurator extends IPSModule
         'A2Y04QPFCANLPQ' => ['name' => 'Bose QC35 II'],
         'A3BW5ZVFHRCQPO' => ['name' => 'Alexa Car'],
         'A3C9PE6TNYLTCH' => ['name' => 'Multiroom Music-Group'],
-	'A303PJF6ISQ7IC' => ['name' => 'Echo Auto']];
+	    'A303PJF6ISQ7IC' => ['name' => 'Echo Auto'],
+        'A1ZB65LA390I4K' => ['name' => 'Fire HD 10 Tablet']];
 
     public function Create()
     {
