@@ -7,7 +7,6 @@ declare(strict_types=1);
  */
 trait EchoDebugHelper
 {
-
     /**
      * Ergänzt SendDebug um Möglichkeit Objekte und Array auszugeben.
      *

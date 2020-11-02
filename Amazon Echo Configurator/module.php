@@ -7,67 +7,69 @@ require_once __DIR__ . '/../libs/EchoDebugHelper.php';
 
 class AmazonEchoConfigurator extends IPSModule
 {
-    use EchoBufferHelper; use EchoDebugHelper;
+    use EchoBufferHelper;
+    use EchoDebugHelper;
     private const DEVICETYPES = [
-        'A2E0SNTXJVT7WK' => ['name' => 'Fire TV'],
-        'A12GXV8XMS007S' => ['name' => 'Fire TV (2.Gen)'],
-        'ADVBD696BHNV5'  => ['name' => 'Fire TV Stick (1.Gen)'],
-        'A2GFL5ZMWNE0PX' => ['name' => 'Fire TV Stick 4K (1.Gen)'],
-        'AKPGW064GI9HE'  => ['name' => 'Fire TV Stick 4K'],
-        'A2LWARUGJLBYEW' => ['name' => 'Fire TV Stick (2.Gen)'],
-        'A21Z3CGI8UIP0F' => ['name' => 'Denon&Marantz (HEOS)'],
-        'AVE5HX13UR5NO'  => ['name' => 'Zero Touch (Logitech)'],
-        'AKOAGQTKAS9YB'  => ['name' => 'Amazon Echo Connect'],
-        'A3GZUE7F9MEB4U' => ['name' => 'Sony WH-100XM3'],
-        'A2J0R2SD7G9LPA' => ['name' => 'Lenovo P10'],
-        'A2825NDLA7WDZV' => ['name' => 'App'],
-        'AB72C64C86AW2'  => ['name' => 'Echo'],
-        'A3S5BH2HU6VAYF' => ['name' => 'Echo Dot (2.Gen)'],
-        'A32DOYMUN6DTXA' => ['name' => 'Echo Dot (3.Gen)'],
-        'A1RABVCI4QCIKC' => ['name' => 'Echo Dot (3.Gen)'],
-        'AILBSA2LNTOYL'  => ['name' => 'Reverb App'],
-        'A15ERDAKK5HQQG' => ['name' => 'Sonos'],
-        'A2OSP3UA4VC85F' => ['name' => 'Sonos One'],
-        'A1NL4BVLQ4L3N3' => ['name' => 'Echo Show'],
-        'AWZZ5CVHX2CD'   => ['name' => 'Echo Show (2.Gen)'],
-        'A4ZP7ZC4PI6TO'  => ['name' => 'Echo Show 5'],
-        'A1Z88NGR2BK6A2' => ['name' => 'Echo Show 8'],
-        'A30YDR2MK8HMRV' => ['name' => 'Echo Dot (3.Gen with Clock)'],
-        'A1J16TEDOYCZTN' => ['name' => 'Amazon Tablet'],
-        'A38EHHIB10L47V' => ['name' => 'Fire HD 8 Tablet'],
-        'A112LJ20W14H95' => ['name' => 'Media Display'],
-        'A3L0T0VL9A921N' => ['name' => 'Tablet'],
-        'A3R9S4ZZECZ6YL' => ['name' => 'Tablet'],
-        'A1DL2DVDQVK3Q'  => ['name' => 'App'],
-        'A1RTAM01W29CUP' => ['name' => 'PC App'],
-        'A1H0CMF1XM0ZP4' => ['name' => 'Bose Soundtouch'],
-        'A1WAR447VT003J' => ['name' => 'Yamaha AVR MusicCast'],
-        'A3VRME03NAXFUB' => ['name' => 'Echo Flex'],
-        'AAMFMBBEW2960'  => ['name' => 'Garmin DriveSmart 65 with Amazon Alexa'],
-        'A10A33FOX2NUBK' => ['name' => 'Echo Spot'],
-        'A7WXQPH584YP'   => ['name' => 'Echo (2.Gen)'],
-        'A2M35JJZWCQOMZ' => ['name' => 'Echo Plus'],
-        'A18O6U1UQFJ0XK' => ['name' => 'Echo Plus'],
-        'A2IVLV5VM2W81'  => ['name' => 'Mobile Voice iOS'],
-        'A2TF17PFR55MTB' => ['name' => 'Mobile Voice Android'],
-        'A1JJ0KFC4ZPNJ3' => ['name' => 'Echo Input'],
-        'A3V3VA38K169FO' => ['name' => 'Fire Tablet'],
-        'A3SSG6GR8UU7SN' => ['name' => 'Echo Sub'],
-        'AP1F6KUH00XPV'  => ['name' => '2.1 Soundsystem 2x Echo Stereo and Subwoofer'],
-        'AVD3HM0HOJAAL'  => ['name' => 'Sonos One'],
-        'A2JKHJ0PX4J3L3' => ['name' => 'Fire TV Cube'],
-        'A2M4YX06LWP8WI' => ['name' => 'Fire 7 Tablet'],
-        'A1C66CX2XD756O' => ['name' => 'Fire HD 8 Tablet'],
-        'A17LGWINFBUTZZ' => ['name' => 'Anker Roav Car Charger'],
-        'A2XPGY5LRKB9BE' => ['name' => 'FitBit watch'],
-        'A3NPD82ABCPIDP' => ['name' => 'Sonos Beam'],
-        'A2Y04QPFCANLPQ' => ['name' => 'Bose QC35 II'],
-        'A3BW5ZVFHRCQPO' => ['name' => 'Alexa Car'],
-        'A3C9PE6TNYLTCH' => ['name' => 'Multiroom Music-Group'],
-	    'A303PJF6ISQ7IC' => ['name' => 'Echo Auto'],
-        'A1ZB65LA390I4K' => ['name' => 'Fire HD 10 Tablet'],
-        'AVU7CPPF2ZRAS' => ['name' => 'Fire HD 8 Plus (2020)'],
-        'A7S41FQ5TWBC9' => ['name' => 'Sony WH-1000XM4']];
+        'A2E0SNTXJVT7WK'   => ['name' => 'Fire TV'],
+        'A12GXV8XMS007S'   => ['name' => 'Fire TV (2.Gen)'],
+        'ADVBD696BHNV5'    => ['name' => 'Fire TV Stick (1.Gen)'],
+        'A2GFL5ZMWNE0PX'   => ['name' => 'Fire TV Stick 4K (1.Gen)'],
+        'AKPGW064GI9HE'    => ['name' => 'Fire TV Stick 4K'],
+        'A2LWARUGJLBYEW'   => ['name' => 'Fire TV Stick (2.Gen)'],
+        'A21Z3CGI8UIP0F'   => ['name' => 'Denon&Marantz (HEOS)'],
+        'AVE5HX13UR5NO'    => ['name' => 'Zero Touch (Logitech)'],
+        'AKOAGQTKAS9YB'    => ['name' => 'Amazon Echo Connect'],
+        'A3GZUE7F9MEB4U'   => ['name' => 'Sony WH-100XM3'],
+        'A2J0R2SD7G9LPA'   => ['name' => 'Lenovo P10'],
+        'A2825NDLA7WDZV'   => ['name' => 'App'],
+        'AB72C64C86AW2'    => ['name' => 'Echo'],
+        'A3S5BH2HU6VAYF'   => ['name' => 'Echo Dot (2.Gen)'],
+        'A32DOYMUN6DTXA'   => ['name' => 'Echo Dot (3.Gen)'],
+        'A1RABVCI4QCIKC'   => ['name' => 'Echo Dot (3.Gen)'],
+        'AILBSA2LNTOYL'    => ['name' => 'Reverb App'],
+        'A15ERDAKK5HQQG'   => ['name' => 'Sonos'],
+        'A2OSP3UA4VC85F'   => ['name' => 'Sonos One'],
+        'A1NL4BVLQ4L3N3'   => ['name' => 'Echo Show'],
+        'AWZZ5CVHX2CD'     => ['name' => 'Echo Show (2.Gen)'],
+        'A4ZP7ZC4PI6TO'    => ['name' => 'Echo Show 5'],
+        'A1Z88NGR2BK6A2'   => ['name' => 'Echo Show 8'],
+        'A30YDR2MK8HMRV'   => ['name' => 'Echo Dot (3.Gen with Clock)'],
+        'A1J16TEDOYCZTN'   => ['name' => 'Amazon Tablet'],
+        'A38EHHIB10L47V'   => ['name' => 'Fire HD 8 Tablet'],
+        'A112LJ20W14H95'   => ['name' => 'Media Display'],
+        'A3L0T0VL9A921N'   => ['name' => 'Tablet'],
+        'A3R9S4ZZECZ6YL'   => ['name' => 'Tablet'],
+        'A1DL2DVDQVK3Q'    => ['name' => 'App'],
+        'A1RTAM01W29CUP'   => ['name' => 'PC App'],
+        'A1H0CMF1XM0ZP4'   => ['name' => 'Bose Soundtouch'],
+        'A1WAR447VT003J'   => ['name' => 'Yamaha AVR MusicCast'],
+        'A3VRME03NAXFUB'   => ['name' => 'Echo Flex'],
+        'AAMFMBBEW2960'    => ['name' => 'Garmin DriveSmart 65 with Amazon Alexa'],
+        'A10A33FOX2NUBK'   => ['name' => 'Echo Spot'],
+        'A7WXQPH584YP'     => ['name' => 'Echo (2.Gen)'],
+        'A3FX4UWTP28V1P'   => ['name' => 'Echo (3.Gen)'],
+        'A2M35JJZWCQOMZ'   => ['name' => 'Echo Plus'],
+        'A18O6U1UQFJ0XK'   => ['name' => 'Echo Plus'],
+        'A2IVLV5VM2W81'    => ['name' => 'Mobile Voice iOS'],
+        'A2TF17PFR55MTB'   => ['name' => 'Mobile Voice Android'],
+        'A1JJ0KFC4ZPNJ3'   => ['name' => 'Echo Input'],
+        'A3V3VA38K169FO'   => ['name' => 'Fire Tablet'],
+        'A3SSG6GR8UU7SN'   => ['name' => 'Echo Sub'],
+        'AP1F6KUH00XPV'    => ['name' => '2.1 Soundsystem 2x Echo Stereo and Subwoofer'],
+        'AVD3HM0HOJAAL'    => ['name' => 'Sonos One'],
+        'A2JKHJ0PX4J3L3'   => ['name' => 'Fire TV Cube'],
+        'A2M4YX06LWP8WI'   => ['name' => 'Fire 7 Tablet'],
+        'A1C66CX2XD756O'   => ['name' => 'Fire HD 8 Tablet'],
+        'A17LGWINFBUTZZ'   => ['name' => 'Anker Roav Car Charger'],
+        'A2XPGY5LRKB9BE'   => ['name' => 'FitBit watch'],
+        'A3NPD82ABCPIDP'   => ['name' => 'Sonos Beam'],
+        'A2Y04QPFCANLPQ'   => ['name' => 'Bose QC35 II'],
+        'A3BW5ZVFHRCQPO'   => ['name' => 'Alexa Car'],
+        'A3C9PE6TNYLTCH'   => ['name' => 'Multiroom Music-Group'],
+        'A303PJF6ISQ7IC'   => ['name' => 'Echo Auto'],
+        'A1ZB65LA390I4K'   => ['name' => 'Fire HD 10 Tablet'],
+        'AVU7CPPF2ZRAS'    => ['name' => 'Fire HD 8 Plus (2020)'],
+        'A7S41FQ5TWBC9'    => ['name' => 'Sony WH-1000XM4']];
 
     public function Create()
     {
@@ -90,6 +92,49 @@ class AmazonEchoConfigurator extends IPSModule
         $this->RegisterReference($this->ReadPropertyInteger('targetCategoryID'));
     }
 
+    /**
+     * Interne Funktion des SDK.
+     *
+     * @noinspection PhpMissingParentCallCommonInspection
+     */
+    public function GetConfigurationForm(): string
+    {
+        $Form['elements'][] = [
+            'type'    => 'SelectCategory',
+            'name'    => 'targetCategoryID',
+            'caption' => 'Target Category'];
+        $Form['actions'][] = [
+            'type'     => 'Configurator',
+            'name'     => 'AmazonEchoConfiguration',
+            'rowCount' => 20,
+            'add'      => false,
+            'delete'   => true,
+            'sort'     => [
+                'column'    => 'name',
+                'direction' => 'ascending'],
+            'columns'  => [
+                ['caption' => 'device name', 'name' => 'name', 'width' => 'auto'],
+                ['caption' => 'device type', 'name' => 'devicetype', 'width' => '250px'],
+                ['caption' => 'device family', 'name' => 'devicefamily', 'width' => '350px'],
+                ['caption' => 'device number', 'name' => 'devicenumber', 'width' => '250px'],
+                ['caption' => 'device account id', 'name' => 'deviceaccountid', 'width' => '250px']],
+            'values'   => $this->Get_ListConfiguration()];
+
+        $jsonForm = json_encode($Form);
+        $this->SendDebug('FORM', $jsonForm, 0);
+        $this->SendDebug('FORM', json_last_error_msg(), 0);
+
+        return $jsonForm;
+    }
+
+    /** @noinspection ReturnTypeCanBeDeclaredInspection */
+    protected function RegisterReference($ID)
+    {
+        if (method_exists('IPSModule', 'RegisterReference ')) {
+            parent::RegisterReference($ID);
+        }
+    }
+
     private function GetDefaultTargetCategory(): int
     {
         $echoDevices = IPS_GetInstanceListByModuleID('{496AB8B5-396A-40E4-AF41-32F4C48AC90D}');
@@ -105,7 +150,6 @@ class AmazonEchoConfigurator extends IPSModule
         }
 
         return $defaultCategory;
-
     }
 
     /** Get Config Echo
@@ -181,7 +225,6 @@ class AmazonEchoConfigurator extends IPSModule
                         'Devicetype'   => $deviceType,
                         'Devicenumber' => $serialNumber],
                     'location'      => $this->getPathOfCategory($this->ReadPropertyInteger('targetCategoryID'))]];
-
         }
 
         return $config_list;
@@ -193,59 +236,15 @@ class AmazonEchoConfigurator extends IPSModule
             return [];
         }
 
-        $path[]   = IPS_GetName($categoryId);
+        $path[] = IPS_GetName($categoryId);
         $parentId = IPS_GetObject($categoryId)['ParentID'];
 
         while ($parentId > 0) {
-            $path[]   = IPS_GetName($parentId);
+            $path[] = IPS_GetName($parentId);
             $parentId = IPS_GetObject($parentId)['ParentID'];
         }
 
         return array_reverse($path);
-    }
-
-    /** @noinspection ReturnTypeCanBeDeclaredInspection */
-    protected function RegisterReference($ID)
-    {
-        if (method_exists('IPSModule', 'RegisterReference ')) {
-            parent::RegisterReference($ID);
-        }
-    }
-
-    /**
-     * Interne Funktion des SDK.
-     *
-     * @noinspection PhpMissingParentCallCommonInspection
-     */
-    public function GetConfigurationForm(): string
-    {
-
-        $Form['elements'][] = [
-            'type'    => 'SelectCategory',
-            'name'    => 'targetCategoryID',
-            'caption' => 'Target Category'];
-        $Form['actions'][]  = [
-            'type'     => 'Configurator',
-            'name'     => 'AmazonEchoConfiguration',
-            'rowCount' => 20,
-            'add'      => false,
-            'delete'   => true,
-            'sort'     => [
-                'column'    => 'name',
-                'direction' => 'ascending'],
-            'columns'  => [
-                ['caption' => 'device name', 'name' => 'name', 'width' => 'auto'],
-                ['caption' => 'device type', 'name' => 'devicetype', 'width' => '250px'],
-                ['caption' => 'device family', 'name' => 'devicefamily', 'width' => '350px'],
-                ['caption' => 'device number', 'name' => 'devicenumber', 'width' => '250px'],
-                ['caption' => 'device account id', 'name' => 'deviceaccountid', 'width' => '250px']],
-            'values'   => $this->Get_ListConfiguration()];
-
-        $jsonForm = json_encode($Form);
-        $this->SendDebug('FORM', $jsonForm, 0);
-        $this->SendDebug('FORM', json_last_error_msg(), 0);
-
-        return $jsonForm;
     }
 
     /** Sends Request to IO and get response.

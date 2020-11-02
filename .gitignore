@@ -1,2 +1,6 @@
 .idea/
 *.db
+.DS_Store
+style.bat
+.php_cs.cache
+.phpunit.result.cache

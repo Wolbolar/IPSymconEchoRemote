@@ -1,0 +1,12 @@
+{
+	"id": "{43192F0B-135B-4CE7-A0A7-1475603F3060}",
+	"name": "Archive Control",
+	"type": 0,
+	"vendor": "Symcon GmbH",
+	"aliases": [],
+	"url": "",
+	"parentRequirements": [],
+	"childRequirements": [],
+	"implemented": [],
+	"prefix": "AC"
+}
