@@ -11,14 +11,15 @@ require_once __DIR__ . '/../libs/EchoDebugHelper.php';
 
 class EchoRemote extends IPSModule
 {
-    use EchoBufferHelper; use EchoDebugHelper;
-    private const STATUS_INST_DEVICETYPE_IS_EMPTY   = 210; // devicetype must not be empty.
+    use EchoBufferHelper;
+    use EchoDebugHelper;
+    private const STATUS_INST_DEVICETYPE_IS_EMPTY = 210; // devicetype must not be empty.
     private const STATUS_INST_DEVICENUMBER_IS_EMPTY = 211; // devicenumber must not be empty
 
     private $customerID = '';
     private $update_counter = 0;
 
-    private $ParentID   = 0;
+    private $ParentID = 0;
 
     public function Create()
     {
@@ -94,7 +95,6 @@ class EchoRemote extends IPSModule
 
         //we will wait until the kernel is ready
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
-
     }
 
     public function ApplyChanges()
@@ -118,39 +118,9 @@ class EchoRemote extends IPSModule
         $this->SetReceiveDataFilter('.*' . $devicenumber . '.*');
     }
 
-    protected function HasActiveParent(): bool
-    {
-        return ($this->ParentID > 0) && (IPS_GetInstance($this->ParentID)['InstanceStatus'] === IS_ACTIVE);
-    }
-
-    /**
-     * Ermittelt den Parent und verwaltet die Einträge des Parent im MessageSink
-     * Ermöglicht es das Statusänderungen des Parent empfangen werden können.
-     *
-     * @return int ID des Parent.
-     */
-    protected function RegisterParent(): int
-    {
-        $OldParentId = $this->ParentID;
-        $ParentId    = @IPS_GetInstance($this->InstanceID)['ConnectionID'];
-        if ($ParentId !== $OldParentId) {
-            if ($OldParentId > 0) {
-                $this->UnregisterMessage($OldParentId, IM_CHANGESTATUS);
-            }
-            if ($ParentId > 0) {
-                $this->RegisterMessage($ParentId, IM_CHANGESTATUS);
-            } else {
-                $ParentId = 0;
-            }
-            $this->ParentID = $ParentId;
-        }
-        return $ParentId;
-    }
-
     /** @noinspection PhpMissingParentCallCommonInspection */
     public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
     {
-
         switch ($Message) {
             case IM_CHANGESTATUS:
                 if ($Data[0] === IS_ACTIVE) {
@@ -169,267 +139,15 @@ class EchoRemote extends IPSModule
         }
     }
 
-    private function ValidateConfiguration(): bool
+    public function ReceiveData($JSONString)
     {
-
-        $this->SetTimerInterval('EchoAlarm', 0);
-        if ($this->ReadPropertyString('Devicetype') === '') {
-            $this->SetStatus(self::STATUS_INST_DEVICETYPE_IS_EMPTY);
-        } elseif ($this->ReadPropertyString('Devicenumber') === '') {
-            $this->SetStatus(self::STATUS_INST_DEVICENUMBER_IS_EMPTY);
-        } else {
-            $this->SetStatus(IS_ACTIVE);
-            $this->SetEchoInterval();
-
-            return true;
-        }
-
-        return false;
-    }
-
-    private function RegisterVariables(): void
-    {
-        if (!$this->HasActiveParent()) {
-            return;
-        }
-
-        $device_info = $this->GetDeviceInfo();
-
-        if (!$device_info) {
-            return;
-        }
-
-        $this->SendDebug(__FUNCTION__, 'Device Info: ' . print_r($device_info, true), 0);
-        $caps = $device_info['capabilities'];
-
-        //Remote Variable
-        $this->RegisterProfileAssociation(
-            'Echo.Remote', 'Move', '', '', 0, 5, 0, 0, VARIABLETYPE_INTEGER, [
-                [0, $this->Translate('Rewind 30s'), 'HollowDoubleArrowLeft', -1],
-                [1, $this->Translate('Previous'), 'HollowLargeArrowLeft', -1],
-                [2, $this->Translate('Pause/Stop'), 'Sleep', -1],
-                [3, $this->Translate('Play'), 'Script', -1],
-                [4, $this->Translate('Next'), 'HollowLargeArrowRight', -1],
-                [5, $this->Translate('Forward 30s'), 'HollowDoubleArrowRight', -1]]
-        );
-        $this->RegisterVariableInteger('EchoRemote', 'Remote', 'Echo.Remote', 1);
-        $this->EnableAction('EchoRemote');
-
-        //Shuffle Variable
-        if (in_array('AMAZON_MUSIC', $caps, true)) {
-            $this->RegisterVariableBoolean('EchoShuffle', 'Shuffle', '~Switch', 2);
-            IPS_SetIcon($this->GetIDForIdent('EchoShuffle'), 'Shuffle');
-            $this->EnableAction('EchoShuffle');
-        }
-
-        //Repeat Variable
-        if (in_array('AMAZON_MUSIC', $caps, true)) {
-            $this->RegisterVariableBoolean('EchoRepeat', 'Repeat', '~Switch', 3);
-            IPS_SetIcon($this->GetIDForIdent('EchoRepeat'), 'Repeat');
-            $this->EnableAction('EchoRepeat');
-        }
-
-        //Repeat Variable
-        if (in_array('VOLUME_SETTING', $caps, true)) {
-            $this->RegisterVariableInteger('EchoVolume', 'Volume', '~Intensity.100', 4);
-            $this->EnableAction('EchoVolume');
-        }
-
-        //Info Variable
-        $this->RegisterVariableString('EchoInfo', 'Info', '~HTMLBox', 5);
-
-        //Actions and TTS Variables
-        if (in_array('FLASH_BRIEFING', $caps, true)) {
-            $this->RegisterProfileAssociation(
-                'Echo.Actions', 'Move', '', '', 0, 5, 0, 0, VARIABLETYPE_INTEGER, [
-                    [0, $this->Translate('Weather'), '', -1],
-                    [1, $this->Translate('Traffic'), '', -1],
-                    [2, $this->Translate('Flash Briefing'), '', -1],
-                    [3, $this->Translate('Good morning'), '', -1],
-                    [4, $this->Translate('Sing a song'), '', -1],
-                    [5, $this->Translate('Tell a story'), '', -1]]
-            );
-            $this->RegisterVariableInteger('EchoActions', 'Actions', 'Echo.Actions', 6);
-            $this->EnableAction('EchoActions');
-
-            $this->RegisterVariableString('EchoTTS', 'Text to Speech', '', 7);
-            $this->EnableAction('EchoTTS');
-        }
-
-        //TuneIn Variable
-        if (in_array('TUNE_IN', $caps, true)) {
-            $devicenumber = $this->ReadPropertyString('Devicenumber');
-            if ($devicenumber !== '') {
-                $associations = [];
-                foreach (json_decode($this->ReadPropertyString('TuneInStations'), true) as $tuneInStation) {
-                    $associations[] = [$tuneInStation['position'], $tuneInStation['station'], '', -1];
-                }
-                $profileName = 'Echo.TuneInStation.' . $devicenumber;
-                $this->RegisterProfileAssociation($profileName, 'Music', '', '', 0, 0, 0, 0, VARIABLETYPE_INTEGER, $associations);
-                $this->RegisterVariableInteger('EchoTuneInRemote_' . $devicenumber, 'TuneIn Radio', $profileName, 5);
-                $this->EnableAction('EchoTuneInRemote_' . $devicenumber);
-            }
-        }
-
-        //Extended Info
-        if ($this->ReadPropertyBoolean('ExtendedInfo')) {
-            $this->RegisterVariableString('Title', $this->Translate('Title'), '', 8);
-            $this->RegisterVariableString('Subtitle_1', $this->Translate('Subtitle 1'), '', 9);
-            $this->RegisterVariableString('Subtitle_2', $this->Translate('Subtitle 2'), '', 10);
-            $this->CreateMediaImage('MediaImageCover', 11);
-        }
-
-        //Mute
-        if ($this->ReadPropertyBoolean('Mute')) {
-            //Mute Variable
-            $this->RegisterProfileAssociation(
-                'Echo.Remote.Mute', 'Speaker', '', '', 0, 1, 0, 0, VARIABLETYPE_BOOLEAN, [
-                    [false, $this->Translate('Mute'), 'Speaker', 0xff3300],
-                    [true, $this->Translate('Unmute'), 'Speaker', 0x00ff55]]
-            );
-            $this->RegisterVariableBoolean('Mute', $this->Translate('Mute'), 'Echo.Remote.Mute', 13);
-            $this->EnableAction('Mute');
-        }
-
-        //support of alarm
-        if ($this->ReadPropertyBoolean('AlarmInfo')) {
-            $this->RegisterVariableInteger('nextAlarmTime', $this->Translate('next Alarm'), '~UnixTimestamp', 12);
-            $this->RegisterVariableInteger('lastAlarmTime', $this->Translate('last Alarm'), '~UnixTimestamp', 13);
-        }
-
-        //support of ShoppingList
-        if ($this->ReadPropertyBoolean('ShoppingList')) {
-            $this->RegisterVariableString('ShoppingList', $this->Translate('ShoppingList'), '~HTMLBox', 12);
-        }
-
-        //support of TaskList
-        if ($this->ReadPropertyBoolean('TaskList')) {
-            $this->RegisterVariableString('TaskList', $this->Translate('TaskList'), '~HTMLBox', 12);
-        }
-
-        // Cover as HTML image
-        if ($this->ReadPropertyBoolean('Cover')) {
-            $this->RegisterVariableString('Cover_HTML', $this->Translate('Cover'), '~HTMLBox', 13);
-        }
-
-        // Title as HTML
-        if ($this->ReadPropertyBoolean('Title')) {
-            $this->RegisterVariableString('Title_HTML', $this->Translate('Title'), '~HTMLBox', 15);
-        }
-
-        // Subtitle 1 as HTML
-        if ($this->ReadPropertyBoolean('Subtitle1')) {
-            $this->RegisterVariableString('Subtitle_1_HTML', $this->Translate('Subtitle 1'), '~HTMLBox', 14);
-        }
-
-        // Subtitle 2 as HTML
-        if ($this->ReadPropertyBoolean('Subtitle2')) {
-            $this->RegisterVariableString('Subtitle_2_HTML', $this->Translate('Subtitle 2'), '~HTMLBox', 16);
-        }
-
-        $this->RegisterVariableInteger('last_action', $this->Translate('Last Action'), '~UnixTimestamp', 17);
-        $this->RegisterVariableString('summary', $this->Translate('Last Command'), '', 18);
-    }
-
-    private function GetDeviceInfo()
-    {
-        $this->SendDebug(__FUNCTION__, 'started', 0);
-
-        //fetch all devices
-        $result = $this->SendData('GetDevices');
-
-        if ($result['http_code'] !== 200) {
-            return false;
-        }
-
-        $devices_arr = json_decode($result['body'], true)['devices'];
-
-        //search device with my type and serial number
-        $myDevice = null;
-        foreach ($devices_arr as $key => $device) {
-            if (($device['deviceType'] === $this->GetDevicetype()) && ($device['serialNumber'] === $this->GetDevicenumber())) {
-                return $device;
-                break;
-            }
-        }
-
-        return false;
-
-    }
-
-    /** Sends Request to IO and get response.
-     *
-     * @param string      $method
-     * @param array|null  $getfields
-     * @param array|null  $postfields
-     * @param null|string $url
-     * @param null        $optpost
-     * @param null        $automation
-     * @param null        $additionalData
-     *
-     * @return mixed
-     */
-    private function SendData(string $method, array $getfields = null, array $postfields = null, $url = null, $optpost = null, $automation = null,
-                              $additionalData = null): ?array
-    {
-        $this->SendDebug(
-            __FUNCTION__,
-            'Method: ' . $method . ', Getfields: ' . json_encode($getfields) . ', Postfields: ' . json_encode($postfields) . ', URL: ' . $url
-            . ', Option Post: ' . (int) $optpost . ', Automation: ' . json_encode($automation), 0
-        );
-
-        $Data['DataID'] = '{8E187D67-F330-2B1D-8C6E-B37896D7AE3E}';
-
-        $Data['Buffer'] = ['method' => $method];
-
-        if ($getfields !== null) {
-            $Data['Buffer']['getfields'] = $getfields;
-        }
-        if ($postfields !== null) {
-            $Data['Buffer']['postfields'] = $postfields;
-        }
-        if ($url !== null) {
-            $Data['Buffer']['url'] = $url;
-        }
-        if ($optpost !== null) {
-            $Data['Buffer']['optpost'] = $optpost;
-        }
-        if ($automation !== null) {
-            $Data['Buffer']['automation'] = $automation;
-        }
-        if ($additionalData !== null) {
-            $Data['Buffer']['additionalData'] = $additionalData;
-        }
-
-        $ResultJSON = $this->SendDataToParent(json_encode($Data));
-        if ($ResultJSON) {
-            $this->SendDebug(__FUNCTION__, 'Result: ' . json_encode($ResultJSON), 0);
-
-            $ret = json_decode($ResultJSON, true);
-            if ($ret) {
-                return $ret; //returns an array of http_code, body and header
-            }
-        }
-
-        IPS_LogMessage(
-            __CLASS__ . '::' . __FUNCTION__, sprintf(
-                                               '\'%s\' (#%s): SendDataToParent returned with %s. $Data = %s', IPS_GetName($this->InstanceID),
-                                               $this->InstanceID, json_encode($ResultJSON), json_encode($Data)
-                                           )
-        );
-
-        return null;
-    }
-
-    public function ReceiveData($JSONString) {
         $data = json_decode($JSONString);
         $this->SendDebug('Receive Data', $JSONString, 0);
         $payload = $data->Buffer;
         $creationTimestamp = $payload->creationTimestamp;
         $this->SendDebug('Creation Timestamp', $creationTimestamp, 0);
         $last_timestamp = $this->ReadAttributeInteger('creationTimestamp');
-        if($last_timestamp != $creationTimestamp)
-        {
+        if ($last_timestamp != $creationTimestamp) {
             $this->WriteAttributeInteger('creationTimestamp', $creationTimestamp);
             $summary = $payload->summary;
             $timestamp = time();
@@ -515,188 +233,7 @@ class EchoRemote extends IPSModule
             } else {
                 $this->Mute(true);
             }
-
         }
-    }
-
-    /** register profiles
-     *
-     *
-     * @param $Name
-     * @param $Icon
-     * @param $Prefix
-     * @param $Suffix
-     * @param $MinValue
-     * @param $MaxValue
-     * @param $StepSize
-     * @param $Digits
-     * @param $Vartype
-     */
-    private function RegisterProfile($Name, $Icon, $Prefix, $Suffix, $MinValue, $MaxValue, $StepSize, $Digits, $Vartype): void
-    {
-
-        if (IPS_VariableProfileExists($Name)) {
-            $profile = IPS_GetVariableProfile($Name);
-            if ($profile['ProfileType'] !== $Vartype) {
-                $this->SendDebug('Profile', 'Variable profile type does not match for profile ' . $Name, 0);
-            }
-        } else {
-            IPS_CreateVariableProfile($Name, $Vartype); // 0 boolean, 1 int, 2 float, 3 string
-            $this->SendDebug('Variablenprofil angelegt', $Name, 0);
-        }
-
-        IPS_SetVariableProfileIcon($Name, $Icon);
-        IPS_SetVariableProfileText($Name, $Prefix, $Suffix);
-        IPS_SetVariableProfileDigits($Name, $Digits); //  Nachkommastellen
-        IPS_SetVariableProfileValues(
-            $Name, $MinValue, $MaxValue, $StepSize
-        ); // string $ProfilName, float $Minimalwert, float $Maximalwert, float $Schrittweite
-        $this->SendDebug(
-            'Variablenprofil konfiguriert',
-            'Name: ' . $Name . ', Icon: ' . $Icon . ', Prefix: ' . $Prefix . ', $Suffix: ' . $Suffix . ', Digits: ' . $Digits . ', MinValue: '
-            . $MinValue . ', MaxValue: ' . $MaxValue . ', StepSize: ' . $StepSize, 0
-        );
-    }
-
-    /** register profile association
-     *
-     * @param $Name
-     * @param $Icon
-     * @param $Prefix
-     * @param $Suffix
-     * @param $MinValue
-     * @param $MaxValue
-     * @param $Stepsize
-     * @param $Digits
-     * @param $Vartype
-     * @param $Associations
-     */
-    private function RegisterProfileAssociation($Name, $Icon, $Prefix, $Suffix, $MinValue, $MaxValue, $Stepsize, $Digits, $Vartype,
-                                                $Associations): void
-    {
-        if (is_array($Associations) && count($Associations) === 0) {
-            $MinValue = 0;
-            $MaxValue = 0;
-        }
-        $this->RegisterProfile($Name, $Icon, $Prefix, $Suffix, $MinValue, $MaxValue, $Stepsize, $Digits, $Vartype);
-
-        if (is_array($Associations)) {
-            //zunächst werden alte Assoziationen gelöscht
-            //bool IPS_SetVariableProfileAssociation ( string $ProfilName, float $Wert, string $Name, string $Icon, integer $Farbe )
-            if ($Vartype === 1 || $Vartype === 2) // 0 boolean, 1 int, 2 float, 3 string
-            {
-                foreach (IPS_GetVariableProfile($Name)['Associations'] as $Association) {
-                    IPS_SetVariableProfileAssociation($Name, $Association['Value'], '', '', -1);
-                }
-            }
-
-            //dann werden die aktuellen eingetragen
-            foreach ($Associations as $Association) {
-                IPS_SetVariableProfileAssociation($Name, $Association[0], $Association[1], $Association[2], $Association[3]);
-            }
-        } else {
-            $Associations = $this->$Associations;
-            foreach ($Associations as $code => $association) {
-                IPS_SetVariableProfileAssociation($Name, $code, $this->Translate($association), $Icon, -1);
-            }
-        }
-    }
-
-    private function SetEchoInterval(): void
-    {
-        $echointerval = $this->ReadPropertyInteger('updateinterval');
-        $interval     = $echointerval * 1000;
-        $this->SetTimerInterval('EchoUpdate', $interval);
-    }
-
-    private function Covername(): string
-    {
-        $name    = IPS_GetName($this->InstanceID);
-        $search  = ['ä', 'ö', 'ü', 'Ä', 'Ö', 'Ü', 'ß', ' '];
-        $replace = ['ae', 'oe', 'ue', 'Ae', 'Oe', 'Ue', 'ss', '_'];
-        return 'echocover' . str_replace($search, $replace, $name);
-    }
-
-    private function CreateMediaImage(string $ident, int $position): void
-    {
-        $covername = $this->Covername();
-        $picurl    = $this->GetBuffer('CoverURL'); // Cover URL
-        $ImageFile = IPS_GetKernelDir() . 'media' . DIRECTORY_SEPARATOR . $covername . '.png';  // Image-Datei
-
-        $MediaID = @$this->GetIDForIdent($ident);
-        if ($MediaID === false) {
-            if ($picurl) {
-                $Content = base64_encode(file_get_contents($picurl)); // Bild Base64 codieren
-                // convert to png
-                imagepng(imagecreatefromstring(file_get_contents($picurl)), $ImageFile); // save PNG
-            } else {
-                // set transparent image
-                $Content =
-                    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='; // Transparent png 1x1 Base64
-                $data    = base64_decode($Content);
-                file_put_contents($ImageFile, $data); // save PNG
-            }
-            $MediaID = IPS_CreateMedia(1);                  // Image im MedienPool anlegen
-            IPS_SetParent($MediaID, $this->InstanceID); // Medienobjekt einsortieren unter der Sonos Instanz
-            IPS_SetIdent($MediaID, $ident);
-            IPS_SetPosition($MediaID, $position);
-            IPS_SetMediaCached($MediaID, true);
-            // Das Cachen für das Mediaobjekt wird aktiviert.
-            // Beim ersten Zugriff wird dieses von der Festplatte ausgelesen
-            // und zukünftig nur noch im Arbeitsspeicher verarbeitet.
-            IPS_SetMediaFile($MediaID, $ImageFile, false);    // Image im MedienPool mit Image-Datei verbinden
-            IPS_SetName($MediaID, 'Cover'); // Medienobjekt benennen
-            //IPS_SetInfo($MediaID, $name);
-            IPS_SetMediaContent($MediaID, $Content);  // Base64 codiertes Bild ablegen
-            IPS_SendMediaEvent($MediaID); //aktualisieren
-        }
-    }
-
-    /** GetTuneInStationID
-     *
-     * @param $preset
-     *
-     * @return string
-     */
-    private function GetTuneInStationID(int $preset): string
-    {
-        $list_json = $this->ReadPropertyString('TuneInStations');
-        $list      = json_decode($list_json, true);
-        $stationid = '';
-        foreach ($list as $station) {
-            if ($preset === $station['position']) {
-                $station_name = $station['station'];
-                $stationid    = $station['station_id'];
-                $this->SendDebug(__FUNCTION__, 'station name: ' . $station_name, 0);
-                $this->SendDebug(__FUNCTION__, 'station id: ' . $stationid, 0);
-            }
-        }
-        return $stationid;
-    }
-
-    /** GetTuneInStationPreset
-     *
-     * @param $guideId
-     *
-     * @return bool|int
-     */
-    private function GetTuneInStationPresetPosition(string $guideId)
-    {
-        $presetPosition = false;
-        $list_json      = $this->ReadPropertyString('TuneInStations');
-        $list           = json_decode($list_json, true);
-        foreach ($list as $station) {
-            if ($guideId === $station['station_id']) {
-                $presetPosition = $station['position'];
-                $station_name   = $station['station'];
-                $stationid      = $station['station_id'];
-                $this->SendDebug(__FUNCTION__, 'preset position: ' . $presetPosition, 0);
-                $this->SendDebug(__FUNCTION__, 'station name: ' . $station_name, 0);
-                $this->SendDebug(__FUNCTION__, 'station id: ' . $stationid, 0);
-                break;
-            }
-        }
-        return $presetPosition;
     }
 
     /**
@@ -925,7 +462,6 @@ class EchoRemote extends IPSModule
                 $volume = (int) $last_volume;
                 $this->SendDebug('Echo Remote:', 'Volume Buffer ' . $last_volume, 0);
             }
-
         }
 
         $getfields = [
@@ -962,7 +498,6 @@ class EchoRemote extends IPSModule
             return json_decode($result['body'], true);
         }
         return false;
-
     }
 
     /** Get Player Status Information
@@ -981,7 +516,6 @@ class EchoRemote extends IPSModule
             return json_decode($result['body'], true);
         }
         return false;
-
     }
 
     /** Shuffle
@@ -1036,26 +570,6 @@ class EchoRemote extends IPSModule
         return false;
     }
 
-    /** PlayCommand
-     *
-     * @param $commandType
-     *
-     * @return array|string
-     */
-    private function PlayCommand(string $commandType)
-    {
-        $this->SendDebug(__FUNCTION__, 'CommandType: ' . $commandType, 0);
-
-        $getfields = [
-            'deviceSerialNumber' => $this->GetDevicenumber(),
-            'deviceType'         => $this->GetDevicetype()];
-
-        $postfields = [
-            'type' => $commandType];
-
-        return $this->SendData('NpCommand', $getfields, $postfields);
-    }
-
     /** play TuneIn radio station
      *
      * @param string $guideId
@@ -1064,7 +578,6 @@ class EchoRemote extends IPSModule
      */
     public function TuneIn(string $guideId): bool
     {
-
         $getfields = [
             'deviceSerialNumber' => $this->GetDevicenumber(),
             'deviceType'         => $this->GetDevicetype()];
@@ -1167,7 +680,6 @@ class EchoRemote extends IPSModule
 
         trigger_error('unknown preset: ' . $preset);
         return false;
-
     }
 
     /** TextToSpeech
@@ -1229,45 +741,6 @@ class EchoRemote extends IPSModule
         return $this->PlaySequenceCmd('Alexa.TellStory.Play');
     }
 
-    /** PlaySequenceCmd
-     *
-     * @param string $SEQUENCECMD
-     * @param string $tts
-     *
-     * @return bool
-     */
-    private function PlaySequenceCmd(string $SEQUENCECMD, string $tts = null): bool
-    {
-
-        $postfields = [
-            'deviceSerialNumber' => $this->GetDevicenumber(),
-            'deviceType'         => $this->GetDevicetype(),
-            'customerId'         => $this->GetCustomerID(),
-            'type'               => $SEQUENCECMD];
-
-        if ($tts !== null) {
-            $postfields['textToSpeak'] = $tts;
-        }
-
-        $result = (array) $this->SendData('BehaviorsPreview', null, $postfields);
-
-        return $result['http_code'] === 200;
-
-    }
-
-    private function GetAutomation($utterance, $automations)
-    {
-        foreach ($automations as $automation) {
-            foreach ($automation['triggers'] as $trigger) {
-                if (isset($trigger['payload']['utterance']) && $trigger['payload']['utterance'] === $utterance) {
-                    return $automation;
-                }
-            }
-        }
-
-        return false;
-    }
-
     /**
      * @param string $utterance
      *
@@ -1300,22 +773,6 @@ class EchoRemote extends IPSModule
         return false;
     }
 
-    /** List all echo devices with connected Bluetooth devices
-     *
-     * @return mixed
-     */
-    private function ListBluetooth()
-    {
-        $result = (array) $this->SendData('Bluetooth');
-
-        if ($result['http_code'] === 200) {
-            $data = json_decode($result['body'], true);
-            return $data['bluetoothStates'];
-        }
-
-        return false;
-    }
-
     /** List paired bluetooth devices
      *
      * @return array|null
@@ -1323,7 +780,7 @@ class EchoRemote extends IPSModule
     public function ListPairedBluetoothDevices(): ?array
     {
         $devicenumber = $this->ReadPropertyString('Devicenumber');
-        $devices      = $this->ListBluetooth();
+        $devices = $this->ListBluetooth();
         if ($devices) {
             foreach ($devices as $key => $device) {
                 if ($devicenumber === $device['deviceSerialNumber']) {
@@ -1342,7 +799,7 @@ class EchoRemote extends IPSModule
             'deviceType'         => $this->GetDevicetype()];
 
         $postfields = ['bluetoothDeviceAddress' => $bluetooth_address];
-        $result     = (array) $this->SendData('BluetoothPairSink', $getfields, $postfields);
+        $result = (array) $this->SendData('BluetoothPairSink', $getfields, $postfields);
 
         return $result['http_code'] === 200;
     }
@@ -1388,11 +845,9 @@ class EchoRemote extends IPSModule
 
         $imageurl = $playerInfo['mainArt']['url'] ?? null;
         $infotext = $playerInfo['infoText'];
-        if(is_null($infotext))
-        {
+        if (is_null($infotext)) {
             $this->SendDebug('Playerinfo Infotext', 'no information found', 0);
-        }
-        else{
+        } else {
             $this->SetStatePage(
                 $imageurl, $playerInfo['infoText']['title'], $playerInfo['infoText']['subText1'], $playerInfo['infoText']['subText2']
             );
@@ -1436,19 +891,16 @@ class EchoRemote extends IPSModule
             }
         }
         $volume = $playerInfo['volume'];
-        if(is_null($volume))
-        {
+        if (is_null($volume)) {
             $this->SendDebug('Playerinfo Volume', 'no volume information found', 0);
-        }
-        else{
+        } else {
             if ($playerInfo['volume']['volume'] !== null) {
                 $this->SetValue('EchoVolume', $playerInfo['volume']['volume']);
             }
         }
 
         //update Alarm
-        if($this->update_counter > 20)
-        {
+        if ($this->update_counter > 20) {
             $this->update_counter = 0;
             if ($this->ReadPropertyBoolean('AlarmInfo')) {
                 $notifications = $this->GetNotifications();
@@ -1489,6 +941,672 @@ class EchoRemote extends IPSModule
         }
 
         return true;
+    }
+
+    public function PlayAlbum(string $album, string $artist, /** @noinspection ParameterDefaultValueIsNotNullInspection */
+                              bool $shuffle = false): bool
+    {
+        return $this->PlayCloudplayer($shuffle, ['albumArtistName' => $artist, 'albumName' => $album]);
+    }
+
+    public function PlaySong(string $track_id): bool
+    {
+        return $this->PlayCloudplayer(false, ['trackId' => $track_id, 'playQueuePrime' => true]);
+    }
+
+    public function PlayPlaylist(string $playlist_id, /** @noinspection ParameterDefaultValueIsNotNullInspection */ bool $shuffle = false): bool
+    {
+        return $this->PlayCloudplayer($shuffle, ['playlistId' => $playlist_id, 'playQueuePrime' => true]);
+    }
+
+    public function GetLastActivities(int $count)
+    {
+        $getfields = [
+            'size'      => $count,
+            'startTime' => '',
+            'offset'    => 1];
+        $result = (array) $this->SendData('Activities', $getfields);
+
+        if ($result['http_code'] === 200) {
+            return json_decode($result['body'], true);
+        }
+
+        return false;
+    }
+
+    /** AmazonMusic
+     *
+     * @param string $seedId
+     * @param string $stationName
+     *
+     * @return mixed
+     */
+    public function PlayAmazonMusic(string $seedId, string $stationName)
+    {
+        $url = 'https://{AlexaURL}/api/gotham/queue-and-play?';
+        $getfields = [
+            'deviceSerialNumber'   => $this->GetDevicenumber(),
+            'deviceType'           => $this->GetDevicetype(),
+            'mediaOwnerCustomerId' => $this->GetCustomerID()];
+        $postfields = ['seed' => json_encode(['type' => 'KEY', 'seedId' => $seedId]), 'stationName' => $stationName, 'seedType' => 'KEY'];
+        return $this->SendData('CustomCommand', $getfields, $postfields, $url)['http_code'] === 200;
+    }
+
+    public function PlayAmazonPrimePlaylist(string $asin): bool
+    {
+        $url = 'https://{AlexaURL}/api/prime/prime-playlist-queue-and-play?';
+        $getfields = [
+            'deviceSerialNumber'   => $this->GetDevicenumber(),
+            'deviceType'           => $this->GetDevicetype(),
+            'mediaOwnerCustomerId' => $this->GetCustomerID()];
+        $postfields = ['asin' => $asin];
+        return $this->SendData('CustomCommand', $getfields, $postfields, $url)['http_code'] === 200;
+    }
+
+    public function GetAmazonPrimeStationSectionList(string $filterSections, string $filterCategories, string $stationItems)
+    {
+        $filterSections = json_decode($filterSections, true);
+        $filterCategories = json_decode($filterCategories, true);
+        $stationItems = json_decode($stationItems, true);
+        $getfields = [
+            'deviceSerialNumber'   => $this->GetDevicenumber(),
+            'deviceType'           => $this->GetDevicetype(),
+            'mediaOwnerCustomerId' => $this->GetCustomerID()];
+        $result = (array) $this->SendData(
+            'PrimeSections', $getfields, null, null, null, null,
+            ['filterSections' => $filterSections, 'filterCategories' => $filterCategories, 'stationItems' => $stationItems]
+        );
+
+        if ($result['http_code'] === 200) {
+            return json_decode($result['body'], true);
+        }
+
+        return false;
+    }
+
+    public function SendDelete(string $url)
+    {
+        return $this->SendData('SendDelete', null, null, $url);
+    }
+
+    public function CustomCommand(string $url, string $postfields = null, bool $optpost = null)
+    {
+        $search = [
+            '{DeviceSerialNumber}',
+            '{DeviceType}',
+            '{MediaOwnerCustomerID}',
+            urlencode('{DeviceSerialNumber}'),
+            urlencode('{DeviceSerialNumber}'),
+            urlencode('{MediaOwnerCustomerID}')];
+
+        $replace = [
+            $this->GetDevicenumber(),
+            $this->GetDevicetype(),
+            $this->GetCustomerID(),
+            $this->GetDevicenumber(),
+            $this->GetDevicetype(),
+            $this->GetCustomerID()];
+
+        $url = str_replace($search, $replace, $url);
+
+        if ($postfields === null) {
+            $this->SendDebug('CustomCommand', 'URL: ' . $url . ' (no postdata)', 0);
+        } else {
+            $postfields = str_replace($search, $replace, $postfields);
+            $postfields = json_decode($postfields, true);
+        }
+
+        return $this->SendData('CustomCommand', null, $postfields, $url, $optpost);
+    }
+
+    //<editor-fold desc="configuration form">
+    /*
+     * Configuration Form
+     */
+
+    /** @noinspection PhpMissingParentCallCommonInspection
+     * build configuration form
+     *
+     * @return string
+     */
+    public function GetConfigurationForm(): string
+    {
+        return json_encode(
+            [
+                'elements' => $this->FormHead(),
+                'actions'  => $this->FormActions(),
+                'status'   => $this->FormStatus()]
+        );
+    }
+
+    protected function HasActiveParent(): bool
+    {
+        return ($this->ParentID > 0) && (IPS_GetInstance($this->ParentID)['InstanceStatus'] === IS_ACTIVE);
+    }
+
+    /**
+     * Ermittelt den Parent und verwaltet die Einträge des Parent im MessageSink
+     * Ermöglicht es das Statusänderungen des Parent empfangen werden können.
+     *
+     * @return int ID des Parent.
+     */
+    protected function RegisterParent(): int
+    {
+        $OldParentId = $this->ParentID;
+        $ParentId = @IPS_GetInstance($this->InstanceID)['ConnectionID'];
+        if ($ParentId !== $OldParentId) {
+            if ($OldParentId > 0) {
+                $this->UnregisterMessage($OldParentId, IM_CHANGESTATUS);
+            }
+            if ($ParentId > 0) {
+                $this->RegisterMessage($ParentId, IM_CHANGESTATUS);
+            } else {
+                $ParentId = 0;
+            }
+            $this->ParentID = $ParentId;
+        }
+        return $ParentId;
+    }
+
+    private function ValidateConfiguration(): bool
+    {
+        $this->SetTimerInterval('EchoAlarm', 0);
+        if ($this->ReadPropertyString('Devicetype') === '') {
+            $this->SetStatus(self::STATUS_INST_DEVICETYPE_IS_EMPTY);
+        } elseif ($this->ReadPropertyString('Devicenumber') === '') {
+            $this->SetStatus(self::STATUS_INST_DEVICENUMBER_IS_EMPTY);
+        } else {
+            $this->SetStatus(IS_ACTIVE);
+            $this->SetEchoInterval();
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private function RegisterVariables(): void
+    {
+        if (!$this->HasActiveParent()) {
+            return;
+        }
+
+        $device_info = $this->GetDeviceInfo();
+
+        if (!$device_info) {
+            return;
+        }
+
+        $this->SendDebug(__FUNCTION__, 'Device Info: ' . print_r($device_info, true), 0);
+        $caps = $device_info['capabilities'];
+
+        //Remote Variable
+        $this->RegisterProfileAssociation(
+            'Echo.Remote', 'Move', '', '', 0, 5, 0, 0, VARIABLETYPE_INTEGER, [
+                [0, $this->Translate('Rewind 30s'), 'HollowDoubleArrowLeft', -1],
+                [1, $this->Translate('Previous'), 'HollowLargeArrowLeft', -1],
+                [2, $this->Translate('Pause/Stop'), 'Sleep', -1],
+                [3, $this->Translate('Play'), 'Script', -1],
+                [4, $this->Translate('Next'), 'HollowLargeArrowRight', -1],
+                [5, $this->Translate('Forward 30s'), 'HollowDoubleArrowRight', -1]]
+        );
+        $this->RegisterVariableInteger('EchoRemote', 'Remote', 'Echo.Remote', 1);
+        $this->EnableAction('EchoRemote');
+
+        //Shuffle Variable
+        if (in_array('AMAZON_MUSIC', $caps, true)) {
+            $this->RegisterVariableBoolean('EchoShuffle', 'Shuffle', '~Switch', 2);
+            IPS_SetIcon($this->GetIDForIdent('EchoShuffle'), 'Shuffle');
+            $this->EnableAction('EchoShuffle');
+        }
+
+        //Repeat Variable
+        if (in_array('AMAZON_MUSIC', $caps, true)) {
+            $this->RegisterVariableBoolean('EchoRepeat', 'Repeat', '~Switch', 3);
+            IPS_SetIcon($this->GetIDForIdent('EchoRepeat'), 'Repeat');
+            $this->EnableAction('EchoRepeat');
+        }
+
+        //Repeat Variable
+        if (in_array('VOLUME_SETTING', $caps, true)) {
+            $this->RegisterVariableInteger('EchoVolume', 'Volume', '~Intensity.100', 4);
+            $this->EnableAction('EchoVolume');
+        }
+
+        //Info Variable
+        $this->RegisterVariableString('EchoInfo', 'Info', '~HTMLBox', 5);
+
+        //Actions and TTS Variables
+        if (in_array('FLASH_BRIEFING', $caps, true)) {
+            $this->RegisterProfileAssociation(
+                'Echo.Actions', 'Move', '', '', 0, 5, 0, 0, VARIABLETYPE_INTEGER, [
+                    [0, $this->Translate('Weather'), '', -1],
+                    [1, $this->Translate('Traffic'), '', -1],
+                    [2, $this->Translate('Flash Briefing'), '', -1],
+                    [3, $this->Translate('Good morning'), '', -1],
+                    [4, $this->Translate('Sing a song'), '', -1],
+                    [5, $this->Translate('Tell a story'), '', -1]]
+            );
+            $this->RegisterVariableInteger('EchoActions', 'Actions', 'Echo.Actions', 6);
+            $this->EnableAction('EchoActions');
+
+            $this->RegisterVariableString('EchoTTS', 'Text to Speech', '', 7);
+            $this->EnableAction('EchoTTS');
+        }
+
+        //TuneIn Variable
+        if (in_array('TUNE_IN', $caps, true)) {
+            $devicenumber = $this->ReadPropertyString('Devicenumber');
+            if ($devicenumber !== '') {
+                $associations = [];
+                foreach (json_decode($this->ReadPropertyString('TuneInStations'), true) as $tuneInStation) {
+                    $associations[] = [$tuneInStation['position'], $tuneInStation['station'], '', -1];
+                }
+                $profileName = 'Echo.TuneInStation.' . $devicenumber;
+                $this->RegisterProfileAssociation($profileName, 'Music', '', '', 0, 0, 0, 0, VARIABLETYPE_INTEGER, $associations);
+                $this->RegisterVariableInteger('EchoTuneInRemote_' . $devicenumber, 'TuneIn Radio', $profileName, 5);
+                $this->EnableAction('EchoTuneInRemote_' . $devicenumber);
+            }
+        }
+
+        //Extended Info
+        if ($this->ReadPropertyBoolean('ExtendedInfo')) {
+            $this->RegisterVariableString('Title', $this->Translate('Title'), '', 8);
+            $this->RegisterVariableString('Subtitle_1', $this->Translate('Subtitle 1'), '', 9);
+            $this->RegisterVariableString('Subtitle_2', $this->Translate('Subtitle 2'), '', 10);
+            $this->CreateMediaImage('MediaImageCover', 11);
+        }
+
+        //Mute
+        if ($this->ReadPropertyBoolean('Mute')) {
+            //Mute Variable
+            $this->RegisterProfileAssociation(
+                'Echo.Remote.Mute', 'Speaker', '', '', 0, 1, 0, 0, VARIABLETYPE_BOOLEAN, [
+                    [false, $this->Translate('Mute'), 'Speaker', 0xff3300],
+                    [true, $this->Translate('Unmute'), 'Speaker', 0x00ff55]]
+            );
+            $this->RegisterVariableBoolean('Mute', $this->Translate('Mute'), 'Echo.Remote.Mute', 13);
+            $this->EnableAction('Mute');
+        }
+
+        //support of alarm
+        if ($this->ReadPropertyBoolean('AlarmInfo')) {
+            $this->RegisterVariableInteger('nextAlarmTime', $this->Translate('next Alarm'), '~UnixTimestamp', 12);
+            $this->RegisterVariableInteger('lastAlarmTime', $this->Translate('last Alarm'), '~UnixTimestamp', 13);
+        }
+
+        //support of ShoppingList
+        if ($this->ReadPropertyBoolean('ShoppingList')) {
+            $this->RegisterVariableString('ShoppingList', $this->Translate('ShoppingList'), '~HTMLBox', 12);
+        }
+
+        //support of TaskList
+        if ($this->ReadPropertyBoolean('TaskList')) {
+            $this->RegisterVariableString('TaskList', $this->Translate('TaskList'), '~HTMLBox', 12);
+        }
+
+        // Cover as HTML image
+        if ($this->ReadPropertyBoolean('Cover')) {
+            $this->RegisterVariableString('Cover_HTML', $this->Translate('Cover'), '~HTMLBox', 13);
+        }
+
+        // Title as HTML
+        if ($this->ReadPropertyBoolean('Title')) {
+            $this->RegisterVariableString('Title_HTML', $this->Translate('Title'), '~HTMLBox', 15);
+        }
+
+        // Subtitle 1 as HTML
+        if ($this->ReadPropertyBoolean('Subtitle1')) {
+            $this->RegisterVariableString('Subtitle_1_HTML', $this->Translate('Subtitle 1'), '~HTMLBox', 14);
+        }
+
+        // Subtitle 2 as HTML
+        if ($this->ReadPropertyBoolean('Subtitle2')) {
+            $this->RegisterVariableString('Subtitle_2_HTML', $this->Translate('Subtitle 2'), '~HTMLBox', 16);
+        }
+
+        $this->RegisterVariableInteger('last_action', $this->Translate('Last Action'), '~UnixTimestamp', 17);
+        $this->RegisterVariableString('summary', $this->Translate('Last Command'), '', 18);
+    }
+
+    private function GetDeviceInfo()
+    {
+        $this->SendDebug(__FUNCTION__, 'started', 0);
+
+        //fetch all devices
+        $result = $this->SendData('GetDevices');
+
+        if ($result['http_code'] !== 200) {
+            return false;
+        }
+
+        $devices_arr = json_decode($result['body'], true)['devices'];
+
+        //search device with my type and serial number
+        $myDevice = null;
+        foreach ($devices_arr as $key => $device) {
+            if (($device['deviceType'] === $this->GetDevicetype()) && ($device['serialNumber'] === $this->GetDevicenumber())) {
+                return $device;
+                break;
+            }
+        }
+
+        return false;
+    }
+
+    /** Sends Request to IO and get response.
+     *
+     * @param string      $method
+     * @param array|null  $getfields
+     * @param array|null  $postfields
+     * @param null|string $url
+     * @param null        $optpost
+     * @param null        $automation
+     * @param null        $additionalData
+     *
+     * @return mixed
+     */
+    private function SendData(string $method, array $getfields = null, array $postfields = null, $url = null, $optpost = null, $automation = null,
+                              $additionalData = null): ?array
+    {
+        $this->SendDebug(
+            __FUNCTION__,
+            'Method: ' . $method . ', Getfields: ' . json_encode($getfields) . ', Postfields: ' . json_encode($postfields) . ', URL: ' . $url
+            . ', Option Post: ' . (int) $optpost . ', Automation: ' . json_encode($automation), 0
+        );
+
+        $Data['DataID'] = '{8E187D67-F330-2B1D-8C6E-B37896D7AE3E}';
+
+        $Data['Buffer'] = ['method' => $method];
+
+        if ($getfields !== null) {
+            $Data['Buffer']['getfields'] = $getfields;
+        }
+        if ($postfields !== null) {
+            $Data['Buffer']['postfields'] = $postfields;
+        }
+        if ($url !== null) {
+            $Data['Buffer']['url'] = $url;
+        }
+        if ($optpost !== null) {
+            $Data['Buffer']['optpost'] = $optpost;
+        }
+        if ($automation !== null) {
+            $Data['Buffer']['automation'] = $automation;
+        }
+        if ($additionalData !== null) {
+            $Data['Buffer']['additionalData'] = $additionalData;
+        }
+
+        $ResultJSON = $this->SendDataToParent(json_encode($Data));
+        if ($ResultJSON) {
+            $this->SendDebug(__FUNCTION__, 'Result: ' . json_encode($ResultJSON), 0);
+
+            $ret = json_decode($ResultJSON, true);
+            if ($ret) {
+                return $ret; //returns an array of http_code, body and header
+            }
+        }
+
+        IPS_LogMessage(
+            __CLASS__ . '::' . __FUNCTION__, sprintf(
+                                               '\'%s\' (#%s): SendDataToParent returned with %s. $Data = %s', IPS_GetName($this->InstanceID),
+                                               $this->InstanceID, json_encode($ResultJSON), json_encode($Data)
+                                           )
+        );
+
+        return null;
+    }
+
+    /** register profiles
+     *
+     *
+     * @param $Name
+     * @param $Icon
+     * @param $Prefix
+     * @param $Suffix
+     * @param $MinValue
+     * @param $MaxValue
+     * @param $StepSize
+     * @param $Digits
+     * @param $Vartype
+     */
+    private function RegisterProfile($Name, $Icon, $Prefix, $Suffix, $MinValue, $MaxValue, $StepSize, $Digits, $Vartype): void
+    {
+        if (IPS_VariableProfileExists($Name)) {
+            $profile = IPS_GetVariableProfile($Name);
+            if ($profile['ProfileType'] !== $Vartype) {
+                $this->SendDebug('Profile', 'Variable profile type does not match for profile ' . $Name, 0);
+            }
+        } else {
+            IPS_CreateVariableProfile($Name, $Vartype); // 0 boolean, 1 int, 2 float, 3 string
+            $this->SendDebug('Variablenprofil angelegt', $Name, 0);
+        }
+
+        IPS_SetVariableProfileIcon($Name, $Icon);
+        IPS_SetVariableProfileText($Name, $Prefix, $Suffix);
+        IPS_SetVariableProfileDigits($Name, $Digits); //  Nachkommastellen
+        IPS_SetVariableProfileValues(
+            $Name, $MinValue, $MaxValue, $StepSize
+        ); // string $ProfilName, float $Minimalwert, float $Maximalwert, float $Schrittweite
+        $this->SendDebug(
+            'Variablenprofil konfiguriert',
+            'Name: ' . $Name . ', Icon: ' . $Icon . ', Prefix: ' . $Prefix . ', $Suffix: ' . $Suffix . ', Digits: ' . $Digits . ', MinValue: '
+            . $MinValue . ', MaxValue: ' . $MaxValue . ', StepSize: ' . $StepSize, 0
+        );
+    }
+
+    /** register profile association
+     *
+     * @param $Name
+     * @param $Icon
+     * @param $Prefix
+     * @param $Suffix
+     * @param $MinValue
+     * @param $MaxValue
+     * @param $Stepsize
+     * @param $Digits
+     * @param $Vartype
+     * @param $Associations
+     */
+    private function RegisterProfileAssociation($Name, $Icon, $Prefix, $Suffix, $MinValue, $MaxValue, $Stepsize, $Digits, $Vartype,
+                                                $Associations): void
+    {
+        if (is_array($Associations) && count($Associations) === 0) {
+            $MinValue = 0;
+            $MaxValue = 0;
+        }
+        $this->RegisterProfile($Name, $Icon, $Prefix, $Suffix, $MinValue, $MaxValue, $Stepsize, $Digits, $Vartype);
+
+        if (is_array($Associations)) {
+            //zunächst werden alte Assoziationen gelöscht
+            //bool IPS_SetVariableProfileAssociation ( string $ProfilName, float $Wert, string $Name, string $Icon, integer $Farbe )
+            if ($Vartype === 1 || $Vartype === 2) { // 0 boolean, 1 int, 2 float, 3 string
+                foreach (IPS_GetVariableProfile($Name)['Associations'] as $Association) {
+                    IPS_SetVariableProfileAssociation($Name, $Association['Value'], '', '', -1);
+                }
+            }
+
+            //dann werden die aktuellen eingetragen
+            foreach ($Associations as $Association) {
+                IPS_SetVariableProfileAssociation($Name, $Association[0], $Association[1], $Association[2], $Association[3]);
+            }
+        } else {
+            $Associations = $this->$Associations;
+            foreach ($Associations as $code => $association) {
+                IPS_SetVariableProfileAssociation($Name, $code, $this->Translate($association), $Icon, -1);
+            }
+        }
+    }
+
+    private function SetEchoInterval(): void
+    {
+        $echointerval = $this->ReadPropertyInteger('updateinterval');
+        $interval = $echointerval * 1000;
+        $this->SetTimerInterval('EchoUpdate', $interval);
+    }
+
+    private function Covername(): string
+    {
+        $name = IPS_GetName($this->InstanceID);
+        $search = ['ä', 'ö', 'ü', 'Ä', 'Ö', 'Ü', 'ß', ' '];
+        $replace = ['ae', 'oe', 'ue', 'Ae', 'Oe', 'Ue', 'ss', '_'];
+        return 'echocover' . str_replace($search, $replace, $name);
+    }
+
+    private function CreateMediaImage(string $ident, int $position): void
+    {
+        $covername = $this->Covername();
+        $picurl = $this->GetBuffer('CoverURL'); // Cover URL
+        $ImageFile = IPS_GetKernelDir() . 'media' . DIRECTORY_SEPARATOR . $covername . '.png';  // Image-Datei
+
+        $MediaID = @$this->GetIDForIdent($ident);
+        if ($MediaID === false) {
+            if ($picurl) {
+                $Content = base64_encode(file_get_contents($picurl)); // Bild Base64 codieren
+                // convert to png
+                imagepng(imagecreatefromstring(file_get_contents($picurl)), $ImageFile); // save PNG
+            } else {
+                // set transparent image
+                $Content =
+                    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='; // Transparent png 1x1 Base64
+                $data = base64_decode($Content);
+                file_put_contents($ImageFile, $data); // save PNG
+            }
+            $MediaID = IPS_CreateMedia(1);                  // Image im MedienPool anlegen
+            IPS_SetParent($MediaID, $this->InstanceID); // Medienobjekt einsortieren unter der Sonos Instanz
+            IPS_SetIdent($MediaID, $ident);
+            IPS_SetPosition($MediaID, $position);
+            IPS_SetMediaCached($MediaID, true);
+            // Das Cachen für das Mediaobjekt wird aktiviert.
+            // Beim ersten Zugriff wird dieses von der Festplatte ausgelesen
+            // und zukünftig nur noch im Arbeitsspeicher verarbeitet.
+            IPS_SetMediaFile($MediaID, $ImageFile, false);    // Image im MedienPool mit Image-Datei verbinden
+            IPS_SetName($MediaID, 'Cover'); // Medienobjekt benennen
+            //IPS_SetInfo($MediaID, $name);
+            IPS_SetMediaContent($MediaID, $Content);  // Base64 codiertes Bild ablegen
+            IPS_SendMediaEvent($MediaID); //aktualisieren
+        }
+    }
+
+    /** GetTuneInStationID
+     *
+     * @param $preset
+     *
+     * @return string
+     */
+    private function GetTuneInStationID(int $preset): string
+    {
+        $list_json = $this->ReadPropertyString('TuneInStations');
+        $list = json_decode($list_json, true);
+        $stationid = '';
+        foreach ($list as $station) {
+            if ($preset === $station['position']) {
+                $station_name = $station['station'];
+                $stationid = $station['station_id'];
+                $this->SendDebug(__FUNCTION__, 'station name: ' . $station_name, 0);
+                $this->SendDebug(__FUNCTION__, 'station id: ' . $stationid, 0);
+            }
+        }
+        return $stationid;
+    }
+
+    /** GetTuneInStationPreset
+     *
+     * @param $guideId
+     *
+     * @return bool|int
+     */
+    private function GetTuneInStationPresetPosition(string $guideId)
+    {
+        $presetPosition = false;
+        $list_json = $this->ReadPropertyString('TuneInStations');
+        $list = json_decode($list_json, true);
+        foreach ($list as $station) {
+            if ($guideId === $station['station_id']) {
+                $presetPosition = $station['position'];
+                $station_name = $station['station'];
+                $stationid = $station['station_id'];
+                $this->SendDebug(__FUNCTION__, 'preset position: ' . $presetPosition, 0);
+                $this->SendDebug(__FUNCTION__, 'station name: ' . $station_name, 0);
+                $this->SendDebug(__FUNCTION__, 'station id: ' . $stationid, 0);
+                break;
+            }
+        }
+        return $presetPosition;
+    }
+
+    /** PlayCommand
+     *
+     * @param $commandType
+     *
+     * @return array|string
+     */
+    private function PlayCommand(string $commandType)
+    {
+        $this->SendDebug(__FUNCTION__, 'CommandType: ' . $commandType, 0);
+
+        $getfields = [
+            'deviceSerialNumber' => $this->GetDevicenumber(),
+            'deviceType'         => $this->GetDevicetype()];
+
+        $postfields = [
+            'type' => $commandType];
+
+        return $this->SendData('NpCommand', $getfields, $postfields);
+    }
+
+    /** PlaySequenceCmd
+     *
+     * @param string $SEQUENCECMD
+     * @param string $tts
+     *
+     * @return bool
+     */
+    private function PlaySequenceCmd(string $SEQUENCECMD, string $tts = null): bool
+    {
+        $postfields = [
+            'deviceSerialNumber' => $this->GetDevicenumber(),
+            'deviceType'         => $this->GetDevicetype(),
+            'customerId'         => $this->GetCustomerID(),
+            'type'               => $SEQUENCECMD];
+
+        if ($tts !== null) {
+            $postfields['textToSpeak'] = $tts;
+        }
+
+        $result = (array) $this->SendData('BehaviorsPreview', null, $postfields);
+
+        return $result['http_code'] === 200;
+    }
+
+    private function GetAutomation($utterance, $automations)
+    {
+        foreach ($automations as $automation) {
+            foreach ($automation['triggers'] as $trigger) {
+                if (isset($trigger['payload']['utterance']) && $trigger['payload']['utterance'] === $utterance) {
+                    return $automation;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /** List all echo devices with connected Bluetooth devices
+     *
+     * @return mixed
+     */
+    private function ListBluetooth()
+    {
+        $result = (array) $this->SendData('Bluetooth');
+
+        if ($result['http_code'] === 200) {
+            $data = json_decode($result['body'], true);
+            return $data['bluetoothStates'];
+        }
+
+        return false;
     }
 
     private function GetHeader()
@@ -1533,7 +1651,7 @@ class EchoRemote extends IPSModule
 
     private function GetTitleCSS()
     {
-        $TitleSize  = $this->ReadPropertyInteger('TitleSize') . 'em';
+        $TitleSize = $this->ReadPropertyInteger('TitleSize') . 'em';
         $TitleColor = $this->GetColor('TitleColor');
         $this->SendDebug('Title Color', $TitleColor, 0);
         if ($TitleSize == '0em') {
@@ -1547,7 +1665,7 @@ class EchoRemote extends IPSModule
 
     private function GetSubtitle1CSS()
     {
-        $Subtitle1Size  = $this->ReadPropertyInteger('Subtitle1Size') . 'em';
+        $Subtitle1Size = $this->ReadPropertyInteger('Subtitle1Size') . 'em';
         $Subtitle1Color = $this->GetColor('Subtitle1Color');
         $this->SendDebug('Subtitle Color', $Subtitle1Color, 0);
         if ($Subtitle1Size == '0em') {
@@ -1561,7 +1679,7 @@ class EchoRemote extends IPSModule
 
     private function GetSubtitle2CSS()
     {
-        $Subtitle2Size  = $this->ReadPropertyInteger('Subtitle2Size') . 'em';
+        $Subtitle2Size = $this->ReadPropertyInteger('Subtitle2Size') . 'em';
         $Subtitle2Color = $this->GetColor('Subtitle2Color');
         $this->SendDebug('Subtitle Color', $Subtitle2Color, 0);
         if ($Subtitle2Size == '0em') {
@@ -1650,7 +1768,6 @@ class EchoRemote extends IPSModule
             if (($notification['type'] === 'Alarm')
                 && ($notification['status'] === 'ON')
                 && ($notification['deviceSerialNumber'] === IPS_GetProperty($this->InstanceID, 'Devicenumber'))) {
-
                 $alarmTime = strtotime($notification['originalDate'] . ' ' . $notification['originalTime']);
 
                 if ($nextAlarm === 0) {
@@ -1662,7 +1779,7 @@ class EchoRemote extends IPSModule
         }
 
         if ($alarmTime === 0) {
-            $nextAlarm        = 0;
+            $nextAlarm = 0;
             $timerIntervalSec = 0;
         } else {
             $timerIntervalSec = $nextAlarm - time();
@@ -1676,12 +1793,10 @@ class EchoRemote extends IPSModule
             $this->SetTimerInterval('EchoAlarm', $timerIntervalSec * 1000);
             $this->SendDebug(__FUNCTION__, 'Timer EchoAlarm is set to ' . $timerIntervalSec . 's', 0);
         }
-
     }
 
     private function GetListPage(array $Items): string
     {
-
         $html = '<!doctype html>
 <html lang="de">' . $this->GetHeader() . '
 <body>
@@ -1699,22 +1814,6 @@ class EchoRemote extends IPSModule
         return $html;
     }
 
-    public function PlayAlbum(string $album, string $artist, /** @noinspection ParameterDefaultValueIsNotNullInspection */
-                              bool $shuffle = false): bool
-    {
-        return $this->PlayCloudplayer($shuffle, ['albumArtistName' => $artist, 'albumName' => $album]);
-    }
-
-    public function PlaySong(string $track_id): bool
-    {
-        return $this->PlayCloudplayer(false, ['trackId' => $track_id, 'playQueuePrime' => true]);
-    }
-
-    public function PlayPlaylist(string $playlist_id, /** @noinspection ParameterDefaultValueIsNotNullInspection */ bool $shuffle = false): bool
-    {
-        return $this->PlayCloudplayer($shuffle, ['playlistId' => $playlist_id, 'playQueuePrime' => true]);
-    }
-
     private function PlayCloudplayer(bool $shuffle, array $postfields): bool
     {
         $getfields = [
@@ -1726,110 +1825,6 @@ class EchoRemote extends IPSModule
         $return = (array) $this->SendData('CloudplayerQueueandplay', $getfields, $postfields);
 
         return $return['http_code'] === 200;
-
-    }
-
-    public function GetLastActivities(int $count)
-    {
-
-        $getfields = [
-            'size'      => $count,
-            'startTime' => '',
-            'offset'    => 1];
-        $result    = (array) $this->SendData('Activities', $getfields);
-
-        if ($result['http_code'] === 200) {
-            return json_decode($result['body'], true);
-        }
-
-        return false;
-
-    }
-
-    /** AmazonMusic
-     *
-     * @param string $seedId
-     * @param string $stationName
-     *
-     * @return mixed
-     */
-    public function PlayAmazonMusic(string $seedId, string $stationName)
-    {
-        $url        = 'https://{AlexaURL}/api/gotham/queue-and-play?';
-        $getfields  = [
-            'deviceSerialNumber'   => $this->GetDevicenumber(),
-            'deviceType'           => $this->GetDevicetype(),
-            'mediaOwnerCustomerId' => $this->GetCustomerID()];
-        $postfields = ['seed' => json_encode(['type' => 'KEY', 'seedId' => $seedId]), 'stationName' => $stationName, 'seedType' => 'KEY'];
-        return $this->SendData('CustomCommand', $getfields, $postfields, $url)['http_code'] === 200;
-    }
-
-    public function PlayAmazonPrimePlaylist(string $asin): bool
-    {
-        $url        = 'https://{AlexaURL}/api/prime/prime-playlist-queue-and-play?';
-        $getfields  = [
-            'deviceSerialNumber'   => $this->GetDevicenumber(),
-            'deviceType'           => $this->GetDevicetype(),
-            'mediaOwnerCustomerId' => $this->GetCustomerID()];
-        $postfields = ['asin' => $asin];
-        return $this->SendData('CustomCommand', $getfields, $postfields, $url)['http_code'] === 200;
-
-    }
-
-    public function GetAmazonPrimeStationSectionList(string $filterSections, string $filterCategories, string $stationItems)
-    {
-        $filterSections   = json_decode($filterSections, true);
-        $filterCategories = json_decode($filterCategories, true);
-        $stationItems     = json_decode($stationItems, true);
-        $getfields        = [
-            'deviceSerialNumber'   => $this->GetDevicenumber(),
-            'deviceType'           => $this->GetDevicetype(),
-            'mediaOwnerCustomerId' => $this->GetCustomerID()];
-        $result           = (array) $this->SendData(
-            'PrimeSections', $getfields, null, null, null, null,
-            ['filterSections' => $filterSections, 'filterCategories' => $filterCategories, 'stationItems' => $stationItems]
-        );
-
-        if ($result['http_code'] === 200) {
-            return json_decode($result['body'], true);
-        }
-
-        return false;
-    }
-
-    public function SendDelete(string $url)
-    {
-        return $this->SendData('SendDelete', null, null, $url);
-    }
-
-    public function CustomCommand(string $url, string $postfields = null, bool $optpost = null)
-    {
-        $search = [
-            '{DeviceSerialNumber}',
-            '{DeviceType}',
-            '{MediaOwnerCustomerID}',
-            urlencode('{DeviceSerialNumber}'),
-            urlencode('{DeviceSerialNumber}'),
-            urlencode('{MediaOwnerCustomerID}')];
-
-        $replace = [
-            $this->GetDevicenumber(),
-            $this->GetDevicetype(),
-            $this->GetCustomerID(),
-            $this->GetDevicenumber(),
-            $this->GetDevicetype(),
-            $this->GetCustomerID()];
-
-        $url = str_replace($search, $replace, $url);
-
-        if ($postfields === null) {
-            $this->SendDebug('CustomCommand', 'URL: ' . $url . ' (no postdata)', 0);
-        } else {
-            $postfields = str_replace($search, $replace, $postfields);
-            $postfields = json_decode($postfields, true);
-        }
-
-        return $this->SendData('CustomCommand', null, $postfields, $url, $optpost);
     }
 
     //<editor-fold desc="not used functions">
@@ -1883,7 +1878,7 @@ class EchoRemote extends IPSModule
             . '&deviceType=' . $this->GetDevicetype() . '&mediaOwnerCustomerId=' . $this->GetCustomerID();
         return $this->SendData('CustomCommand', null, null, $url);
     }
-*/
+     */
     //</editor-fold>
 
     //<editor-fold desc="not supported functions">
@@ -1895,7 +1890,7 @@ class EchoRemote extends IPSModule
         $url = 'https://{AlexaURL}/api/cloudplayer/tracks?deviceSerialNumber=' . $this->GetDevicenumber() . '&deviceType=' . $this->GetDevicetype() . '&mediaOwnerCustomerId=' . $this->GetCustomerID();
         return $this->SendData_old("GetTracks", $url);
     }
-    */
+     */
 
     /*
     public function GetCurrentQueue()
@@ -1935,7 +1930,7 @@ class EchoRemote extends IPSModule
         }
     }
 
-    */
+     */
     //</editor-fold>
 
     /** GetDevicetype
@@ -1972,30 +1967,9 @@ class EchoRemote extends IPSModule
                 $this->customerID = '';
                 trigger_error('CustomerID nicht gesetzt. Parent: ' . $ParentID);
             }
-
         }
 
         return $this->customerID;
-    }
-
-    //<editor-fold desc="configuration form">
-    /***********************************************************
-     * Configuration Form
-     ***********************************************************/
-
-    /** @noinspection PhpMissingParentCallCommonInspection
-     * build configuration form
-     *
-     * @return string
-     */
-    public function GetConfigurationForm(): string
-    {
-        return json_encode(
-            [
-                'elements' => $this->FormHead(),
-                'actions'  => $this->FormActions(),
-                'status'   => $this->FormStatus()]
-        );
     }
 
     /**

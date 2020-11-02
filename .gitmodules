@@ -1,0 +1,6 @@
+[submodule ".style"]
+	path = .style
+	url = https://github.com/symcon/StylePHP
+[submodule "tests/stubs"]
+	path = tests/stubs
+	url = https://github.com/symcon/SymconStubs
