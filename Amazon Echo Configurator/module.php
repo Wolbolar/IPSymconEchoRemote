@@ -34,6 +34,7 @@ class AmazonEchoConfigurator extends IPSModule
         'A4ZP7ZC4PI6TO'    => ['name' => 'Echo Show 5'],
         'A1Z88NGR2BK6A2'   => ['name' => 'Echo Show 8'],
         'A30YDR2MK8HMRV'   => ['name' => 'Echo Dot (3.Gen with Clock)'],
+        'A2H4LV5GIZ1JFT'   => ['name' => 'Echo Dot (4.Gen with Clock)'],
         'A1J16TEDOYCZTN'   => ['name' => 'Amazon Tablet'],
         'A38EHHIB10L47V'   => ['name' => 'Fire HD 8 Tablet'],
         'A112LJ20W14H95'   => ['name' => 'Media Display'],
@@ -68,8 +69,9 @@ class AmazonEchoConfigurator extends IPSModule
         'A3C9PE6TNYLTCH'   => ['name' => 'Multiroom Music-Group'],
         'A303PJF6ISQ7IC'   => ['name' => 'Echo Auto'],
         'A1ZB65LA390I4K'   => ['name' => 'Fire HD 10 Tablet'],
-        'AVU7CPPF2ZRAS'    => ['name' => 'Fire HD 8 Plus (2020)',],
-        'ABN8JEI7OQF61'    => ['name' => 'Sony WF-1000XM3',],
+        'AVU7CPPF2ZRAS'    => ['name' => 'Fire HD 8 Plus (2020)'],
+        'A24Z7PEXY4MDTK'   => ['name' => 'Sony WF-1000X'],
+        'ABN8JEI7OQF61'    => ['name' => 'Sony WF-1000XM3'],
         'A7S41FQ5TWBC9'    => ['name' => 'Sony WH-1000XM4']];
 
     public function Create()
