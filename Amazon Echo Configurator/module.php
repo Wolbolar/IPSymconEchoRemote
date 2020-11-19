@@ -72,7 +72,8 @@ class AmazonEchoConfigurator extends IPSModule
         'AVU7CPPF2ZRAS'    => ['name' => 'Fire HD 8 Plus (2020)'],
         'A24Z7PEXY4MDTK'   => ['name' => 'Sony WF-1000X'],
         'ABN8JEI7OQF61'    => ['name' => 'Sony WF-1000XM3'],
-        'A7S41FQ5TWBC9'    => ['name' => 'Sony WH-1000XM4']];
+        'A7S41FQ5TWBC9'    => ['name' => 'Sony WH-1000XM4'],
+        'AKKLQD9FZWWQS'    => ['name' => 'Jabra Elite 75t']];
 
     public function Create()
     {
