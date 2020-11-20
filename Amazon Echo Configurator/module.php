@@ -26,6 +26,7 @@ class AmazonEchoConfigurator extends IPSModule
         'A3S5BH2HU6VAYF'   => ['name' => 'Echo Dot (2.Gen)'],
         'A32DOYMUN6DTXA'   => ['name' => 'Echo Dot (3.Gen)'],
         'A1RABVCI4QCIKC'   => ['name' => 'Echo Dot (3.Gen)'],
+        'A2U21SRK4QGSE1'   => ['name' => 'Echo Dot (4.Gen)'],
         'AILBSA2LNTOYL'    => ['name' => 'Reverb App'],
         'A15ERDAKK5HQQG'   => ['name' => 'Sonos'],
         'A2OSP3UA4VC85F'   => ['name' => 'Sonos One'],
