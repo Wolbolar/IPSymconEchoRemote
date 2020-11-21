@@ -74,6 +74,7 @@ class AmazonEchoConfigurator extends IPSModule
         'A24Z7PEXY4MDTK'   => ['name' => 'Sony WF-1000X'],
         'ABN8JEI7OQF61'    => ['name' => 'Sony WF-1000XM3'],
         'A7S41FQ5TWBC9'    => ['name' => 'Sony WH-1000XM4'],
+        'A265XOI9586NML'   => ['name' => 'unkown'],
         'AKKLQD9FZWWQS'    => ['name' => 'Jabra Elite 75t']];
 
     public function Create()
