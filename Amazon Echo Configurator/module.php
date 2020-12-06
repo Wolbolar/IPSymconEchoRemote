@@ -76,6 +76,7 @@ class AmazonEchoConfigurator extends IPSModule
         'A7S41FQ5TWBC9'    => ['name' => 'Sony WH-1000XM4'],
         'A265XOI9586NML'   => ['name' => 'Fire TV Stick with Alexa voice remote control (with TV control buttons)'],
         'AKKLQD9FZWWQS'    => ['name' => 'Jabra Elite 75t']];
+        'A17KNHDVUO2UVP'    => ['name' => 'Audi MIB3']];
 
     public function Create()
     {
