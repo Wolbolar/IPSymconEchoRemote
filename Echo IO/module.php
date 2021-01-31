@@ -1332,11 +1332,13 @@ class AmazonEchoIO extends IPSModule
         return $result;
     }
 
+    /** V2 Routine
+     * @return array|false|mixed
+     */
     private function BehaviorsAutomations()
     {
         $header = $this->GetHeader();
-
-        $url = 'https://' . $this->GetAlexaURL() . '/api/behaviors/automations';
+        $url = 'https://' . $this->GetAlexaURL() . '/api/behaviors/v2/automations';
 
         return $this->SendEcho($url, $header);
     }
