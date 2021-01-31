@@ -1764,7 +1764,7 @@ class EchoRemote extends IPSModule
     {
         $alarmTime = 0;
         $nextAlarm = $this->GetValue('nextAlarmTime');
-
+        
         // if the alarm time has already passed, it is set to 0
         if ($nextAlarm < (time() - 2 * 60)) {
             $nextAlarm = 0;
@@ -1774,7 +1774,7 @@ class EchoRemote extends IPSModule
             if (($notification['type'] === 'Alarm')
                 && ($notification['status'] === 'ON')
                 && ($notification['deviceSerialNumber'] === IPS_GetProperty($this->InstanceID, 'Devicenumber'))) {
-                $alarmTime = strtotime($notification['originalDate'] . ' ' . $notification['originalTime']);
+                $alarmTime = strtotime($notification['originalDate'] . 'T' . $notification['originalTime']);
 
                 if ($nextAlarm === 0) {
                     $nextAlarm = $alarmTime;
