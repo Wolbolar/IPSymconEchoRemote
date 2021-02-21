@@ -138,17 +138,20 @@ Hier sind anzugeben:
  - Amazon 2FA Code (falls in Amazon die Zwei-Schritt-Verifizierung eingestellt ist)
  - Sprache
 
-Vielen Dank an dieser Stelle an ok1982, der die Unterstützung der Zwei-Schritt-Verifizierung ermöglicht hat. Eine Beschreibung, wie die Verfizierung einzurichten ist findet ihr hier:
+Vielen Dank an dieser Stelle an ok1982, der die Unterstützung der Zwei-Schritt-Verifizierung ermöglicht hat.
 
-<a href="https://www.symcon.de/forum/attachment.php?attachmentid=48519&d=1554833431">Anleitung 2FA.pdf</a>
+##### Nutzung der Zwei-Schritt-Verifizierung von Amazon
 
-**Wichtig: Der erste Punkt in der Anleitung ("Die beiden Dateien ...") ist nicht mehr gültig, bitte ignorieren!**
+Um sich einfach bei Amazon authentifizieren zu können, kann _optional_ die Zwei-Schritt-Verifizierung von Amazon aktiviert werden.
+Dadurch entfällt der Schritt den Cookie zu ermitteln was die Einrichtung einfacher macht. Allerdings ist hierzu zunächst bei Amazon dauerhaft die 
+[Zwei-Schritt-Verifizierung](https://www.amazon.de/gp/help/customer/display.html?nodeId=202013000) dauerhaft zu aktivieren.
+
+Eine Beschreibung, wie die Verfizierung einzurichten ist findet ihr hier:
+
+- [Einrichtung der Zwei-Schritt-Verifizierung](2FA.md "Einrichtung der Zwei-Schritt-Verifizierung")
 
 Alternativ zu Benutzername und Passwort kann auch ein gültiger Cookie verwendet werden.
- 
 
- 
- 
 ##### Ermittlung des Cookie
 Wenn beim Amazon Konto die Zwei-Schritt-Verifizierung aktiviert ist, dann ist der Anmeldeweg über den Cookie zu wählen, da vom Modul keine Zwei-Schritt-Verifizierung unterstützt wird.
 

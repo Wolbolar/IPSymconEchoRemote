@@ -78,7 +78,8 @@ class AmazonEchoConfigurator extends IPSModule
         'AKKLQD9FZWWQS'    => ['name' => 'Jabra Elite 75t'],
         'A3RMGO6LYLH7YN'   => ['name' => 'Echo (4.Gen)'],
         'A38949IHXHRQ5P'   => ['name' => 'Amazon Tap'],
-        'A3RBAYBE7VM004'   => ['name' => 'Echo Studio']];
+        'A3RBAYBE7VM004'   => ['name' => 'Echo Studio'],
+        'ATH4K2BAIXVHQ'    => ['name' => 'Amazon Alexa App Android']];
 
     public function Create()
     {
