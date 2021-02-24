@@ -79,7 +79,8 @@ class AmazonEchoConfigurator extends IPSModule
         'A3RMGO6LYLH7YN'   => ['name' => 'Echo (4.Gen)'],
         'A38949IHXHRQ5P'   => ['name' => 'Amazon Tap'],
         'A3RBAYBE7VM004'   => ['name' => 'Echo Studio'],
-        'ATH4K2BAIXVHQ'    => ['name' => 'Amazon Alexa App Android']];
+        'ATH4K2BAIXVHQ'    => ['name' => 'Amazon Alexa App Android'],
+        'A27VEYGQBW3YR5'   => ['name' => 'Echo Link']];
 
     public function Create()
     {
