@@ -282,46 +282,50 @@ class AmazonEchoIO extends IPSModule
     public function GetLastDevice()
     {
         $response_activities = $this->CustomCommand('https://{AlexaURL}/api/activities?startTime=&size=10&offset=1');
-        $http_code = $response_activities['http_code'];
         $last_device = ['name' => '', 'serialnumber' => '', 'creationTimestamp' => '', 'summary' => ''];
-        $serialNumber = '';
-        if ($http_code == 200) {
-            $payload_activities = $response_activities['body'];
-            $activities_array = json_decode($payload_activities, true);
-            $activities = $activities_array['activities'];
-            foreach ($activities as $key => $activity) {
-                $state = $activity['activityStatus'];
-                if ($state == 'SUCCESS') {
-                    $sourceDeviceIds = $activity['sourceDeviceIds'][0];
-                    $serialNumber = $sourceDeviceIds['serialNumber'];
-                    $creationTimestamp = $activity['creationTimestamp'];
-                    $description = $activity['description'];
-                    $summary = json_decode($description)->summary;
-                    break;
+        if($response_activities != false)
+        {
+            $http_code = $response_activities['http_code'];
+
+            $serialNumber = '';
+            if ($http_code == 200) {
+                $payload_activities = $response_activities['body'];
+                $activities_array = json_decode($payload_activities, true);
+                $activities = $activities_array['activities'];
+                foreach ($activities as $key => $activity) {
+                    $state = $activity['activityStatus'];
+                    if ($state == 'SUCCESS') {
+                        $sourceDeviceIds = $activity['sourceDeviceIds'][0];
+                        $serialNumber = $sourceDeviceIds['serialNumber'];
+                        $creationTimestamp = $activity['creationTimestamp'];
+                        $description = $activity['description'];
+                        $summary = json_decode($description)->summary;
+                        break;
+                    }
                 }
             }
-        }
-        $devices = $this->GetDeviceList();
+            $devices = $this->GetDeviceList();
 
-        if (empty($devices)) {
-            return [];
-        }
+            if (empty($devices)) {
+                return [];
+            }
 
-        if ($serialNumber != '') {
-            foreach ($devices as $key => $device) {
-                $accountName = $device['accountName'];
-                $device_serialNumber = $device['serialNumber'];
-                if ($serialNumber == $device_serialNumber) {
-                    $this->SendDebug('Echo Device', 'account name: ' . $accountName, 0);
-                    $this->SendDebug('Echo Device', 'serial number: ' . $device_serialNumber, 0);
-                    $this->SendDebug('Echo Command', 'summary: ' . $summary, 0);
-                    $last_device = ['name' => $accountName, 'serialnumber' => $device_serialNumber, 'creationTimestamp' => $creationTimestamp, 'summary' => $summary];
-                    $payload = json_encode(['DataID' => '{E41E38AC-30D7-CA82-DEF5-9561A5B06CD7}', 'Buffer' => $last_device]);
-                    $this->SendDataToChildren($payload);
-                    $this->SendDebug('Forward Data Last Device', $payload, 0);
-                    $current_serial = GetValue($this->GetIDForIdent('last_device'));
-                    if ($current_serial != $key + 1) {
-                        $this->SetValue('last_device', $key + 1);
+            if ($serialNumber != '') {
+                foreach ($devices as $key => $device) {
+                    $accountName = $device['accountName'];
+                    $device_serialNumber = $device['serialNumber'];
+                    if ($serialNumber == $device_serialNumber) {
+                        $this->SendDebug('Echo Device', 'account name: ' . $accountName, 0);
+                        $this->SendDebug('Echo Device', 'serial number: ' . $device_serialNumber, 0);
+                        $this->SendDebug('Echo Command', 'summary: ' . $summary, 0);
+                        $last_device = ['name' => $accountName, 'serialnumber' => $device_serialNumber, 'creationTimestamp' => $creationTimestamp, 'summary' => $summary];
+                        $payload = json_encode(['DataID' => '{E41E38AC-30D7-CA82-DEF5-9561A5B06CD7}', 'Buffer' => $last_device]);
+                        $this->SendDataToChildren($payload);
+                        $this->SendDebug('Forward Data Last Device', $payload, 0);
+                        $current_serial = GetValue($this->GetIDForIdent('last_device'));
+                        if ($current_serial != $key + 1) {
+                            $this->SetValue('last_device', $key + 1);
+                        }
                     }
                 }
             }
