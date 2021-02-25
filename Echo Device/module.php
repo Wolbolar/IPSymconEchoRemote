@@ -499,9 +499,12 @@ class EchoRemote extends IPSModule
         ];
 
         $result = $this->SendData('NpPlayer', $getfields);
-        if ($result['http_code'] === 200) {
-            //$this->SetValue("EchoVolume", $volume);
-            return json_decode($result['body'], true);
+        if(!empty($result))
+        {
+            if ($result['http_code'] === 200) {
+                //$this->SetValue("EchoVolume", $volume);
+                return json_decode($result['body'], true);
+            }
         }
         return false;
     }
