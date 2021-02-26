@@ -1159,31 +1159,31 @@ class EchoRemote extends IPSModule
                 [4, $this->Translate('Next'), 'HollowLargeArrowRight', -1],
                 [5, $this->Translate('Forward 30s'), 'HollowDoubleArrowRight', -1]]
         );
-        $this->RegisterVariableInteger('EchoRemote', 'Remote', 'Echo.Remote', 1);
+        $this->RegisterVariableInteger('EchoRemote', $this->Translate('Remote'), 'Echo.Remote', 1);
         $this->EnableAction('EchoRemote');
 
         //Shuffle Variable
         if (in_array('AMAZON_MUSIC', $caps, true)) {
-            $this->RegisterVariableBoolean('EchoShuffle', 'Shuffle', '~Switch', 2);
+            $this->RegisterVariableBoolean('EchoShuffle', $this->Translate('Shuffle'), '~Switch', 2);
             IPS_SetIcon($this->GetIDForIdent('EchoShuffle'), 'Shuffle');
             $this->EnableAction('EchoShuffle');
         }
 
         //Repeat Variable
         if (in_array('AMAZON_MUSIC', $caps, true)) {
-            $this->RegisterVariableBoolean('EchoRepeat', 'Repeat', '~Switch', 3);
+            $this->RegisterVariableBoolean('EchoRepeat', $this->Translate('Repeat'), '~Switch', 3);
             IPS_SetIcon($this->GetIDForIdent('EchoRepeat'), 'Repeat');
             $this->EnableAction('EchoRepeat');
         }
 
-        //Repeat Variable
+        //Volume Variable
         if (in_array('VOLUME_SETTING', $caps, true)) {
-            $this->RegisterVariableInteger('EchoVolume', 'Volume', '~Intensity.100', 4);
+            $this->RegisterVariableInteger('EchoVolume', $this->Translate('Volume'), '~Intensity.100', 4);
             $this->EnableAction('EchoVolume');
         }
 
         //Info Variable
-        $this->RegisterVariableString('EchoInfo', 'Info', '~HTMLBox', 5);
+        $this->RegisterVariableString('EchoInfo', $this->Translate('Info'), '~HTMLBox', 5);
 
         //Actions and TTS Variables
         if (in_array('FLASH_BRIEFING', $caps, true)) {
@@ -1196,10 +1196,10 @@ class EchoRemote extends IPSModule
                     [4, $this->Translate('Sing a song'), '', -1],
                     [5, $this->Translate('Tell a story'), '', -1]]
             );
-            $this->RegisterVariableInteger('EchoActions', 'Actions', 'Echo.Actions', 6);
+            $this->RegisterVariableInteger('EchoActions', $this->Translate('Actions'), 'Echo.Actions', 6);
             $this->EnableAction('EchoActions');
 
-            $this->RegisterVariableString('EchoTTS', 'Text to Speech', '', 7);
+            $this->RegisterVariableString('EchoTTS', $this->Translate('Text to Speech'), '', 7);
             $this->EnableAction('EchoTTS');
         }
 
