@@ -702,6 +702,17 @@ class EchoRemote extends IPSModule
         return $this->PlaySequenceCmd('Alexa.Speak', $tts);
     }
 
+    /** Announcement
+     *
+     * @param string $tts
+     *
+     * @return array|string
+     */
+    public function Announcement(string $tts): bool
+    {
+        return $this->PlaySequenceCmd('AlexaAnnouncement', $tts);
+    }
+
     /**
      * Weather Forcast.
      */

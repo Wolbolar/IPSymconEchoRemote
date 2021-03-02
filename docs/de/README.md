@@ -33,6 +33,9 @@ Modul für IP-Symcon ab Version 5.0. Ermöglicht die Fernsteuerung mit einem Ama
      - Titel wiederholen
      - Radio TuneIn Sender auswählen     
  - Sprachausgabe auf einem Echo (Text to Speech)
+ - Ausgabe von Sound der Amazon Sound Library auf einem Echo
+ - Sprachausgabe mit SSML auf einem Echo (Text to Speech) / auch in Kombination mit Sound
+ - Ankündigungen auf allen Echo Geräten im WLAN (Text to Speech)
  - Uhrzeit der nächsten Weckzeit
  - Anzeige der Einkaufsliste
  - Anzeige der Aufgabenliste
@@ -195,6 +198,20 @@ _Erstellen_ drücken, die Instanz wird dann erzeugt.
 
  ![Webfront](img/webfront.png?raw=true "Config IO")
 
+### Beispiel zur Einrichtung einer Routine und dem Starten der Routine aus IP-Symcon
+
+Eine Beschreibung, wie eine Routine in der Alexa App eingerichtet werden kann und diese aus IP-Symcon gestartet wird:
+
+- [Einrichtung einer Routine in der Alexa App und starten dieser aus IP-Symcon](routines.md "Einrichtung einer Routine in der Alexa App und starten dieser aus IP-Symcon")
+
+### Beispiel zur Einrichtung von Ankündigungen auf einem Alexa Gerät und Nutzung aus IP-Symcon
+
+Eine Beschreibung, wie Ankündigungen auf einem Echo Gerät einzurichten sind:
+
+- [Einrichtung für Ankündigungen auf einem Alexa Geräte](2FA.md "Einrichtung für Ankündigungen auf einem Alexa Geräte")
+
+
+
 ## 4. Funktionsreferenz
 
 ### Echo Remote Device:
@@ -350,7 +367,15 @@ ECHOREMOTE_TextToSpeech(integer $InstanceID, string $text_to_speech)
 ``` 
 Parameter _$InstanceID_ ObjektID des Echo Remote Devices 
 
-Parameter _$text_to_speech_ Text der von dem Gerät vorgelesen werden soll     
+Parameter _$text_to_speech_ Text der von dem Gerät vorgelesen werden soll
+
+**Ankündigung**
+```php
+ECHOREMOTE_Announcement(integer $InstanceID, string $text_to_speech)
+``` 
+Parameter _$InstanceID_ ObjektID des Echo Remote Devices
+
+Parameter _$text_to_speech_ Text der auf allen Echo Geräten im WLAN vorgelesen werden soll, mit Ausnahme aller Echo Geräte, bei denen _Bitte nicht stören_ aktiv ist 
 
 **Wettervorhersage**
 ```php
@@ -476,6 +501,8 @@ Es wird die zum Sprachausdruck passende Routine gestartet. Im Fehlerfall wird fa
 Beispiel:
 ```php
 ECHOREMOTE_StartAlexaRoutine(47111, 'Starte meinen Tag');
+
+
 ```
 
 ### AmazonEchoIO:

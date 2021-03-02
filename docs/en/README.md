@@ -33,6 +33,9 @@ Module for IP Symcon version 5.0 or higher. Enables remote control with an Amazo
     - Repeat title
     - Select Radio TuneIn station
  - Voice output on an echo (text to speech)
+ - Output of sound from the Amazon Sound Library on an Echo device
+ - Speech output with SSML on an echo (text to speech) / also in combination with sound
+ - Announcements on all Echo devices in the WLAN (text to speech)
  - Weather forecast
  - Traffic News
  - Flash Briefing
@@ -172,8 +175,19 @@ In the block Request Headers you can find it. The cookie is quite long and needs
 
 ### Webfront View
 
-
  ![Webfront](img/webfront.png?raw=true "Config IO")
+
+### Example for setting up a routine and starting the routine from IP-Symcon
+
+A description of how a routine can be set up in the Alexa app and how it is started from IP-Symcon:
+
+- [Set up a routine in the Alexa app and start it from IP-Symcon](routines.md "Set up a routine in the Alexa app and start it from IP-Symcon")
+
+### Example of setting up announcements on an Alexa device and using it from IP-Symcon
+
+A description of how to set up announcements on an Echo device:
+
+- [Setup for announcements on an Alexa device](announcements.md "Setup for announcements on an Alexa device")
 
 ## 4. Function Reference
 
@@ -276,7 +290,16 @@ ECHOREMOTE_TextToSpeech(integer $InstanceID, string $text_to_speech)
 ``` 
 Parameter _$InstanceID_ ObjectID of the Echo Remote Device 
 
-Parameter _$text_to_speech_ Text to be read by the device     
+Parameter _$text_to_speech_ Text to be read by the device   
+
+**Announcements**
+```php
+ECHOREMOTE_Announcement(integer $InstanceID, string $text_to_speech)
+``` 
+Parameter _$InstanceID_ ObjektID of the Echo Remote Device
+
+Parameter _$text_to_speech_ Text that should be read out on all Echo devices in the WLAN, with the exception of all Echo devices on which _Do not disturb_ is active
+
 
 **Weather Forcast**
 ```php

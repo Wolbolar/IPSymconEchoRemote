@@ -134,6 +134,12 @@ class AmazonEchoIO extends IPSModule
         }
     }
 
+    public function SetCookieFileFolder()
+    {
+        IPS_SetProperty($this->InstanceID, 'CookiesFileName', IPS_GetKernelDir() . 'alexa_cookie.txt');
+        IPS_ApplyChanges($this->InstanceID);
+    }
+
     public function LogOff(): bool
     {
         $this->SendDebug(__FUNCTION__, '== started ==', 0);
@@ -290,17 +296,20 @@ class AmazonEchoIO extends IPSModule
             $serialNumber = '';
             if ($http_code == 200) {
                 $payload_activities = $response_activities['body'];
-                $activities_array = json_decode($payload_activities, true);
-                $activities = $activities_array['activities'];
-                foreach ($activities as $key => $activity) {
-                    $state = $activity['activityStatus'];
-                    if ($state == 'SUCCESS') {
-                        $sourceDeviceIds = $activity['sourceDeviceIds'][0];
-                        $serialNumber = $sourceDeviceIds['serialNumber'];
-                        $creationTimestamp = $activity['creationTimestamp'];
-                        $description = $activity['description'];
-                        $summary = json_decode($description)->summary;
-                        break;
+                if(!empty($payload_activities))
+                {
+                    $activities_array = json_decode($payload_activities, true);
+                    $activities = $activities_array['activities'];
+                    foreach ($activities as $key => $activity) {
+                        $state = $activity['activityStatus'];
+                        if ($state == 'SUCCESS') {
+                            $sourceDeviceIds = $activity['sourceDeviceIds'][0];
+                            $serialNumber = $sourceDeviceIds['serialNumber'];
+                            $creationTimestamp = $activity['creationTimestamp'];
+                            $description = $activity['description'];
+                            $summary = json_decode($description)->summary;
+                            break;
+                        }
                     }
                 }
             }
