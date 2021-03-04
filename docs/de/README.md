@@ -42,11 +42,14 @@ Modul für IP-Symcon ab Version 5.0. Ermöglicht die Fernsteuerung mit einem Ama
  - Wettervorhersage
  - Verkehrsmeldungen
  - Flash Briefing
+ - Erzählt ein Funfact
+ - Erzählt einen Witz
  - Guten Morgen
  - Singt ein Lied
  - Erzählt eine Geschichte
  - Startet eine Routine
  - Koppeln von Bluetooth Geräten
+ - Bitte nicht Stören ein-/ ausschalten
         
 
 ## 2. Voraussetzungen
@@ -417,6 +420,22 @@ Parameter _$InstanceID_ ObjektID des Echo Remote Devices
 
 Spielt ein Lied auf dem Gerät ab
 
+**Erzählt ein Funfact**
+```php
+ECHOREMOTE_TellFunFact(integer $InstanceID)
+``` 
+Parameter _$InstanceID_ ObjektID des Echo Remote Devices
+
+Spielt ein Funfact auf dem Gerät ab
+
+**Erzählt ein Witz**
+```php
+ECHOREMOTE_TellJoke(integer $InstanceID)
+``` 
+Parameter _$InstanceID_ ObjektID des Echo Remote Devices
+
+Spielt ein Witz auf dem Gerät ab
+
 **Erzählt Geschichte**
 ```php
 ECHOREMOTE_TellStory(integer $InstanceID)
@@ -501,9 +520,23 @@ Es wird die zum Sprachausdruck passende Routine gestartet. Im Fehlerfall wird fa
 Beispiel:
 ```php
 ECHOREMOTE_StartAlexaRoutine(47111, 'Starte meinen Tag');
-
-
 ```
+
+**Bitte nicht Stören einschalten**
+```php
+ECHOREMOTE_DoNotDisturb(integer $InstanceID, bool true)
+``` 
+Parameter _$InstanceID_ ObjektID des Echo Remote Devices
+
+Bitte nicht stören wird am Gerät aktiviert.
+
+**Bitte nicht Stören ausschalten**
+```php
+ECHOREMOTE_DoNotDisturb(integer $InstanceID, bool false)
+``` 
+Parameter _$InstanceID_ ObjektID des Echo Remote Devices
+
+Bitte nicht stören wird am Gerät deaktiviert.
 
 ### AmazonEchoIO:
 **Anmelden**

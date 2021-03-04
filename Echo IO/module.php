@@ -405,6 +405,12 @@ class AmazonEchoIO extends IPSModule
                 $result = $this->NpQueue($getfields);
                 break;
 
+            case 'DoNotDisturb':
+                $putfields = $buffer['postfields'];
+
+                $result = $this->DoNotDisturb($putfields);
+                break;
+
             case 'BehaviorsPreview':
                 $postfields = $buffer['postfields'];
 
@@ -1103,18 +1109,57 @@ class AmazonEchoIO extends IPSModule
         return $this->SendEcho($url, $header);
     }
 
+    private function DoNotDisturb($putfields)
+    {
+        $url = 'https://alexa.' . $this->GetAmazonURL() . '/api/dnd/status';
+        $postfields = [
+            'deviceSerialNumber' => $putfields['deviceSerialNumber'],
+            'deviceType'         => $putfields['deviceType'],
+            'enabled'               => $putfields['enabled']];
+        $header = $this->GetHeader();
+
+        return $this->SendEcho($url, $header, json_encode($postfields), false, 'PUT');
+    }
+
     private function BehaviorsPreview(array $postfields)
     {
         $url = 'https://alexa.' . $this->GetAmazonURL() . '/api/behaviors/preview';
-
+        $locale = $this->GetLanguage();
         $operationPayload = [
             'deviceType'         => $postfields['deviceType'],
             'deviceSerialNumber' => $postfields['deviceSerialNumber'],
-            'locale'             => $this->GetLanguage(),
+            'locale'             => $locale,
             'customerId'         => $postfields['customerId']];
 
         if (isset($postfields['textToSpeak'])) {
-            $operationPayload['textToSpeak'] = $postfields['textToSpeak'];
+            $tts = $postfields['textToSpeak'];
+            if($tts == '{DISPLAY_OFF}' || $tts == '{DISPLAY_ON}')
+            {
+                //todo send command for display off
+                if($locale == 'de-DE')
+                {
+                    if($tts = '{DISPLAY_OFF}'){
+                        $operationPayload['textToSpeak'] = str_replace('{DISPLAY_OFF}', 'Display ausschalten', $postfields['textToSpeak']);
+                    }
+                    if($tts = '{DISPLAY_ON}'){
+                        $operationPayload['textToSpeak'] = str_replace('{DISPLAY_ON}', 'Display einschalten', $postfields['textToSpeak']);
+                    }
+                    //todo
+                }
+                if($locale == 'en-us')
+                {
+                    if($tts = '{DISPLAY_OFF}'){
+                        $operationPayload['textToSpeak'] = str_replace('{DISPLAY_OFF}', 'display off', $postfields['textToSpeak']);
+                    }
+                    if($tts = '{DISPLAY_ON}'){
+                        $operationPayload['textToSpeak'] = str_replace('{DISPLAY_ON}', 'display on', $postfields['textToSpeak']);
+                    }
+                    //todo
+                }
+            }
+            else{
+                $operationPayload['textToSpeak'] = $postfields['textToSpeak'];
+            }
         }
 
         $startNode = [
@@ -1152,7 +1197,21 @@ class AmazonEchoIO extends IPSModule
         $postfields = str_replace(
             ['ALEXA_CURRENT_DEVICE_TYPE', 'ALEXA_CURRENT_DSN'], [$deviceinfos['deviceType'], $deviceinfos['deviceSerialNumber']], $postfields
         );
+        $utterance = '';
 
+        foreach ($automation['triggers'] as $trigger) {
+            if (isset($trigger['payload']['utterance'])) {
+                $utterance = $trigger['payload']['utterance'];
+            }
+            if(empty($automation['name']))
+            {
+                $automation_name = '';
+            }
+            else{
+                $automation_name = $automation['name'];
+            }
+        }
+        $this->SendDebug('Trigger Automation', 'automation name: ' . $automation_name . ', automation utterance: ' . $utterance , 0);
         return $this->SendEcho($url, $header, $postfields);
     }
 
@@ -1430,10 +1489,11 @@ class AmazonEchoIO extends IPSModule
      * @param array     $header
      * @param string    $postfields as json string
      * @param bool|null $optpost
+     * @param string    $type
      *
      * @return mixed
      */
-    private function SendEcho(string $url, array $header, string $postfields = null, bool $optpost = null)
+    private function SendEcho(string $url, array $header, string $postfields = null, bool $optpost = null, string $type = null)
     {
         $this->SendDebug(__FUNCTION__, 'Header: ' . json_encode($header), 0);
 
@@ -1465,8 +1525,12 @@ class AmazonEchoIO extends IPSModule
             }
         }
 
-        if ($optpost !== null) {
+        if ($optpost !== null && $type == null) {
             $options[CURLOPT_POST] = $optpost;
+        }
+
+        if ($type == 'PUT') {
+            $options[CURLOPT_CUSTOMREQUEST] = 'PUT';
         }
 
         $this->SendDebug(__FUNCTION__, 'Options: ' . json_encode($options), 0);

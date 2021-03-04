@@ -20,6 +20,7 @@ class EchoRemote extends IPSModule
     private $update_counter = 0;
 
     private $ParentID = 0;
+    private int $position = 0;
 
     public function Create()
     {
@@ -69,6 +70,7 @@ class EchoRemote extends IPSModule
 
         //        $this->RegisterPropertyString('TuneInStations', '');
         $this->RegisterPropertyInteger('updateinterval', 0);
+        $this->RegisterPropertyBoolean('DND', false);
         $this->RegisterPropertyBoolean('ExtendedInfo', false);
         $this->RegisterPropertyBoolean('AlarmInfo', false);
         $this->RegisterPropertyBoolean('ShoppingList', false);
@@ -228,6 +230,18 @@ class EchoRemote extends IPSModule
                     $this->SetValue('EchoActions', $Value);
                     $this->TellStory();
                     break;
+                case 6: // tell a joke
+                    $this->SetValue('EchoActions', $Value);
+                    $this->TellJoke();
+                    break;
+                case 7: // tell a funfact
+                    $this->SetValue('EchoActions', $Value);
+                    $this->TellFunFact();
+                    break;
+                case 8: // stop all actions
+                    $this->SetValue('EchoActions', $Value);
+                    $this->StopDeviceActions();
+                    break;
             }
         }
         if ($Ident === 'EchoTTS') {
@@ -238,6 +252,13 @@ class EchoRemote extends IPSModule
                 $this->Mute(false);
             } else {
                 $this->Mute(true);
+            }
+        }
+        if ($Ident === 'DND') {
+            if ($Value) {
+                $this->DoNotDisturb(false);
+            } else {
+                $this->DoNotDisturb(true);
             }
         }
     }
@@ -702,6 +723,16 @@ class EchoRemote extends IPSModule
         return $this->PlaySequenceCmd('Alexa.Speak', $tts);
     }
 
+    /** Send a text Command to an echo device
+     *
+     * @return bool
+     */
+    public function TextCommand($command): bool
+    {
+        //todo Sequencecmd
+        return $this->PlaySequenceCmd('Alexa.TextCommand', $command);
+    }
+
     /** Announcement
      *
      * @param string $tts
@@ -710,7 +741,8 @@ class EchoRemote extends IPSModule
      */
     public function Announcement(string $tts): bool
     {
-        return $this->PlaySequenceCmd('AlexaAnnouncement', $tts);
+        //todo
+        return $this->PlaySequenceCmd('AlexaAnnouncement', '<speak>' . $tts . '</speak>');
     }
 
     /**
@@ -762,34 +794,163 @@ class EchoRemote extends IPSModule
     }
 
     /**
-     * @param string $utterance
+     * Tell a funfact.
+     */
+    public function TellFunFact(): bool
+    {
+        return $this->PlaySequenceCmd('Alexa.FunFact.Play');
+    }
+
+    /**
+     * Tell a joke.
+     */
+    public function TellJoke(): bool
+    {
+        return $this->PlaySequenceCmd('Alexa.Joke.Play');
+    }
+
+    /**
+     * Stop all current actions on device.
+     */
+    public function StopDeviceActions(): bool
+    {
+        return $this->PlaySequenceCmd('Alexa.DeviceControls.Stop');
+    }
+
+    /**
+     * Clean Up need Amazon Music Unlimited.
+     */
+    public function CleanUp(): bool
+    {
+        return $this->PlaySequenceCmd('Alexa.CleanUp.Play');
+    }
+
+    /**
+     * Calendar Today.
+     */
+    public function CalendarToday(): bool
+    {
+        return $this->PlaySequenceCmd('Alexa.Calendar.PlayToday');
+    }
+
+    /**
+     * Calendar Tomorrow.
+     */
+    public function CalendarTomorrow(): bool
+    {
+        return $this->PlaySequenceCmd('Alexa.Calendar.PlayTomorrow');
+    }
+
+    /**
+     * Calendar Next.
+     */
+    public function CalendarNext(): bool
+    {
+        return $this->PlaySequenceCmd('Alexa.Calendar.PlayNext');
+    }
+
+    /** Get all automations
      *
      * @return bool
      */
-    public function StartAlexaRoutine(string $utterance): bool
+    public function GetAllAutomations()
     {
-
         //get all Automations
         $result = (array) $this->SendData('BehaviorsAutomations');
 
         if ($result['http_code'] !== 200) {
             return false;
         }
+        return json_decode($result['body'], true);
+    }
 
-        $automations = json_decode($result['body'], true);
+    /** Echo Show Display off
+     *
+     * @return bool
+     */
+    public function DisplayOff(): bool
+    {
+        //todo Sequencecmd
+        $skillId = 'amzn1.ask.1p.tellalexa';
+        return $this->PlaySequenceCmd('Alexa.TextCommand', '{DISPLAY_OFF}');
+    }
 
-        //search Automation of utterance
-        $automation = $this->GetAutomation($utterance, $automations);
-        if ($automation) {
-            //play automation
-            $postfields = [
-                'deviceSerialNumber' => $this->GetDevicenumber(),
-                'deviceType'         => $this->GetDevicetype()];
+    /** Echo Show Display on
+     *
+     * @return bool
+     */
+    public function DisplayOn(): bool
+    {
+        //todo Sequencecmd
+        return $this->PlaySequenceCmd('Alexa.TextCommand', '{DISPLAY_ON}');
+    }
 
-            $result = (array) $this->SendData('BehaviorsPreviewAutomation', null, $postfields, null, null, $automation);
-            return $result['http_code'] === 200;
+    /** Set do not disturb
+     *
+     * @param $state
+     * @return bool
+     */
+    public function DoNotDisturb($state): bool
+    {
+        $postfields = [
+            'deviceSerialNumber' => $this->GetDevicenumber(),
+            'deviceType'         => $this->GetDevicetype(),
+            'enabled'               => $state];
+
+        $result = (array) $this->SendData('DoNotDisturb', null, $postfields);
+
+        return $result['http_code'] === 200;
+    }
+
+
+
+    /** Start Alexa Routine by utterance
+     * @param string $utterance
+     *
+     * @return bool
+     */
+    public function StartAlexaRoutine(string $utterance): bool
+    {
+        $automations = $this->GetAllAutomations();
+        if($automations)
+        {
+            //search Automation of utterance
+            $automation = $this->GetAutomation($utterance, $automations);
+            if ($automation) {
+                //play automation
+                $postfields = [
+                    'deviceSerialNumber' => $this->GetDevicenumber(),
+                    'deviceType'         => $this->GetDevicetype()];
+
+                $result = (array) $this->SendData('BehaviorsPreviewAutomation', null, $postfields, null, null, $automation);
+                return $result['http_code'] === 200;
+            }
         }
+        return false;
+    }
 
+    /** Start Alexa routine by routine name
+     * @param string $routine_name
+     *
+     * @return bool
+     */
+    public function StartAlexaRoutineByName(string $routine_name): bool
+    {
+        $automations = $this->GetAllAutomations();
+        if($automations)
+        {
+            //search Automation of utterance
+            $automation = $this->GetAutomationByName($routine_name, $automations);
+            if ($automation) {
+                //play automation
+                $postfields = [
+                    'deviceSerialNumber' => $this->GetDevicenumber(),
+                    'deviceType'         => $this->GetDevicetype()];
+
+                $result = (array) $this->SendData('BehaviorsPreviewAutomation', null, $postfields, null, null, $automation);
+                return $result['http_code'] === 200;
+            }
+        }
         return false;
     }
 
@@ -1145,6 +1306,16 @@ class EchoRemote extends IPSModule
         return false;
     }
 
+    /**
+     * return incremented position
+     * @return int
+     */
+    private function _getPosition()
+    {
+        $this->position++;
+        return $this->position;
+    }
+
     private function RegisterVariables(): void
     {
         if (!$this->HasActiveParent()) {
@@ -1170,31 +1341,31 @@ class EchoRemote extends IPSModule
                 [4, $this->Translate('Next'), 'HollowLargeArrowRight', -1],
                 [5, $this->Translate('Forward 30s'), 'HollowDoubleArrowRight', -1]]
         );
-        $this->RegisterVariableInteger('EchoRemote', $this->Translate('Remote'), 'Echo.Remote', 1);
+        $this->RegisterVariableInteger('EchoRemote', $this->Translate('Remote'), 'Echo.Remote', $this->_getPosition());
         $this->EnableAction('EchoRemote');
 
         //Shuffle Variable
         if (in_array('AMAZON_MUSIC', $caps, true)) {
-            $this->RegisterVariableBoolean('EchoShuffle', $this->Translate('Shuffle'), '~Switch', 2);
+            $this->RegisterVariableBoolean('EchoShuffle', $this->Translate('Shuffle'), '~Switch', $this->_getPosition());
             IPS_SetIcon($this->GetIDForIdent('EchoShuffle'), 'Shuffle');
             $this->EnableAction('EchoShuffle');
         }
 
         //Repeat Variable
         if (in_array('AMAZON_MUSIC', $caps, true)) {
-            $this->RegisterVariableBoolean('EchoRepeat', $this->Translate('Repeat'), '~Switch', 3);
+            $this->RegisterVariableBoolean('EchoRepeat', $this->Translate('Repeat'), '~Switch', $this->_getPosition());
             IPS_SetIcon($this->GetIDForIdent('EchoRepeat'), 'Repeat');
             $this->EnableAction('EchoRepeat');
         }
 
         //Volume Variable
         if (in_array('VOLUME_SETTING', $caps, true)) {
-            $this->RegisterVariableInteger('EchoVolume', $this->Translate('Volume'), '~Intensity.100', 4);
+            $this->RegisterVariableInteger('EchoVolume', $this->Translate('Volume'), '~Intensity.100', $this->_getPosition());
             $this->EnableAction('EchoVolume');
         }
 
         //Info Variable
-        $this->RegisterVariableString('EchoInfo', $this->Translate('Info'), '~HTMLBox', 5);
+        $this->RegisterVariableString('EchoInfo', $this->Translate('Info'), '~HTMLBox', $this->_getPosition());
 
         //Actions and TTS Variables
         if (in_array('FLASH_BRIEFING', $caps, true)) {
@@ -1205,12 +1376,15 @@ class EchoRemote extends IPSModule
                     [2, $this->Translate('Flash Briefing'), '', -1],
                     [3, $this->Translate('Good morning'), '', -1],
                     [4, $this->Translate('Sing a song'), '', -1],
-                    [5, $this->Translate('Tell a story'), '', -1]]
+                    [5, $this->Translate('Tell a story'), '', -1],
+                    [6, $this->Translate('Tell a joke'), '', -1],
+                    [7, $this->Translate('Tell a funfact'), '', -1],
+                    [8, $this->Translate('Stop all actions'), '', -1]]
             );
-            $this->RegisterVariableInteger('EchoActions', $this->Translate('Actions'), 'Echo.Actions', 6);
+            $this->RegisterVariableInteger('EchoActions', $this->Translate('Actions'), 'Echo.Actions', $this->_getPosition());
             $this->EnableAction('EchoActions');
 
-            $this->RegisterVariableString('EchoTTS', $this->Translate('Text to Speech'), '', 7);
+            $this->RegisterVariableString('EchoTTS', $this->Translate('Text to Speech'), '', $this->_getPosition());
             $this->EnableAction('EchoTTS');
         }
 
@@ -1224,17 +1398,28 @@ class EchoRemote extends IPSModule
                 }
                 $profileName = 'Echo.TuneInStation.' . $devicenumber;
                 $this->RegisterProfileAssociation($profileName, 'Music', '', '', 0, 0, 0, 0, VARIABLETYPE_INTEGER, $associations);
-                $this->RegisterVariableInteger('EchoTuneInRemote_' . $devicenumber, 'TuneIn Radio', $profileName, 5);
+                $this->RegisterVariableInteger('EchoTuneInRemote_' . $devicenumber, 'TuneIn Radio', $profileName, $this->_getPosition());
                 $this->EnableAction('EchoTuneInRemote_' . $devicenumber);
             }
         }
 
         //Extended Info
         if ($this->ReadPropertyBoolean('ExtendedInfo')) {
-            $this->RegisterVariableString('Title', $this->Translate('Title'), '', 8);
-            $this->RegisterVariableString('Subtitle_1', $this->Translate('Subtitle 1'), '', 9);
-            $this->RegisterVariableString('Subtitle_2', $this->Translate('Subtitle 2'), '', 10);
+            $this->RegisterVariableString('Title', $this->Translate('Title'), '', $this->_getPosition());
+            $this->RegisterVariableString('Subtitle_1', $this->Translate('Subtitle 1'), '', $this->_getPosition());
+            $this->RegisterVariableString('Subtitle_2', $this->Translate('Subtitle 2'), '', $this->_getPosition());
             $this->CreateMediaImage('MediaImageCover', 11);
+        }
+
+        // Do not disturb
+        if ($this->ReadPropertyBoolean('DND')) {
+            $this->RegisterProfileAssociation(
+                'Echo.Remote.DND', 'Speaker', '', '', 0, 1, 0, 0, VARIABLETYPE_BOOLEAN, [
+                    [false, $this->Translate('Do not disturb off'), 'Speaker', 0x00ff55],
+                    [true, $this->Translate('Do not disturb'), 'Speaker', 0xff3300]]
+            );
+            $this->RegisterVariableBoolean('DND', $this->Translate('Do not disturb'), 'Echo.Remote.DND', $this->_getPosition());
+            $this->EnableAction('DND');
         }
 
         //Mute
@@ -1245,48 +1430,48 @@ class EchoRemote extends IPSModule
                     [false, $this->Translate('Mute'), 'Speaker', 0xff3300],
                     [true, $this->Translate('Unmute'), 'Speaker', 0x00ff55]]
             );
-            $this->RegisterVariableBoolean('Mute', $this->Translate('Mute'), 'Echo.Remote.Mute', 13);
+            $this->RegisterVariableBoolean('Mute', $this->Translate('Mute'), 'Echo.Remote.Mute', $this->_getPosition());
             $this->EnableAction('Mute');
         }
 
         //support of alarm
         if ($this->ReadPropertyBoolean('AlarmInfo')) {
-            $this->RegisterVariableInteger('nextAlarmTime', $this->Translate('next Alarm'), '~UnixTimestamp', 12);
-            $this->RegisterVariableInteger('lastAlarmTime', $this->Translate('last Alarm'), '~UnixTimestamp', 13);
+            $this->RegisterVariableInteger('nextAlarmTime', $this->Translate('next Alarm'), '~UnixTimestamp', $this->_getPosition());
+            $this->RegisterVariableInteger('lastAlarmTime', $this->Translate('last Alarm'), '~UnixTimestamp', $this->_getPosition());
         }
 
         //support of ShoppingList
         if ($this->ReadPropertyBoolean('ShoppingList')) {
-            $this->RegisterVariableString('ShoppingList', $this->Translate('ShoppingList'), '~HTMLBox', 12);
+            $this->RegisterVariableString('ShoppingList', $this->Translate('ShoppingList'), '~HTMLBox', $this->_getPosition());
         }
 
         //support of TaskList
         if ($this->ReadPropertyBoolean('TaskList')) {
-            $this->RegisterVariableString('TaskList', $this->Translate('TaskList'), '~HTMLBox', 12);
+            $this->RegisterVariableString('TaskList', $this->Translate('TaskList'), '~HTMLBox', $this->_getPosition());
         }
 
         // Cover as HTML image
         if ($this->ReadPropertyBoolean('Cover')) {
-            $this->RegisterVariableString('Cover_HTML', $this->Translate('Cover'), '~HTMLBox', 13);
+            $this->RegisterVariableString('Cover_HTML', $this->Translate('Cover'), '~HTMLBox', $this->_getPosition());
         }
 
         // Title as HTML
         if ($this->ReadPropertyBoolean('Title')) {
-            $this->RegisterVariableString('Title_HTML', $this->Translate('Title'), '~HTMLBox', 15);
+            $this->RegisterVariableString('Title_HTML', $this->Translate('Title'), '~HTMLBox', $this->_getPosition());
         }
 
         // Subtitle 1 as HTML
         if ($this->ReadPropertyBoolean('Subtitle1')) {
-            $this->RegisterVariableString('Subtitle_1_HTML', $this->Translate('Subtitle 1'), '~HTMLBox', 14);
+            $this->RegisterVariableString('Subtitle_1_HTML', $this->Translate('Subtitle 1'), '~HTMLBox', $this->_getPosition());
         }
 
         // Subtitle 2 as HTML
         if ($this->ReadPropertyBoolean('Subtitle2')) {
-            $this->RegisterVariableString('Subtitle_2_HTML', $this->Translate('Subtitle 2'), '~HTMLBox', 16);
+            $this->RegisterVariableString('Subtitle_2_HTML', $this->Translate('Subtitle 2'), '~HTMLBox', $this->_getPosition());
         }
 
-        $this->RegisterVariableInteger('last_action', $this->Translate('Last Action'), '~UnixTimestamp', 17);
-        $this->RegisterVariableString('summary', $this->Translate('Last Command'), '', 18);
+        $this->RegisterVariableInteger('last_action', $this->Translate('Last Action'), '~UnixTimestamp', $this->_getPosition());
+        $this->RegisterVariableString('summary', $this->Translate('Last Command'), '', $this->_getPosition());
     }
 
     private function GetDeviceInfo()
@@ -1610,6 +1795,17 @@ class EchoRemote extends IPSModule
             }
         }
 
+        return false;
+    }
+
+    private function GetAutomationByName($routine_name, $automations)
+    {
+        foreach ($automations as $automation) {
+            if($automation['name'] === $routine_name)
+            {
+                return $automation;
+            }
+        }
         return false;
     }
 
@@ -2014,6 +2210,10 @@ class EchoRemote extends IPSModule
                 'caption' => 'update interval',
                 'suffix'  => 'seconds',
                 'minimum' => 0],
+            [
+                'name'    => 'DND',
+                'type'    => 'CheckBox',
+                'caption' => 'setup variable for Do not disturb'],
             [
                 'name'    => 'ExtendedInfo',
                 'type'    => 'CheckBox',
