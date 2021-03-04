@@ -44,6 +44,7 @@ Module for IP Symcon version 5.0 or higher. Enables remote control with an Amazo
  - Tell a story
  - Start a Routine
  - Connect Bluetooth devices
+ - switch Do not Disturb on / off
        
 ## 2. Requirements
 
@@ -348,6 +349,22 @@ ECHOREMOTE_TellStory(integer $InstanceID)
 Parameter _$InstanceID_ ObjectID of the Echo Remote Device 
 
 Plays a short story on the device
+
+**Do not disturb on**
+```php
+ECHOREMOTE_DoNotDisturb(integer $InstanceID, bool true)
+``` 
+Parameter _$InstanceID_ ObjektID des Echo Remote Devices
+
+Do not disturb active.
+
+**Do not disturb off**
+```php
+ECHOREMOTE_DoNotDisturb(integer $InstanceID, bool false)
+``` 
+Parameter _$InstanceID_ ObjektID des Echo Remote Devices
+
+Do not disturb inactive.
      
 
 ## 5. Configuration
