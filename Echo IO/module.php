@@ -40,8 +40,8 @@ class AmazonEchoIO extends IPSModule
         $this->RegisterPropertyString(
             'browser', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:58.0) Gecko/20100101 Firefox/58.0'
         );
-        $this->RegisterPropertyString('CookiesFileName', IPS_GetKernelDir() . 'alexa_cookie.txt');
-        $this->RegisterPropertyString('LoginFileName', IPS_GetKernelDir() . 'alexa_login.html');
+        $this->RegisterAttributeString('CookiesFileName', IPS_GetKernelDir() . 'alexa_cookie.txt');
+        $this->RegisterAttributeString('LoginFileName', IPS_GetKernelDir() . 'alexa_login.html');
         $this->RegisterPropertyBoolean('TimerLastAction', true);
 
         //we will wait until the kernel is ready
@@ -134,12 +134,6 @@ class AmazonEchoIO extends IPSModule
         }
     }
 
-    public function SetCookieFileFolder()
-    {
-        IPS_SetProperty($this->InstanceID, 'CookiesFileName', IPS_GetKernelDir() . 'alexa_cookie.txt');
-        IPS_ApplyChanges($this->InstanceID);
-    }
-
     public function LogOff(): bool
     {
         $this->SendDebug(__FUNCTION__, '== started ==', 0);
@@ -153,7 +147,7 @@ class AmazonEchoIO extends IPSModule
 
         if ($return['http_code'] === 200) { //OK
             $this->SetStatus(self::STATUS_INST_NOT_AUTHENTICATED);
-            return $this->deleteFile($this->ReadPropertyString('CookiesFileName'));
+            return $this->deleteFile($this->ReadAttributeString('CookiesFileName'));
         }
 
         return false;
@@ -871,7 +865,7 @@ class AmazonEchoIO extends IPSModule
          */
 
         //delete old cookie
-        $this->deleteFile($this->ReadPropertyString('CookiesFileName'));
+        $this->deleteFile($this->ReadAttributeString('CookiesFileName'));
 
         $echo_data = $this->SendEchoData('https://alexa.' . $this->GetAmazonURL(), $this->GetLoginHeader());
 
@@ -977,7 +971,7 @@ class AmazonEchoIO extends IPSModule
          */
 
         //get session-id from cookie file
-        $session_line = array_values(preg_grep('/\tsession-id\t/', file($this->ReadPropertyString('CookiesFileName'))));
+        $session_line = array_values(preg_grep('/\tsession-id\t/', file($this->ReadAttributeString('CookiesFileName'))));
         $session_id = preg_split('/\s+/', $session_line[0])[6];
         $this->SendDebug(__FUNCTION__, 'Session ID: ' . $session_id, 0);
 
@@ -1018,7 +1012,7 @@ class AmazonEchoIO extends IPSModule
 
          */
 
-        $LoginFile = $this->ReadPropertyString('LoginFileName');
+        $LoginFile = $this->ReadAttributeString('LoginFileName');
 
         if (count(preg_grep('/Location: https:\/\/alexa.*html/', $session_data['header'])) === 0) {
             file_put_contents($LoginFile, $session_data['body']);
@@ -1422,8 +1416,8 @@ class AmazonEchoIO extends IPSModule
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_COOKIEFILE, $this->ReadPropertyString('CookiesFileName')); //this file is read
-        curl_setopt($ch, CURLOPT_COOKIEJAR, $this->ReadPropertyString('CookiesFileName'));  //this file is written
+        curl_setopt($ch, CURLOPT_COOKIEFILE, $this->ReadAttributeString('CookiesFileName')); //this file is read
+        curl_setopt($ch, CURLOPT_COOKIEJAR, $this->ReadAttributeString('CookiesFileName'));  //this file is written
         curl_setopt($ch, CURLOPT_USERAGENT, $this->ReadPropertyString('browser'));
         curl_setopt($ch, CURLOPT_ENCODING, '');
         curl_setopt($ch, CURLOPT_HEADER, true);
@@ -1456,7 +1450,7 @@ class AmazonEchoIO extends IPSModule
                 trigger_error('no valid CSRF in cookie: ' . $this->ReadPropertyString('alexa_cookie'));
             }
         } else {
-            $CookiesFileName = $this->ReadPropertyString('CookiesFileName');
+            $CookiesFileName = $this->ReadAttributeString('CookiesFileName');
 
             if (file_exists($CookiesFileName)) {
                 //get CSRF from cookie file
@@ -1512,7 +1506,7 @@ class AmazonEchoIO extends IPSModule
         if ($this->ReadPropertyBoolean('UseCustomCSRFandCookie')) {
             $options[CURLOPT_COOKIE] = $this->ReadPropertyString('alexa_cookie'); //this content is read
         } else {
-            $options[CURLOPT_COOKIEFILE] = $this->ReadPropertyString('CookiesFileName'); //this file is read
+            $options[CURLOPT_COOKIEFILE] = $this->ReadAttributeString('CookiesFileName'); //this file is read
         }
 
         if ($postfields !== null) {
