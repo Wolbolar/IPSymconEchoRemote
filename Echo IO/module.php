@@ -1428,12 +1428,10 @@ class AmazonEchoIO extends IPSModule
 
         $header = $this->GetHeader();
 
-        $postfields = json_encode(
-            [
+        $postfields = [
                 'behaviorId' => $automation['automationId'],
                 'sequenceJson' => json_encode($automation['sequence']),
-                'status' => 'ENABLED']
-        );
+                'status' => 'ENABLED'];
 
         $postfields = str_replace(
             ['ALEXA_CURRENT_DEVICE_TYPE', 'ALEXA_CURRENT_DSN'], [$deviceinfos['deviceType'], $deviceinfos['deviceSerialNumber']], $postfields
