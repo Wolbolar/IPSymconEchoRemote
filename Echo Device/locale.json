@@ -73,7 +73,12 @@
       "Plause": "Pause",
       "Decrease Volume": "Lautstärke erniedrigen",
       "Increase Volume": "Lautstärke erhöhen",
-      "Speak Text": "Spreche Text"
+      "Speak Text": "Spreche Text",
+      "Alexa Routines": "Alexa Routinen",
+      "setup variable for Alexa routines": "Variable für Alexa Routinen anlegen",
+      "routine id": "Routinen ID",
+      "routine name": "Routinen Name",
+      "routine utterance": "Routine Sprechweise (utterance)"
     }
   }
 }

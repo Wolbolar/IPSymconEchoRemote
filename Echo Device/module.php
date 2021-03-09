@@ -92,6 +92,8 @@ class EchoRemote extends IPSModule
         $this->RegisterTimer('EchoUpdate', 0, 'EchoRemote_UpdateStatus(' . $this->InstanceID . ');');
         $this->RegisterTimer('EchoAlarm', 0, 'EchoRemote_RaiseAlarm(' . $this->InstanceID . ');');
         $this->RegisterAttributeInteger('creationTimestamp', 0);
+        $this->RegisterAttributeString('routines', '[]');
+        $this->RegisterPropertyBoolean('routines_wf', false);
 
         $this->ConnectParent('{C7F853A4-60D2-99CD-A198-2C9025E2E312}');
 
@@ -256,10 +258,13 @@ class EchoRemote extends IPSModule
         }
         if ($Ident === 'DND') {
             if ($Value) {
-                $this->DoNotDisturb(false);
-            } else {
                 $this->DoNotDisturb(true);
+            } else {
+                $this->DoNotDisturb(false);
             }
+        }
+        if ($Ident === 'Automation') {
+            $this->StartAlexaRoutineByKey($Value);
         }
     }
 
@@ -729,7 +734,6 @@ class EchoRemote extends IPSModule
      */
     public function TextCommand($command): bool
     {
-        //todo Sequencecmd
         return $this->PlaySequenceCmd('Alexa.TextCommand', $command);
     }
 
@@ -741,7 +745,6 @@ class EchoRemote extends IPSModule
      */
     public function Announcement(string $tts): bool
     {
-        //todo
         return $this->PlaySequenceCmd('AlexaAnnouncement', '<speak>' . $tts . '</speak>');
     }
 
@@ -849,9 +852,37 @@ class EchoRemote extends IPSModule
         return $this->PlaySequenceCmd('Alexa.Calendar.PlayNext');
     }
 
+    /** Get state do not disturb
+     * @return array|mixed|null
+     */
+    public function GetDoNotDisturbState()
+    {
+        $this->SendDebug(__FUNCTION__, 'started', 0);
+
+        $result = $this->SendData('GetDNDState');
+        $deviceSerialNumber = $this->ReadPropertyString('Devicenumber');
+        if ($result['http_code'] == 200) {
+            $doNotDisturbDeviceStatusList = json_decode($result['body'], true);
+            $dnd_devices = $doNotDisturbDeviceStatusList['doNotDisturbDeviceStatusList'];
+            foreach($dnd_devices as $dnd_device)
+            {
+                if($deviceSerialNumber == $dnd_device['deviceSerialNumber']){
+                    $dnd = $dnd_device['enabled'];
+                    $this->SendDebug('do not disturb state', strval($dnd), 0);
+                    if(@$this->GetIDForIdent('DND') > 0)
+                    {
+                        $this->SetValue('DND', $dnd);
+                    }
+                }
+            }
+            return $result['body'];
+        }
+        return $result;
+    }
+
     /** Get all automations
      *
-     * @return bool
+     * @return array
      */
     public function GetAllAutomations()
     {
@@ -859,9 +890,35 @@ class EchoRemote extends IPSModule
         $result = (array) $this->SendData('BehaviorsAutomations');
 
         if ($result['http_code'] !== 200) {
-            return false;
+            return [];
         }
         return json_decode($result['body'], true);
+    }
+
+    private function GetAutomationsList()
+    {
+        $automations = $this->GetAllAutomations();
+        $list = [];
+
+        foreach ($automations as $key => $automation) {
+
+            $routine_id = $key;
+            $automationId = $automation['automationId'];
+            $routine_name = $automation['name'];
+            $routine_utterance = $automation['triggers'][0]['payload']['utterance'];
+            if(is_null($routine_name))
+            {
+                $routine_name = '';
+            }
+
+            $list[] = [
+                'routine_id'        => $routine_id,
+                'automationId'      => $automationId,
+                'routine_name'      => $routine_name,
+                'routine_utterance' => $routine_utterance,
+            ];
+        }
+        return $list;
     }
 
     /** Echo Show Display off
@@ -870,8 +927,6 @@ class EchoRemote extends IPSModule
      */
     public function DisplayOff(): bool
     {
-        //todo Sequencecmd
-        $skillId = 'amzn1.ask.1p.tellalexa';
         return $this->PlaySequenceCmd('Alexa.TextCommand', '{DISPLAY_OFF}');
     }
 
@@ -881,7 +936,6 @@ class EchoRemote extends IPSModule
      */
     public function DisplayOn(): bool
     {
-        //todo Sequencecmd
         return $this->PlaySequenceCmd('Alexa.TextCommand', '{DISPLAY_ON}');
     }
 
@@ -898,11 +952,11 @@ class EchoRemote extends IPSModule
             'enabled'               => $state];
 
         $result = (array) $this->SendData('DoNotDisturb', null, $postfields);
+        IPS_Sleep(200);
+        $this->GetDoNotDisturbState();
 
         return $result['http_code'] === 200;
     }
-
-
 
     /** Start Alexa Routine by utterance
      * @param string $utterance
@@ -912,10 +966,35 @@ class EchoRemote extends IPSModule
     public function StartAlexaRoutine(string $utterance): bool
     {
         $automations = $this->GetAllAutomations();
-        if($automations)
+        if(!empty($automations))
         {
             //search Automation of utterance
             $automation = $this->GetAutomation($utterance, $automations);
+            if ($automation) {
+                //play automation
+                $postfields = [
+                    'deviceSerialNumber' => $this->GetDevicenumber(),
+                    'deviceType'         => $this->GetDevicetype()];
+
+                $result = (array) $this->SendData('BehaviorsPreviewAutomation', null, $postfields, null, null, $automation);
+                return $result['http_code'] === 200;
+            }
+        }
+        return false;
+    }
+
+    /** Start Alexa routine by routine name
+     * @param int $routine_key
+     *
+     * @return bool
+     */
+    private function StartAlexaRoutineByKey(int $routine_key): bool
+    {
+        $automations = $this->GetAllAutomations();
+        if(!empty($automations))
+        {
+            //search Automation of utterance
+            $automation = $this->GetAutomationByKey($routine_key, $automations);
             if ($automation) {
                 //play automation
                 $postfields = [
@@ -937,7 +1016,7 @@ class EchoRemote extends IPSModule
     public function StartAlexaRoutineByName(string $routine_name): bool
     {
         $automations = $this->GetAllAutomations();
-        if($automations)
+        if(!empty($automations))
         {
             //search Automation of utterance
             $automation = $this->GetAutomationByName($routine_name, $automations);
@@ -1006,7 +1085,7 @@ class EchoRemote extends IPSModule
         if (!$result = $this->GetPlayerInformation()) {
             return false;
         }
-
+        $this->GetDoNotDisturbState();
         $playerInfo = $result['playerInfo'];
         $this->SendDebug('Playerinfo', json_encode($playerInfo), 0);
         switch ($playerInfo['state']) {
@@ -1470,6 +1549,32 @@ class EchoRemote extends IPSModule
             $this->RegisterVariableString('Subtitle_2_HTML', $this->Translate('Subtitle 2'), '~HTMLBox', $this->_getPosition());
         }
 
+        if ($this->ReadPropertyBoolean('routines_wf')) {
+            $automations = $this->GetAllAutomations();
+            // automation variable
+            $associations = [];
+            $max = count($automations);
+            foreach ($automations as $key => $automation) {
+                $routine_id = $key;
+                // $automationId = $automation['automationId'];
+                $routine_name = $automation['name'];
+                $routine_utterance = $automation['triggers'][0]['payload']['utterance'];
+                if(is_null($routine_name))
+                {
+                    $routine_name = '';
+                }
+                $association_name = $routine_name;
+                if($routine_name == '')
+                {
+                    $association_name = $routine_utterance;
+                }
+                $associations[] = [$routine_id, $association_name, '', -1];
+            }
+            $this->RegisterProfileAssociation('Echo.Remote.Automation', 'Execute', '', '', 0, $max, 0, 0, VARIABLETYPE_INTEGER, $associations);
+            $this->RegisterVariableInteger('Automation', 'Automation', 'Echo.Remote.Automation', $this->_getPosition());
+            $this->EnableAction('Automation');
+        }
+
         $this->RegisterVariableInteger('last_action', $this->Translate('Last Action'), '~UnixTimestamp', $this->_getPosition());
         $this->RegisterVariableString('summary', $this->Translate('Last Command'), '', $this->_getPosition());
     }
@@ -1802,6 +1907,17 @@ class EchoRemote extends IPSModule
     {
         foreach ($automations as $automation) {
             if($automation['name'] === $routine_name)
+            {
+                return $automation;
+            }
+        }
+        return false;
+    }
+
+    private function GetAutomationByKey($routine_key, $automations)
+    {
+        foreach ($automations as $key => $automation) {
+            if($key === $routine_key)
             {
                 return $automation;
             }
@@ -2236,6 +2352,50 @@ class EchoRemote extends IPSModule
                 'caption' => 'setup variable for a task list'],
             [
                 'type'    => 'ExpansionPanel',
+                'caption' => 'Alexa Routines',
+                'items'   => [
+                    [
+                        'name'    => 'routines_wf',
+                        'type'    => 'CheckBox',
+                        'caption' => 'setup variable for Alexa routines'],
+                    [
+                        'type'     => 'List',
+                        'name'     => 'routines',
+                        'caption'  => 'Alexa Routines',
+                        'rowCount' => 20,
+                        'add'      => false,
+                        'delete'   => false,
+                        'sort'     => [
+                            'column'    => 'routine_name',
+                            'direction' => 'ascending'],
+                        'columns'  => [
+                            [
+                                'name'    => 'routine_id',
+                                'caption' => 'ID',
+                                'width'   => '100px',
+                                'save'    => true,
+                                'visible' => true],
+                            [
+                                'name'    => 'automationId',
+                                'caption' => 'automationId',
+                                'width'   => '100px',
+                                'save'    => true,
+                                'visible' => false],
+                            [
+                                'name'    => 'routine_name',
+                                'caption' => 'routine name',
+                                'width'   => '200px',
+                                'save'    => true],
+                            [
+                                'name'    => 'routine_utterance',
+                                'caption' => 'routine utterance',
+                                'width'   => 'auto',
+                                'save'    => true,
+                                'visible' => true]],
+                        'values'   => $this->GetAutomationsList()
+                   ]]],
+            [
+                'type'    => 'ExpansionPanel',
                 'caption' => 'Layout for extended info',
                 'items'   => [
                     [
@@ -2282,42 +2442,47 @@ class EchoRemote extends IPSModule
                         'caption' => 'size subtitle 2',
                         'options' => $this->SelectionFontSize()]]],
             [
-                'type'     => 'List',
-                'name'     => 'TuneInStations',
-                'caption'  => 'TuneIn stations',
-                'rowCount' => 20,
-                'add'      => true,
-                'delete'   => true,
-                'sort'     => [
-                    'column'    => 'position',
-                    'direction' => 'ascending'],
-                'columns'  => [
+                'type'    => 'ExpansionPanel',
+                'caption' => 'TuneIn stations',
+                'items'   => [
                     [
-                        'name'    => 'position',
-                        'caption' => 'Station',
-                        'width'   => '100px',
-                        'save'    => true,
-                        'visible' => true,
-                        'add'     => 0,
-                        'edit'    => [
-                            'type' => 'NumberSpinner']],
-                    [
-                        'name'    => 'station',
-                        'caption' => 'Station Name',
-                        'width'   => '200px',
-                        'save'    => true,
-                        'add'     => '',
-                        'edit'    => [
-                            'type' => 'ValidationTextBox']],
-                    [
-                        'name'    => 'station_id',
-                        'caption' => 'Station ID',
-                        'width'   => 'auto',
-                        'save'    => true,
-                        'add'     => '',
-                        'edit'    => [
-                            'type' => 'ValidationTextBox'],
-                        'visible' => true]]]];
+                        'type'     => 'List',
+                        'name'     => 'TuneInStations',
+                        'caption'  => 'TuneIn stations',
+                        'rowCount' => 20,
+                        'add'      => true,
+                        'delete'   => true,
+                        'sort'     => [
+                            'column'    => 'position',
+                            'direction' => 'ascending'],
+                        'columns'  => [
+                            [
+                                'name'    => 'position',
+                                'caption' => 'Station',
+                                'width'   => '100px',
+                                'save'    => true,
+                                'visible' => true,
+                                'add'     => 0,
+                                'edit'    => [
+                                    'type' => 'NumberSpinner']],
+                            [
+                                'name'    => 'station',
+                                'caption' => 'Station Name',
+                                'width'   => '200px',
+                                'save'    => true,
+                                'add'     => '',
+                                'edit'    => [
+                                    'type' => 'ValidationTextBox']],
+                            [
+                                'name'    => 'station_id',
+                                'caption' => 'Station ID',
+                                'width'   => 'auto',
+                                'save'    => true,
+                                'add'     => '',
+                                'edit'    => [
+                                    'type' => 'ValidationTextBox'],
+                                'visible' => true]]]
+                ]]];
     }
 
     private function SelectionFontSize()
