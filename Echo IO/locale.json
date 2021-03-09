@@ -25,7 +25,8 @@
       "Get OTP": "Generiere OTP",
       "Amazon 2FA": "Amazon 2FA (QR-Code Daten / leer = deaktiviert)",
       "last device": "letztes Gerät",
-      "Get last action": "Letzte Aktion auswerten"
+      "Get last action": "Letzte Aktion auswerten",
+      "Message from Symcon": "Nachricht von Symcon"
     }
   }
 }
