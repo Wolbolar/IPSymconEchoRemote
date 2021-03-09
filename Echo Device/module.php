@@ -899,24 +899,30 @@ class EchoRemote extends IPSModule
     {
         $automations = $this->GetAllAutomations();
         $list = [];
+        if(!empty($automations))
+        {
+            foreach ($automations as $key => $automation) {
 
-        foreach ($automations as $key => $automation) {
+                $routine_id = $key;
+                $automationId = $automation['automationId'];
+                $routine_name = $automation['name'];
+                $routine_utterance = '';
+                if(isset($automation['triggers'][0]['payload']['utterance']))
+                {
+                    $routine_utterance = $automation['triggers'][0]['payload']['utterance'];
+                }
+                if(is_null($routine_name))
+                {
+                    $routine_name = '';
+                }
 
-            $routine_id = $key;
-            $automationId = $automation['automationId'];
-            $routine_name = $automation['name'];
-            $routine_utterance = $automation['triggers'][0]['payload']['utterance'];
-            if(is_null($routine_name))
-            {
-                $routine_name = '';
+                $list[] = [
+                    'routine_id'        => $routine_id,
+                    'automationId'      => $automationId,
+                    'routine_name'      => $routine_name,
+                    'routine_utterance' => $routine_utterance,
+                ];
             }
-
-            $list[] = [
-                'routine_id'        => $routine_id,
-                'automationId'      => $automationId,
-                'routine_name'      => $routine_name,
-                'routine_utterance' => $routine_utterance,
-            ];
         }
         return $list;
     }
