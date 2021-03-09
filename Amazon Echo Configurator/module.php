@@ -81,7 +81,8 @@ class AmazonEchoConfigurator extends IPSModule
         'A3RBAYBE7VM004'   => ['name' => 'Echo Studio'],
         'ATH4K2BAIXVHQ'    => ['name' => 'Amazon Alexa App Android'],
         'A27VEYGQBW3YR5'   => ['name' => 'Echo Link'],
-        'AO50AHDYKXRFG'    => ['name' => 'Bose Noise Cancelling Headphones 700']];
+        'AO50AHDYKXRFG'    => ['name' => 'Bose Noise Cancelling Headphones 700'],
+        'A1Q7QCGNMXAKYW'   => ['name' => 'Fire 7 Tablet']];
 
     public function Create()
     {
