@@ -1573,7 +1573,14 @@ class EchoRemote extends IPSModule
                 $routine_id = $key;
                 // $automationId = $automation['automationId'];
                 $routine_name = $automation['name'];
-                $routine_utterance = $automation['triggers'][0]['payload']['utterance'];
+                $routine_utterance = '';
+                if(isset($automation['triggers'][0]['payload']['utterance']))
+                {
+                    $routine_utterance = $automation['triggers'][0]['payload']['utterance'];
+                }
+                else{
+                    $routine_utterance = 'no utterance';
+                }
                 if(is_null($routine_name))
                 {
                     $routine_name = '';
