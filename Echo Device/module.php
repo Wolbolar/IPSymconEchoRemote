@@ -945,6 +945,15 @@ class EchoRemote extends IPSModule
         return $this->PlaySequenceCmd('Alexa.TextCommand', '{DISPLAY_ON}');
     }
 
+    /** Show Alarm Clock
+     *
+     * @return bool
+     */
+    public function ShowAlarmClock(): bool
+    {
+        return $this->PlaySequenceCmd('Alexa.TextCommand', '{SHOW_ALARM_CLOCK}');
+    }
+
     /** Set do not disturb
      *
      * @param $state

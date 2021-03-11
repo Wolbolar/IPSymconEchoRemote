@@ -1361,24 +1361,37 @@ class AmazonEchoIO extends IPSModule
 
         if (isset($postfields['textToSpeak'])) {
             $tts = $postfields['textToSpeak'];
-            if ($tts == '{DISPLAY_OFF}' || $tts == '{DISPLAY_ON}') {
-                if ($locale == 'de-DE') {
-                    if ($tts == '{DISPLAY_OFF}') {
-                        $operationPayload['text'] = str_replace('{DISPLAY_OFF}', 'Bildschirm ausschalten', $tts);
+            if($postfields['type'] == 'Alexa.TextCommand')
+            {
+                if ($tts == '{DISPLAY_OFF}' || $tts == '{DISPLAY_ON}') {
+                    if ($locale == 'de-DE') {
+                        if ($tts == '{DISPLAY_OFF}') {
+                            $operationPayload['text'] = str_replace('{DISPLAY_OFF}', 'Bildschirm ausschalten', $tts);
+                        }
+                        if ($tts == '{DISPLAY_ON}') {
+                            $operationPayload['text'] = str_replace('{DISPLAY_ON}', 'Bildschirm einschalten', $tts);
+                        }
+                        if ($tts == '{SHOW_ALARM_CLOCK}') {
+                            $operationPayload['text'] = str_replace('{DISPLAY_ON}', 'Wecker anzeigen', $tts);
+                        }
                     }
-                    if ($tts == '{DISPLAY_ON}') {
-                        $operationPayload['text'] = str_replace('{DISPLAY_ON}', 'Bildschirm einschalten', $tts);
+                    if ($locale == 'en-us') {
+                        if ($tts == '{DISPLAY_OFF}') {
+                            $operationPayload['text'] = str_replace('{DISPLAY_OFF}', 'display off', $tts);
+                        }
+                        if ($tts == '{DISPLAY_ON}') {
+                            $operationPayload['text'] = str_replace('{DISPLAY_ON}', 'display on', $tts);
+                        }
+                        if ($tts == '{SHOW_ALARM_CLOCK}') {
+                            $operationPayload['text'] = str_replace('{DISPLAY_ON}', 'show alarm clock', $tts);
+                        }
                     }
                 }
-                if ($locale == 'en-us') {
-                    if ($tts == '{DISPLAY_OFF}') {
-                        $operationPayload['text'] = str_replace('{DISPLAY_OFF}', 'display off', $tts);
-                    }
-                    if ($tts == '{DISPLAY_ON}') {
-                        $operationPayload['text'] = str_replace('{DISPLAY_ON}', 'display on', $tts);
-                    }
+                else{
+                    $operationPayload['text'] = $tts;
                 }
-            } else {
+            }
+            else {
                 $operationPayload['textToSpeak'] = $postfields['textToSpeak'];
             }
         }
