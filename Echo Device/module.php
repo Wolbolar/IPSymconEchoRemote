@@ -729,10 +729,10 @@ class EchoRemote extends IPSModule
     }
 
     /** Send a text Command to an echo device
-     *
+     * @param string $command
      * @return bool
      */
-    public function TextCommand($command): bool
+    public function TextCommand(string $command): bool
     {
         return $this->PlaySequenceCmd('Alexa.TextCommand', $command);
     }
@@ -955,11 +955,10 @@ class EchoRemote extends IPSModule
     }
 
     /** Set do not disturb
-     *
-     * @param $state
+     * @param bool $state
      * @return bool
      */
-    public function DoNotDisturb($state): bool
+    public function DoNotDisturb(bool $state): bool
     {
         $postfields = [
             'deviceSerialNumber' => $this->GetDevicenumber(),
