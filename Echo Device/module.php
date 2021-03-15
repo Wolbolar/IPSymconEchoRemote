@@ -1439,15 +1439,17 @@ class EchoRemote extends IPSModule
 
         //Shuffle Variable
         if (in_array('AMAZON_MUSIC', $caps, true)) {
+            $exist_shuffle = $this->CheckExistence('EchoShuffle');
             $this->RegisterVariableBoolean('EchoShuffle', $this->Translate('Shuffle'), '~Switch', $this->_getPosition());
-            IPS_SetIcon($this->GetIDForIdent('EchoShuffle'), 'Shuffle');
+            $this->SetIcon('EchoShuffle', 'Shuffle', $exist_shuffle);
             $this->EnableAction('EchoShuffle');
         }
 
         //Repeat Variable
         if (in_array('AMAZON_MUSIC', $caps, true)) {
+            $exist_repeat = $this->CheckExistence('EchoRepeat');
             $this->RegisterVariableBoolean('EchoRepeat', $this->Translate('Repeat'), '~Switch', $this->_getPosition());
-            IPS_SetIcon($this->GetIDForIdent('EchoRepeat'), 'Repeat');
+            $this->SetIcon('EchoRepeat', 'Repeat', $exist_repeat);
             $this->EnableAction('EchoRepeat');
         }
 
@@ -1598,6 +1600,27 @@ class EchoRemote extends IPSModule
 
         $this->RegisterVariableInteger('last_action', $this->Translate('Last Action'), '~UnixTimestamp', $this->_getPosition());
         $this->RegisterVariableString('summary', $this->Translate('Last Command'), '', $this->_getPosition());
+    }
+
+    private function CheckExistence($ident)
+    {
+        $objectid = @$this->GetIDForIdent($ident);
+        if ($objectid == false) {
+            $exist = false;
+        } else {
+            $exist = true;
+        }
+        return $exist;
+    }
+
+    private function SetIcon($ident, $icon, $exist)
+    {
+        $icon_exist = false;
+        if ($exist == false) {
+            $icon_exist = IPS_SetIcon($this->GetIDForIdent($ident), $icon);
+        }
+
+        return $icon_exist;
     }
 
     private function GetDeviceInfo()
