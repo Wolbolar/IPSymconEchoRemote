@@ -364,10 +364,10 @@ class AmazonEchoIO extends IPSModule
                 if($postfields['type'] === 'DELETE'){
                     $this->SendDebug(__FUNCTION__, 'Type: DELETE', 0);
                     $options[CURLOPT_CUSTOMREQUEST] = 'DELETE';
+                }else {
+                    $this->SendDebug(__FUNCTION__, 'Postfields: ' . json_encode($postfields), 0);
+                    $options[CURLOPT_POSTFIELDS] = json_encode($postfields);
                 }
-            } else {
-                $this->SendDebug(__FUNCTION__, 'Postfields: ' . json_encode($postfields), 0);
-                $options[CURLOPT_POSTFIELDS] = json_encode($postfields);
             }
         }
 
