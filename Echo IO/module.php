@@ -368,6 +368,9 @@ class AmazonEchoIO extends IPSModule
                     $this->SendDebug(__FUNCTION__, 'Postfields: ' . json_encode($postfields), 0);
                     $options[CURLOPT_POSTFIELDS] = json_encode($postfields);
                 }
+            }else {
+                $this->SendDebug(__FUNCTION__, 'Postfields: ' . json_encode($postfields), 0);
+                $options[CURLOPT_POSTFIELDS] = json_encode($postfields);
             }
         }
 
