@@ -63,7 +63,10 @@ class AmazonEchoConfigurator extends IPSModule
         'A3NPD82ABCPIDP' => ['name' => 'Sonos Beam'],
         'A2Y04QPFCANLPQ' => ['name' => 'Bose QC35 II'],
         'A3C9PE6TNYLTCH' => ['name' => 'Multiroom Music-Group'],
-	'A303PJF6ISQ7IC' => ['name' => 'Echo Auto']];
+		'A303PJF6ISQ7IC' => ['name' => 'Echo Auto'],
+		'A15996VY63BQ2D' => ['name' => 'Echo Show 8 (2.Gen)'],
+		'ATNLRCEBX3W4P'  => ['name' => 'Fire HD 10 Tablet']
+		];
 
     public function Create()
     {
