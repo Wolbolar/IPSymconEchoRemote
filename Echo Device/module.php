@@ -861,7 +861,7 @@ class EchoRemote extends IPSModule
 
         $result = $this->SendData('GetDNDState');
         $deviceSerialNumber = $this->ReadPropertyString('Devicenumber');
-        if ($result['http_code'] == 200) {
+        if (isset($result['http_code']) && $result['http_code'] == 200) {
             $doNotDisturbDeviceStatusList = json_decode($result['body'], true);
             $dnd_devices = $doNotDisturbDeviceStatusList['doNotDisturbDeviceStatusList'];
             foreach($dnd_devices as $dnd_device)
