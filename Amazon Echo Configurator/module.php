@@ -15,6 +15,7 @@ class AmazonEchoConfigurator extends IPSModule
         'ADVBD696BHNV5'    => ['name' => 'Fire TV Stick (1.Gen)'],
         'A2GFL5ZMWNE0PX'   => ['name' => 'Fire TV Stick 4K (1.Gen)'],
         'AKPGW064GI9HE'    => ['name' => 'Fire TV Stick 4K'],
+        'A3EVMLQTU6WL1W'   => ['name' => 'Fire TV Stick 4K MAX'],
         'A2LWARUGJLBYEW'   => ['name' => 'Fire TV Stick (2.Gen)'],
         'A21Z3CGI8UIP0F'   => ['name' => 'Denon&Marantz (HEOS)'],
         'AVE5HX13UR5NO'    => ['name' => 'Zero Touch (Logitech)'],
