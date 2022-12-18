@@ -211,7 +211,7 @@ class AmazonEchoConfigurator extends IPSModule
                 $device_type_name = $this->Translate(self::DEVICETYPES[$deviceType]['name']);
             } else {
                 $device_type_name = 'unknown: ' . $deviceType;
-                $this->LogMessage('Unknown DeviceType: ' . $deviceType, KL_WARNING);
+                $this->LogMessage('Unknown DeviceType: ' . $deviceType . ' (' . $accountName . ')', KL_WARNING);
             }
             $this->SendDebug('Echo Device', 'device type: ' . $deviceType . ', device type name: ' . $device_type_name, 0);
 
