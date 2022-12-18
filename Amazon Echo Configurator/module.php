@@ -83,7 +83,8 @@ class AmazonEchoConfigurator extends IPSModule
         'A27VEYGQBW3YR5'   => ['name' => 'Echo Link'],
         'AO50AHDYKXRFG'    => ['name' => 'Bose Noise Cancelling Headphones 700'],
         'A1Q7QCGNMXAKYW'   => ['name' => 'Fire 7 Tablet'],
-        'A17KNHDVUO2UVP'   => ['name' => 'Audi Alexa Integration']];
+        'A17KNHDVUO2UVP'   => ['name' => 'Audi Alexa Integration'],
+        'A1OECNXBQCC1P9'   => ['name' => 'Samsung Tizen']];
 
     public function Create()
     {
